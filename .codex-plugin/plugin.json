@@ -1,0 +1,33 @@
+{
+  "name": "codex-auto-router",
+  "version": "0.1.0",
+  "description": "Automatic, safety-gated routing of bounded Codex work to native Terra or Luna background agents.",
+  "author": {
+    "name": "miniLV",
+    "url": "https://github.com/miniLV"
+  },
+  "homepage": "https://github.com/miniLV/codex-auto-router",
+  "repository": "https://github.com/miniLV/codex-auto-router",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "routing",
+    "subagents",
+    "terra",
+    "luna",
+    "workflow"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Codex Auto Router",
+    "shortDescription": "Automatically route safe bounded work to native Codex agents.",
+    "longDescription": "Considers every Main Task once, applies the repository policy gate, and delegates only safe bounded work to fixed Terra or Luna native-agent tuples while Root retains judgment and final verification.",
+    "developerName": "miniLV",
+    "category": "Productivity",
+    "capabilities": [
+      "skills"
+    ],
+    "websiteURL": "https://github.com/miniLV/codex-auto-router",
+    "defaultPrompt": "Apply the Codex Auto Router policy to the Main Task."
+  }
+}

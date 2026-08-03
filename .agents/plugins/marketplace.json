@@ -1,0 +1,21 @@
+{
+  "name": "codex-auto-router",
+  "interface": {
+    "displayName": "Codex Auto Router"
+  },
+  "plugins": [
+    {
+      "name": "codex-auto-router",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/miniLV/codex-auto-router.git",
+        "ref": "master"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

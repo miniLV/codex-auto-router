@@ -51,6 +51,15 @@ https://github.com/miniLV/codex-auto-router/tree/master/skills/codex-auto-router
 
 安装完成后，从下一条 task 开始即可使用。路由能力来自 skill；不需要启动 Node 服务，也不需要打开 Dashboard。
 
+如果希望把它作为 Codex plugin marketplace 安装，也可以使用：
+
+```sh
+codex plugin marketplace add miniLV/codex-auto-router --ref master
+codex plugin add codex-auto-router@codex-auto-router
+```
+
+这两条命令只是安装 skill 包；它们不运行 `npm run setup`，也不要求安装 `ccusage`。
+
 ## 核心流程
 
 每个 Main Task 会自动**考虑一次**，但考虑不等于委派：

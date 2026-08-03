@@ -48,6 +48,16 @@ test("metadata enables implicit consideration without duplicating policy state",
   assert.doesNotMatch(skill, /## (?:Route decisions|Failure behavior)/);
 });
 
+test("skill entrypoint is automatic and independent of optional Dashboard setup", () => {
+  const skill = read(skillPath);
+
+  assert.match(skill, /metadata hook is the automatic entry point/i);
+  assert.match(skill, /considers the Main Task for native background execution/i);
+  assert.match(skill, /without waiting\s+for a Dashboard or `npm run setup`/i);
+  assert.match(skill, /keep the work in Root/i);
+  assert.match(skill, /no executable router engine or Dashboard\s+dependency/i);
+});
+
 test("v2.1 route tuples, stand-down rules, gate, and break-even are explicit", () => {
   const policy = read(policyPath);
 

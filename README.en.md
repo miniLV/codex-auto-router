@@ -51,6 +51,15 @@ https://github.com/miniLV/codex-auto-router/tree/master/skills/codex-auto-router
 
 The skill is available from the next task. Routing comes from the skill; no Node service or Dashboard is required.
 
+If you prefer to install it as a Codex plugin from its marketplace, run:
+
+```sh
+codex plugin marketplace add miniLV/codex-auto-router --ref master
+codex plugin add codex-auto-router@codex-auto-router
+```
+
+These commands only install the skill package. They do not run `npm run setup` and do not require `ccusage`.
+
 ## Core flow
 
 Every Main Task is automatically **considered once**, but consideration does not imply delegation:
