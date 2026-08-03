@@ -61,6 +61,8 @@ if (!canRun("codex")) fail([
 
 console.log(`setup: Node ${process.version}, npm ${capture(npmCommand, ["--version"])}, Codex ${capture("codex", ["--version"]).split("\n")[0]}`);
 run(npmCommand, ["ci"]);
+run(npmCommand, ["run", "ccusage", "--", "--version"]);
 run(npmCommand, ["run", "typecheck"]);
 run(npmCommand, ["test"]);
+console.log("setup: project-local ccusage is available. Use: npm run ccusage -- <arguments>");
 console.log("setup: ready. Run npm start.");

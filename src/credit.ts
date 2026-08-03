@@ -53,22 +53,54 @@ export function allocateCredits(used: string, models: LocalUsage["models"]): Arr
   return rows.map((row) => ({ model: row.model, credits: formatScaled(row.base, places), share: row.tokens / totalTokens }));
 }
 
+/** Preserve local model mix when the official subscription endpoint has no credit amount. */
+export function allocateModelShares(models: LocalUsage["models"]): Array<{ model: string; share: number }> {
+  const known = models.filter((entry) => Number.isSafeInteger(entry.tokens) && entry.tokens > 0);
+  const totalTokens = known.reduce((total, entry) => total + entry.tokens, 0);
+  if (totalTokens <= 0) return [];
+  return known.map((entry) => ({ model: entry.model, share: entry.tokens / totalTokens }));
+}
+
 export function makeViewModel(official: OfficialSnapshot, local: LocalUsage | undefined, observationWindow: ObservationWindow): UsageViewModel {
   const diagnostics = [official.diagnostic, local?.diagnostic].filter((diagnostic): diagnostic is NonNullable<typeof diagnostic> => diagnostic !== undefined);
+  const localUsageSummary = {
+    modelCount: local?.models.length ?? 0,
+    tokenCount: local?.models.reduce((total, model) => total + model.tokens, 0) ?? 0
+  };
   if (!official.rateLimit) {
     return {
       observationWindow,
       officialCredit: { status: "unavailable" },
       estimatedCreditAttribution: [],
+      localUsageSummary,
       attributionQuality: { status: "unavailable", message: official.diagnostic?.message ?? "Official credit is unavailable, so estimates are unavailable." },
       diagnostics
     };
   }
   const rate = official.rateLimit;
+  const localModelShare = allocateModelShares(local?.models ?? []);
+  if (rate.kind === "subscription-quota") {
+    return {
+      observationWindow,
+      officialCredit: { status: "available", ...rate },
+      estimatedCreditAttribution: [],
+      localModelShare,
+      localUsageSummary,
+      attributionQuality: {
+        status: "unavailable",
+        message: localModelShare.length > 0
+          ? "The official subscription quota exposes usage percentage only; local model shares are available but cannot be converted to credit amounts."
+          : "The official subscription quota exposes usage percentage only, so per-model credit attribution is unavailable."
+      },
+      diagnostics
+    };
+  }
   const limit = displayCredit(rate.limit);
   const used = displayCredit(rate.used);
   const officialCredit = {
     status: "available" as const,
+    kind: "credit" as const,
+    source: "individualLimit" as const,
     limit,
     used,
     remaining: (BigInt(limit) - BigInt(used)).toString(),
@@ -80,6 +112,7 @@ export function makeViewModel(official: OfficialSnapshot, local: LocalUsage | un
       observationWindow,
       officialCredit,
       estimatedCreditAttribution: [],
+      localUsageSummary,
       attributionQuality: { status: "unavailable", message: local?.diagnostic?.message ?? "Local model attribution is unavailable." },
       diagnostics
     };
@@ -88,6 +121,7 @@ export function makeViewModel(official: OfficialSnapshot, local: LocalUsage | un
     observationWindow,
     officialCredit,
     estimatedCreditAttribution: allocateCredits(used, local.models),
+    localUsageSummary,
     attributionQuality: {
       status: "estimated",
       message: official.usageAvailable

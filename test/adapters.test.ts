@@ -11,8 +11,37 @@ test("rate limits prefer the codex limit and reject incomplete values", () => {
   assert.deepEqual(normalizeRateLimits({
     rateLimitsByLimitId: { codex: { individualLimit: { limit: "500.00", used: "12.50", remainingPercent: 97.5, resetsAt: 1785542400 } } },
     rateLimits: { individualLimit: { limit: "1.00", used: "1.00", remainingPercent: 0, resetsAt: 1 } }
-  }), { limit: "500.00", used: "12.50", remaining: "487.50", remainingPercent: 97.5, resetsAt: "2026-08-01T00:00:00.000Z" });
+  }), { kind: "credit", source: "individualLimit", limit: "500.00", used: "12.50", remaining: "487.50", remainingPercent: 97.5, resetsAt: "2026-08-01T00:00:00.000Z" });
   assert.equal(normalizeRateLimits({ rateLimits: { limit: 500, used: 12.5, remainingPercent: 97.5, resetsAt: "2026-08-01T00:00:00Z" } }), undefined);
+});
+
+test("rate limits normalize the current primary subscription quota when individual credit is null", () => {
+  assert.deepEqual(normalizeRateLimits({
+    rateLimits: {
+      individualLimit: null,
+      primary: { usedPercent: 27.5, windowDurationMins: 10_080, resetsAt: 1785542400, planType: "plus" }
+    },
+    rateLimitsByLimitId: { codex: { individualLimit: null, primary: { usedPercent: 27.5, windowDurationMins: 10_080, resetsAt: 1785542400, planType: "plus" } } }
+  }), {
+    kind: "subscription-quota",
+    source: "primary",
+    usedPercent: 27.5,
+    remainingPercent: 72.5,
+    windowDurationMins: 10_080,
+    resetsAt: "2026-08-01T00:00:00.000Z",
+    planType: "plus"
+  });
+  assert.deepEqual(normalizeRateLimits({
+    rateLimits: { primary: { usedPercent: 0, windowDurationMins: 10_080, resetsAt: 1785542400 }, planType: null }
+  }), {
+    kind: "subscription-quota",
+    source: "primary",
+    usedPercent: 0,
+    remainingPercent: 100,
+    windowDurationMins: 10_080,
+    resetsAt: "2026-08-01T00:00:00.000Z"
+  });
+  assert.equal(normalizeRateLimits({ rateLimits: { primary: { usedPercent: 101, windowDurationMins: 10_080, resetsAt: 1785542400 } } }), undefined);
 });
 
 test("local aggregation retains only named model totals and generic skip counts", () => {
@@ -81,14 +110,14 @@ test("estimated rows use deterministic largest remainder and sum to the integer 
 
 test("the public view model rounds every credit value to an integer before export or rendering", () => {
   const view = makeViewModel({
-    rateLimit: { limit: "500.49", used: "12.50", remaining: "487.99", remainingPercent: 97.5, resetsAt: "2026-08-01T00:00:00.000Z" },
+    rateLimit: { kind: "credit", source: "individualLimit", limit: "500.49", used: "12.50", remaining: "487.99", remainingPercent: 97.5, resetsAt: "2026-08-01T00:00:00.000Z" },
     usageAvailable: true
   }, {
     models: [{ model: "gpt-5.6-sol", tokens: 2 }, { model: "gpt-5.6-terra", tokens: 1 }],
     skippedEntries: 0
   }, { since: "2026-07-16", until: "2026-07-30", timezone: "UTC" });
   assert.deepEqual(view.officialCredit, {
-    status: "available", limit: "500", used: "13", remaining: "487", remainingPercent: 97.5, resetsAt: "2026-08-01T00:00:00.000Z"
+    status: "available", kind: "credit", source: "individualLimit", limit: "500", used: "13", remaining: "487", remainingPercent: 97.5, resetsAt: "2026-08-01T00:00:00.000Z"
   });
   assert.deepEqual(view.estimatedCreditAttribution, [
     { model: "gpt-5.6-sol", credits: "9", share: 2 / 3 },
@@ -96,16 +125,51 @@ test("the public view model rounds every credit value to an integer before expor
   ]);
 });
 
+test("subscription quota never turns used percentage into per-model credit", () => {
+  const view = makeViewModel({
+    rateLimit: {
+      kind: "subscription-quota",
+      source: "primary",
+      usedPercent: 27.5,
+      remainingPercent: 72.5,
+      windowDurationMins: 10_080,
+      resetsAt: "2026-08-01T00:00:00.000Z",
+      planType: "plus"
+    },
+    usageAvailable: true
+  }, {
+    models: [{ model: "gpt-5.6-sol", tokens: 2 }, { model: "gpt-5.6-terra", tokens: 1 }],
+    skippedEntries: 0
+  }, { since: "2026-07-16", until: "2026-07-30", timezone: "UTC" });
+  assert.deepEqual(view.officialCredit, {
+    status: "available",
+    kind: "subscription-quota",
+    source: "primary",
+    usedPercent: 27.5,
+    remainingPercent: 72.5,
+    windowDurationMins: 10_080,
+    resetsAt: "2026-08-01T00:00:00.000Z",
+    planType: "plus"
+  });
+  assert.deepEqual(view.estimatedCreditAttribution, []);
+  assert.deepEqual(view.localModelShare, [
+    { model: "gpt-5.6-sol", share: 2 / 3 },
+    { model: "gpt-5.6-terra", share: 1 / 3 }
+  ]);
+  assert.equal(view.attributionQuality.status, "unavailable");
+});
+
 test("availability diagnostics are preserved for the dashboard and API", () => {
   const view = makeViewModel({
     usageAvailable: false,
-    diagnostic: { source: "official", code: "read-timeout", message: "Official Credit did not respond within 8 seconds.", remediation: "Restart or update Codex, then retry." }
+    diagnostic: { source: "official", code: "read-timeout", message: "Official usage did not respond within 8 seconds.", remediation: "Restart or update Codex, then retry." }
   }, {
     models: [],
     skippedEntries: 0,
     diagnostic: { source: "local", code: "codex-missing", message: "Local session usage could not start because Codex was not found.", remediation: "Install or repair the Codex CLI, then run npm run setup." }
   }, { since: "2026-08-01", until: "2026-08-01", timezone: "UTC" });
-  assert.equal(view.attributionQuality.message, "Official Credit did not respond within 8 seconds.");
+  assert.equal(view.attributionQuality.message, "Official usage did not respond within 8 seconds.");
+  assert.deepEqual(view.localUsageSummary, { modelCount: 0, tokenCount: 0 });
   assert.deepEqual(view.diagnostics.map(({ source, code }) => ({ source, code })), [
     { source: "official", code: "read-timeout" },
     { source: "local", code: "codex-missing" }

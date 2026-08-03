@@ -42,7 +42,7 @@ That is this project's value: it does not blindly downgrade tasks. It moves exec
 
 ## 3-minute start
 
-Prerequisites: Node.js 22+ and a Codex CLI installation that has been signed in. The project never installs or upgrades Codex CLI for you:
+Prerequisites: Node.js 22+ and a signed-in Codex CLI. The project installs an exact-pinned local `ccusage`; no global command is required:
 
 ```sh
 # macOS / Linux
@@ -60,7 +60,14 @@ npm run setup
 npm start
 ```
 
-`npm run setup` checks Node.js, npm, and Codex CLI, installs locked dependencies, and runs the checks. If a prerequisite is missing, it prints the command and stops; it never installs it automatically. Local attribution uses the exact-pinned project-local `ccusage` package in offline mode, with no global install, `npx`, or runtime download.
+`npm run setup` checks Node.js, npm, and Codex CLI, installs locked dependencies, then verifies the project-local `ccusage`, typecheck, and tests. If a system prerequisite is missing, it prints manual installation instructions and stops; it never installs global tools. The Dashboard reads Codex session logs through the exact-pinned project-local `ccusage`, without using a global version, `npx`, or runtime downloads.
+
+After setup, the direct CLI is available:
+
+```sh
+npm run ccusage -- --version
+npm run ccusage -- codex session --json --offline
+```
 
 ## Core flow
 
@@ -92,18 +99,20 @@ See the [Runtime Router Policy](skills/codex-auto-router/references/routing-poli
 
 ## Self-checking cost locally
 
-Run `npm start`, then open the `127.0.0.1` URL printed in the terminal. **Official Credit** is authoritative; **Model mix** is an estimate based on local token share, not an official per-task bill.
+Run `npm start`, then open the `127.0.0.1` URL printed in the terminal. **Subscription usage** reads the official subscription quota from Codex app-server; **Model mix** is an observation based on local token share, not an official per-task bill. The project calls `account/rateLimits/read` for `primary.usedPercent`, window duration, and reset time, plus `account/usage/read` to validate account activity; it does not use the OpenAI Platform API token-billing endpoint.
+
+The **Setup status** panel checks Node.js, Codex CLI, and the project-local `ccusage`. Each item shows its version or a missing prerequisite and remediation. If refresh fails, the **Debug log** at the bottom preserves the error and a safe snapshot; **Copy debug** copies both at once.
 
 ![Codex Auto Router local Credit page](docs/assets/codex-auto-router-dashboard.png)
 
-The screenshot above is from the current repository. Official Credit and local model attribution are unavailable in this environment, so it is possible to confirm the data-source state but **not** whether Sol is overused. Self-check it this way:
+In subscription mode, the page shows the current window in the form `55% remaining · Weekly`. Legacy or enterprise Credit mode still supports `individualLimit`, but the two billing shapes are never mixed. Self-check it this way:
 
 1. Click **Refresh**, confirm that Codex CLI is signed in, and wait for Model mix rows to appear.
 2. Check **Top local share** and the model list. If Sol dominates local estimated share while the work is mostly mechanical, bounded, and verifiable, inspect route receipts and task decomposition.
-3. Click **Export JSON** and inspect `estimatedCreditAttribution` for each model's `share` and `credits`.
-4. If the page still says `No local model attribution is available`, fix the Codex session/data source first; do not interpret missing data as zero Sol cost.
+3. Click **Export JSON**. In subscription mode inspect `officialCredit.kind = "subscription-quota"`, `usedPercent`, `remainingPercent`, and `localModelShare`; only Credit mode exposes per-model `credits` in `estimatedCreditAttribution`.
+4. If both `estimatedCreditAttribution` and `localModelShare` are empty, fix the Codex session/data source first; do not interpret missing data as zero Sol cost.
 
-The Dashboard is read-only and never controls routing. Official Credit remains the source of truth; local attribution is a trend signal only.
+The Dashboard is read-only and never controls routing. Subscription quota is an official window-level state; local model share is a trend signal only and cannot replace official allowance or billing. See the [Codex app-server documentation](https://learn.chatgpt.com/docs/app-server) for the protocol.
 
 ## Verification
 

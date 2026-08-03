@@ -42,7 +42,7 @@ AI 编程助手不应该把每个任务都交给最贵的模型，也不应该�
 
 ## 3 分钟开始
 
-前置条件：Node.js 22+、已经安装并登录的 Codex CLI。项目不会替用户安装或升级 Codex CLI：
+前置条件：Node.js 22+，以及已经安装并登录的 Codex CLI。`ccusage` 由项目以精确版本安装，不要求全局命令：
 
 ```sh
 # macOS / Linux
@@ -60,7 +60,14 @@ npm run setup
 npm start
 ```
 
-`npm run setup` 只检查 Node.js、npm 和 Codex CLI，安装锁定依赖并运行检查。缺少前置条件时，它会打印安装命令后停止，不会自动安装。项目使用精确锁定、项目内的 `ccusage` 离线读取 Codex session logs，不使用全局安装、`npx` 或运行时下载。
+`npm run setup` 会检查 Node.js、npm 和 Codex CLI，安装锁定依赖，并验证项目内 `ccusage`、类型检查与测试。缺少系统前置条件时，它会打印手动安装命令后停止；不会安装全局工具。Dashboard 使用精确锁定的项目内 `ccusage` 读取 Codex session logs，不使用全局版本、`npx` 或运行时下载。
+
+setup 完成后，用户可以直接使用 CLI：
+
+```sh
+npm run ccusage -- --version
+npm run ccusage -- codex session --json --offline
+```
 
 ## 核心流程
 
@@ -92,18 +99,20 @@ Sol 更适合高判断、复杂上下文和最终责任，但把它用于每个�
 
 ## 本地页面怎么自查
 
-运行 `npm start` 后，打开终端打印的 `127.0.0.1` 地址。页面中的 **Official Credit** 是官方权威来源，**Model mix** 是基于本地 token share 的估算，不是官方逐任务账单。
+运行 `npm start` 后，打开终端打印的 `127.0.0.1` 地址。页面中的 **Subscription usage** 读取 Codex app-server 的官方订阅配额；**Model mix** 是基于本地 token share 的观察，不是官方逐任务账单。项目调用 `account/rateLimits/read` 获取 `primary.usedPercent`、窗口时长和重置时间，并调用 `account/usage/read` 检查本地活动是否可用；不调用 OpenAI Platform API 的 token 账单接口。
+
+页面顶部的 **Setup status** 会检查 Node.js、Codex CLI 和项目内 `ccusage`。三项都会显示版本或缺失原因；任一项未满足时，页面会给出修复命令。刷新失败时，页面底部的 **Debug log** 会保留错误与安全快照，可用 **Copy debug** 一次复制。
 
 ![Codex Auto Router 本地 Credit 页面](docs/assets/codex-auto-router-dashboard.png)
 
-上图是当前仓库实际运行截图：官方 Credit 和本地模型归因均暂不可用。因此这时只能确认数据源状态，**不能据此判断 Sol 用得多还是少**。自查步骤：
+订阅模式下，页面会显示类似 `55% remaining · Weekly` 的当前窗口额度。旧版或企业 Credit 模式仍兼容 `individualLimit`，但两种口径不会混在一起。自查步骤：
 
 1. 点击 **Refresh**，确认 Codex CLI 已登录，并等待 Model mix 出现模型列表。
 2. 看 **Top local share** 和右侧模型列表；如果 Sol 长期占据大部分本地估算，而任务本应是机械、有界、可验证的，就检查路由 receipt 和任务拆分。
-3. 用 **Export JSON** 保存当前快照，查看 `estimatedCreditAttribution` 中各模型的 `share` 和 `credits`。
-4. 如果页面仍显示 `No local model attribution is available`，先修复 Codex session / 数据源；不要把空数据误判为 Sol 成本为零。
+3. 用 **Export JSON** 保存当前快照：订阅模式看 `officialCredit.kind = "subscription-quota"`、`usedPercent`、`remainingPercent` 和 `localModelShare`；只有 Credit 模式才看 `estimatedCreditAttribution` 中的 `credits`。
+4. 如果 `estimatedCreditAttribution` 和 `localModelShare` 都为空，先修复 Codex session / 数据源；不要把空数据误判为 Sol 成本为零。
 
-Dashboard 只是只读观察器，不会反过来控制路由。官方 Credit 不可用时，页面必须明确显示不可用；本地估算可用时，也只能用来发现趋势，不能替代官方账单。
+Dashboard 只是只读观察器，不会反过来控制路由。订阅配额是窗口级官方状态，本地 model share 只能用来发现 Sol/Terra/Luna 的使用趋势，不能替代官方额度或账单。接口协议见 [Codex app-server 文档](https://learn.chatgpt.com/docs/app-server)。
 
 ## 验证
 

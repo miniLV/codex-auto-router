@@ -1,6 +1,7 @@
 import { readOfficialSnapshot } from "./app-server.js";
 import { makeViewModel } from "./credit.js";
 import { readLocalUsage } from "./local.js";
+import { readSetupStatus } from "./setup.js";
 import type { LocalUsage, ObservationWindow, OfficialSnapshot, SnapshotProvider, UsageViewModel } from "./types.js";
 
 function utcDate(value: number): string {
@@ -27,6 +28,6 @@ export class UsageService implements SnapshotProvider {
     const official = await this.officialReader();
     const window = sourceOwnWindow(this.now());
     const local = await this.localReader(window);
-    return makeViewModel(official, local, window);
+    return { ...makeViewModel(official, local, window), setupStatus: readSetupStatus() };
   }
 }

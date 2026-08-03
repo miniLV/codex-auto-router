@@ -12,6 +12,7 @@ test("the dashboard rejects a Host that is not its current loopback authority", 
       observationWindow: { since: "2026-07-16", until: "2026-07-30", timezone: "UTC" },
       officialCredit: { status: "unavailable" as const },
       estimatedCreditAttribution: [],
+      localUsageSummary: { modelCount: 0, tokenCount: 0 },
       attributionQuality: { status: "unavailable" as const, message: "Official credit is unavailable, so estimates are unavailable." },
       diagnostics: []
     };
