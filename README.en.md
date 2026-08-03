@@ -14,9 +14,9 @@
 </p>
 
 <p align="center">
-  <a href="#3-minute-start"><strong>3-minute start</strong></a> ·
+  <a href="#install-the-skill"><strong>Install the Skill</strong></a> ·
   <a href="#core-flow"><strong>Core flow</strong></a> ·
-  <a href="#self-checking-cost-locally"><strong>Cost self-check</strong></a>
+  <a href="#optional-local-dashboard"><strong>Optional Dashboard</strong></a>
 </p>
 
 <p align="center">
@@ -32,7 +32,7 @@ An AI coding assistant should not send every task to the most expensive model, a
 - **Sol / Root protects quality**: it keeps user intent, authorization, complex judgment, external actions, integration, final verification, and delivery.
 - **Terra / Luna reduce execution cost**: only independent, bounded, restorable, deterministically verifiable units go to the background; they are usually lighter and faster for repeatable engineering work.
 - **Safety beats price**: cost is never the only routing signal. Unclear ownership, baselines, recovery, or acceptance returns the task to `ROOT_DIRECT`.
-- **Local and auditable**: the policy, Task Packet, lifecycle, and Dashboard live in this repository; there is no black-box scheduler.
+- **Local and auditable**: the policy, Task Packet, and lifecycle live in this repository, with an optional Dashboard and no black-box scheduler.
 
 ### Why routing matters now
 
@@ -40,34 +40,16 @@ The same model generation now has a meaningful capability/cost ladder. In public
 
 That is this project's value: it does not blindly downgrade tasks. It moves execution from Sol to Luna or Terra only after the Gate, exact paths, baselines, recovery, and deterministic verification are satisfied. Subscription Codex Credit and API token billing are separate measures; the Dashboard identifies its data source and never presents API prices as a linear conversion of subscription allowance. See OpenAI's [GPT-5.6 announcement](https://openai.com/index/gpt-5-6/) for pricing and positioning, and [Artificial Analysis](https://artificialanalysis.ai/articles/gpt-5-6-has-landed/) for an independent capability/cost comparison.
 
-## 3-minute start
+## Install the Skill
 
-Prerequisites: Node.js 22+ and a signed-in Codex CLI. The project installs an exact-pinned local `ccusage`; no global command is required:
+Most users only need to paste this into Codex:
 
-```sh
-# macOS / Linux
-curl -fsSL https://chatgpt.com/codex/install.sh | sh
-
-# macOS / Homebrew
-brew install codex
-
-# Windows, or any platform with npm
-npm install --global @openai/codex
-
-codex
-codex --version
-npm run setup
-npm start
+```text
+Install this Codex skill:
+https://github.com/miniLV/codex-auto-router/tree/master/skills/codex-auto-router
 ```
 
-`npm run setup` checks Node.js, npm, and Codex CLI, installs locked dependencies, then verifies the project-local `ccusage`, typecheck, and tests. If a system prerequisite is missing, it prints manual installation instructions and stops; it never installs global tools. The Dashboard reads Codex session logs through the exact-pinned project-local `ccusage`, without using a global version, `npx`, or runtime downloads.
-
-After setup, the direct CLI is available:
-
-```sh
-npm run ccusage -- --version
-npm run ccusage -- codex session --json --offline
-```
+The skill is available from the next task. Routing comes from the skill; no Node service or Dashboard is required.
 
 ## Core flow
 
@@ -97,23 +79,6 @@ Sol is best reserved for high judgment, complex context, and final responsibilit
 
 See the [Runtime Router Policy](skills/codex-auto-router/references/routing-policy.md), [Task Packet](skills/codex-auto-router/references/task-packet.md), and [Native Subagent Lifecycle](skills/codex-auto-router/references/native-subagent-lifecycle.md) for the complete contract.
 
-## Self-checking cost locally
-
-Run `npm start`, then open the `127.0.0.1` URL printed in the terminal. **Subscription usage** reads the official subscription quota from Codex app-server; **Model mix** is an observation based on local token share, not an official per-task bill. The project calls `account/rateLimits/read` for `primary.usedPercent`, window duration, and reset time, plus `account/usage/read` to validate account activity; it does not use the OpenAI Platform API token-billing endpoint.
-
-The **Setup status** panel checks Node.js, Codex CLI, and the project-local `ccusage`. Each item shows its version or a missing prerequisite and remediation. If refresh fails, the **Debug log** at the bottom preserves the error and a safe snapshot; **Copy debug** copies both at once.
-
-![Codex Auto Router local Credit page](docs/assets/codex-auto-router-dashboard.png)
-
-In subscription mode, the page shows the current window in the form `55% remaining · Weekly`. Legacy or enterprise Credit mode still supports `individualLimit`, but the two billing shapes are never mixed. Self-check it this way:
-
-1. Click **Refresh**, confirm that Codex CLI is signed in, and wait for Model mix rows to appear.
-2. Check **Top local share** and the model list. If Sol dominates local estimated share while the work is mostly mechanical, bounded, and verifiable, inspect route receipts and task decomposition.
-3. Click **Export JSON**. In subscription mode inspect `officialCredit.kind = "subscription-quota"`, `usedPercent`, `remainingPercent`, and `localModelShare`; only Credit mode exposes per-model `credits` in `estimatedCreditAttribution`.
-4. If both `estimatedCreditAttribution` and `localModelShare` are empty, fix the Codex session/data source first; do not interpret missing data as zero Sol cost.
-
-The Dashboard is read-only and never controls routing. Subscription quota is an official window-level state; local model share is a trend signal only and cannot replace official allowance or billing. See the [Codex app-server documentation](https://learn.chatgpt.com/docs/app-server) for the protocol.
-
 ## Verification
 
 ```sh
@@ -130,3 +95,22 @@ The tests cover the routing contract, model tuples, Task Packet, lifecycle bound
 - Raw Codex session logs remain in their local locations.
 - Local model attribution reads existing logs and does not upload sessions.
 - This repository provides a Codex skill and static contract, not a standalone background scheduler.
+
+## Optional: local Dashboard
+
+The Dashboard is not required to use the skill. Run it only when you want a local view of subscription quota, Credit status, and Sol/Terra/Luna token share:
+
+```sh
+git clone https://github.com/miniLV/codex-auto-router.git
+cd codex-auto-router
+npm run setup
+npm run dashboard
+```
+
+It requires Node.js 22+ and a signed-in Codex CLI. `ccusage` is installed as an exact-pinned project dependency; no global command is required. Open the printed `127.0.0.1` URL.
+
+The page distinguishes **Subscription usage** from **Credit** and never mixes either with OpenAI Platform API token billing. **Model mix** comes from local session token share, not an official per-task bill. If refresh fails, **Debug log** and **Copy debug** provide a safe copyable diagnostic snapshot.
+
+![Codex Auto Router local Credit page](docs/assets/codex-auto-router-dashboard.png)
+
+Subscription exports use `officialCredit.kind = "subscription-quota"` and `localModelShare`; only Credit mode exposes `credits` in `estimatedCreditAttribution`. The Dashboard binds only to `127.0.0.1`, is read-only, and never controls routing. See the [Codex app-server documentation](https://learn.chatgpt.com/docs/app-server) for the protocol.

@@ -14,9 +14,9 @@
 </p>
 
 <p align="center">
-  <a href="#3-分钟开始"><strong>3 分钟开始</strong></a> ·
+  <a href="#安装-skill"><strong>安装 Skill</strong></a> ·
   <a href="#核心流程"><strong>核心流程</strong></a> ·
-  <a href="#本地页面怎么自查"><strong>自查成本</strong></a>
+  <a href="#可选本地-dashboard"><strong>可选 Dashboard</strong></a>
 </p>
 
 <p align="center">
@@ -32,7 +32,7 @@ AI 编程助手不应该把每个任务都交给最贵的模型，也不应该�
 - **Sol / Root 保质量**：保留用户意图、授权解释、复杂判断、外部动作、整合、最终验证和交付。
 - **Terra / Luna 降成本**：只把独立、有界、可恢复、可确定性验证的执行单元放到后台；通常更轻量、更快，也更适合重复性工程工作。
 - **安全优先于价格**：成本不是单独的路由条件。只要边界、baseline、恢复路径或验收方式不清楚，就回到 `ROOT_DIRECT`。
-- **本地可审计**：路由规则、Task Packet、生命周期和 Dashboard 都在仓库内；不依赖一个黑盒调度服务。
+- **本地可审计**：路由规则、Task Packet 和生命周期都在仓库内；另有可选 Dashboard，不依赖黑盒调度服务。
 
 ### 为什么现在值得路由
 
@@ -40,34 +40,16 @@ AI 编程助手不应该把每个任务都交给最贵的模型，也不应该�
 
 这正是本项目的价值：不是把任务盲目降级，而是在 Gate、精确路径、baseline、恢复与确定性验证都满足时，才把执行从 Sol 分流到 Luna 或 Terra。订阅制 Codex 的官方 Credit 与 API token 账单是两条不同口径；Dashboard 会明确显示数据源，绝不把 API 单价伪装成订阅额度的线性换算。定价和模型定位见 [OpenAI GPT-5.6 发布说明](https://openai.com/index/gpt-5-6/)；能力/成本的独立比较见 [Artificial Analysis](https://artificialanalysis.ai/articles/gpt-5-6-has-landed/)。
 
-## 3 分钟开始
+## 安装 Skill
 
-前置条件：Node.js 22+，以及已经安装并登录的 Codex CLI。`ccusage` 由项目以精确版本安装，不要求全局命令：
+大多数用户只需要在 Codex 中粘贴下面这句话：
 
-```sh
-# macOS / Linux
-curl -fsSL https://chatgpt.com/codex/install.sh | sh
-
-# macOS / Homebrew
-brew install codex
-
-# Windows，或任何支持 npm 的平台
-npm install --global @openai/codex
-
-codex
-codex --version
-npm run setup
-npm start
+```text
+请安装这个 Codex skill：
+https://github.com/miniLV/codex-auto-router/tree/master/skills/codex-auto-router
 ```
 
-`npm run setup` 会检查 Node.js、npm 和 Codex CLI，安装锁定依赖，并验证项目内 `ccusage`、类型检查与测试。缺少系统前置条件时，它会打印手动安装命令后停止；不会安装全局工具。Dashboard 使用精确锁定的项目内 `ccusage` 读取 Codex session logs，不使用全局版本、`npx` 或运行时下载。
-
-setup 完成后，用户可以直接使用 CLI：
-
-```sh
-npm run ccusage -- --version
-npm run ccusage -- codex session --json --offline
-```
+安装完成后，从下一条 task 开始即可使用。路由能力来自 skill；不需要启动 Node 服务，也不需要打开 Dashboard。
 
 ## 核心流程
 
@@ -97,23 +79,6 @@ Sol 更适合高判断、复杂上下文和最终责任，但把它用于每个�
 
 完整规则见 [Runtime Router Policy](skills/codex-auto-router/references/routing-policy.md)、[Task Packet](skills/codex-auto-router/references/task-packet.md) 和 [Native Subagent Lifecycle](skills/codex-auto-router/references/native-subagent-lifecycle.md)。
 
-## 本地页面怎么自查
-
-运行 `npm start` 后，打开终端打印的 `127.0.0.1` 地址。页面中的 **Subscription usage** 读取 Codex app-server 的官方订阅配额；**Model mix** 是基于本地 token share 的观察，不是官方逐任务账单。项目调用 `account/rateLimits/read` 获取 `primary.usedPercent`、窗口时长和重置时间，并调用 `account/usage/read` 检查本地活动是否可用；不调用 OpenAI Platform API 的 token 账单接口。
-
-页面顶部的 **Setup status** 会检查 Node.js、Codex CLI 和项目内 `ccusage`。三项都会显示版本或缺失原因；任一项未满足时，页面会给出修复命令。刷新失败时，页面底部的 **Debug log** 会保留错误与安全快照，可用 **Copy debug** 一次复制。
-
-![Codex Auto Router 本地 Credit 页面](docs/assets/codex-auto-router-dashboard.png)
-
-订阅模式下，页面会显示类似 `55% remaining · Weekly` 的当前窗口额度。旧版或企业 Credit 模式仍兼容 `individualLimit`，但两种口径不会混在一起。自查步骤：
-
-1. 点击 **Refresh**，确认 Codex CLI 已登录，并等待 Model mix 出现模型列表。
-2. 看 **Top local share** 和右侧模型列表；如果 Sol 长期占据大部分本地估算，而任务本应是机械、有界、可验证的，就检查路由 receipt 和任务拆分。
-3. 用 **Export JSON** 保存当前快照：订阅模式看 `officialCredit.kind = "subscription-quota"`、`usedPercent`、`remainingPercent` 和 `localModelShare`；只有 Credit 模式才看 `estimatedCreditAttribution` 中的 `credits`。
-4. 如果 `estimatedCreditAttribution` 和 `localModelShare` 都为空，先修复 Codex session / 数据源；不要把空数据误判为 Sol 成本为零。
-
-Dashboard 只是只读观察器，不会反过来控制路由。订阅配额是窗口级官方状态，本地 model share 只能用来发现 Sol/Terra/Luna 的使用趋势，不能替代官方额度或账单。接口协议见 [Codex app-server 文档](https://learn.chatgpt.com/docs/app-server)。
-
 ## 验证
 
 ```sh
@@ -130,3 +95,22 @@ git diff --check
 - 原始 Codex session logs 保留在本机原位置。
 - 本地模型归因只读取已有日志，不上传 session。
 - 本仓库提供 Codex skill 与静态契约，不是独立的后台调度服务。
+
+## 可选：本地 Dashboard
+
+Dashboard 不是使用 skill 的前置条件。只有想在本机查看订阅 quota、Credit 状态和 Sol/Terra/Luna token share 时才需要它：
+
+```sh
+git clone https://github.com/miniLV/codex-auto-router.git
+cd codex-auto-router
+npm run setup
+npm run dashboard
+```
+
+前置条件是 Node.js 22+ 和已经登录的 Codex CLI；`ccusage` 会作为项目内精确锁定依赖安装，不要求全局命令。打开终端打印的 `127.0.0.1` 地址即可查看页面。
+
+页面会明确区分 **Subscription usage** 与 **Credit**，不会和 OpenAI Platform API token 账单混算。**Model mix** 来自本地 session token share，不是官方逐任务账单。刷新失败时，底部 **Debug log** 与 **Copy debug** 可直接复制安全诊断快照。
+
+![Codex Auto Router 本地 Credit 页面](docs/assets/codex-auto-router-dashboard.png)
+
+订阅模式导出的 JSON 使用 `officialCredit.kind = "subscription-quota"` 和 `localModelShare`；只有 Credit 模式才会在 `estimatedCreditAttribution` 中提供 `credits`。Dashboard 只绑定 `127.0.0.1`、只读运行，也不会反过来控制路由。协议见 [Codex app-server 文档](https://learn.chatgpt.com/docs/app-server)。

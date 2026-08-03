@@ -65,4 +65,4 @@ run(npmCommand, ["run", "ccusage", "--", "--version"]);
 run(npmCommand, ["run", "typecheck"]);
 run(npmCommand, ["test"]);
 console.log("setup: project-local ccusage is available. Use: npm run ccusage -- <arguments>");
-console.log("setup: ready. Run npm start.");
+console.log("setup: ready. Run npm run dashboard.");
