@@ -34,6 +34,12 @@ AI 编程助手不应该把每个任务都交给最贵的模型，也不应该�
 - **安全优先于价格**：成本不是单独的路由条件。只要边界、baseline、恢复路径或验收方式不清楚，就回到 `ROOT_DIRECT`。
 - **本地可审计**：路由规则、Task Packet、生命周期和 Dashboard 都在仓库内；不依赖一个黑盒调度服务。
 
+### 为什么现在值得路由
+
+同一代模型已经有清晰的能力/成本台阶：公开 API 定价中，GPT-5.6 Sol 为每百万 token 输入 $5、输出 $30；Terra 为 $2.50 / $15；Luna 为 $1 / $6。也就是说，Terra 约为 Sol 的一半，Luna 约为其五分之一。把日志窗口读取、单测补齐等**有界且可机械验收**的单元交给合适模型，能让同一笔 API token 预算覆盖更多实际工作；一次无法验证的返工则足以吃掉这些节省。
+
+这正是本项目的价值：不是把任务盲目降级，而是在 Gate、精确路径、baseline、恢复与确定性验证都满足时，才把执行从 Sol 分流到 Luna 或 Terra。订阅制 Codex 的官方 Credit 与 API token 账单是两条不同口径；Dashboard 会明确显示数据源，绝不把 API 单价伪装成订阅额度的线性换算。定价和模型定位见 [OpenAI GPT-5.6 发布说明](https://openai.com/index/gpt-5-6/)；能力/成本的独立比较见 [Artificial Analysis](https://artificialanalysis.ai/articles/gpt-5-6-has-landed/)。
+
 ## 3 分钟开始
 
 前置条件：Node.js 22+、已经安装并登录的 Codex CLI。项目不会替用户安装或升级 Codex CLI：

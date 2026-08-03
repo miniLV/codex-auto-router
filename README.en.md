@@ -34,6 +34,12 @@ An AI coding assistant should not send every task to the most expensive model, a
 - **Safety beats price**: cost is never the only routing signal. Unclear ownership, baselines, recovery, or acceptance returns the task to `ROOT_DIRECT`.
 - **Local and auditable**: the policy, Task Packet, lifecycle, and Dashboard live in this repository; there is no black-box scheduler.
 
+### Why routing matters now
+
+The same model generation now has a meaningful capability/cost ladder. In public API pricing, GPT-5.6 Sol is $5 input / $30 output per million tokens; Terra is $2.50 / $15; Luna is $1 / $6. Terra is therefore about half of Sol's price and Luna about one fifth. Assigning bounded, mechanically verifiable units—such as log-window reads and unit-test work—to the appropriate model lets the same API token budget cover more real work; one unverifiable rework can erase those savings.
+
+That is this project's value: it does not blindly downgrade tasks. It moves execution from Sol to Luna or Terra only after the Gate, exact paths, baselines, recovery, and deterministic verification are satisfied. Subscription Codex Credit and API token billing are separate measures; the Dashboard identifies its data source and never presents API prices as a linear conversion of subscription allowance. See OpenAI's [GPT-5.6 announcement](https://openai.com/index/gpt-5-6/) for pricing and positioning, and [Artificial Analysis](https://artificialanalysis.ai/articles/gpt-5-6-has-landed/) for an independent capability/cost comparison.
+
 ## 3-minute start
 
 Prerequisites: Node.js 22+ and a Codex CLI installation that has been signed in. The project never installs or upgrades Codex CLI for you:
