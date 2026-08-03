@@ -176,10 +176,11 @@ test("Root ownership, static-versus-runtime boundary, and Dashboard isolation al
   }
   assert.match(context, /Static contract/);
   assert.match(context, /Runtime proof/);
-  assert.match(context, /current global `codex-orchestration` policy conflict blocks the v2\.1 pilot/i);
+  assert.match(context, /Competing routing authority/);
+  assert.match(context, /stands down to `ROOT_DIRECT`/i);
   assert.match(solution, /illustrative only/i);
   assert.match(solution, /cannot select a route or replace\s+the canonical Policy/i);
-  assert.match(solution, /no global configuration edits/i);
+  assert.match(solution, /another routing or orchestration authority governs the current task/i);
 });
 
 test("prohibited executable routing artifacts and imports are absent", () => {

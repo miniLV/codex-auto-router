@@ -74,11 +74,10 @@ initial attempt and at most two focused repair follow-ups. Root then resolves
 all paths and takes over. No unresolved writable path may cross a lifecycle
 transition.
 
-## Pilot boundary
+## Runtime compatibility
 
-The current global `codex-orchestration` policy conflicts with this v2.1
-automatic-routing contract and blocks a runtime pilot. This repository makes
-no global configuration edits. Sol Medium is only an external-deployment
+If another routing or orchestration authority governs the current task, this
+Skill stands down to `ROOT_DIRECT`. Sol Medium is only an external-deployment
 assumption, not a local route or Root-model change.
 
 Dashboard is an independent, read-only observer and never a routing input or control. Credits, history, labels, and local estimates remain outside the

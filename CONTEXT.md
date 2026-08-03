@@ -26,10 +26,10 @@ and cannot define a route.
 | Dashboard | Dashboard is an independent, read-only observer and never a routing input or control. Its history, credits, labels, and estimates cannot affect a decision. |
 | Static contract | Documentation, metadata, and static tests that validate shapes and boundaries. They do not prove runtime enforcement. |
 | Runtime proof | Evidence from a real platform invocation and Root verification; it is separate from static contract checks. |
-| Global orchestration conflict | The current global `codex-orchestration` policy conflict. It blocks the v2.1 pilot; this repository makes no global configuration edits. |
+| Competing routing authority | Any other routing or orchestration policy governing the current task. The Auto Router stands down to `ROOT_DIRECT` instead of competing with it. |
 
 The contract deliberately has no executable router engine, classifier, registry,
 LLM router, routing dependency, telemetry, or Dashboard control artifact.
 
-The current global `codex-orchestration` policy conflict blocks the v2.1 pilot;
-this repository makes no global configuration edits.
+If a competing routing authority governs the current task, the Auto Router
+stands down to `ROOT_DIRECT`.
