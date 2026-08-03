@@ -120,6 +120,6 @@ npm run dashboard
 
 页面会明确区分 **Subscription usage** 与 **Credit**，不会和 OpenAI Platform API token 账单混算。**Model mix** 来自本地 session token share，不是官方逐任务账单。刷新失败时，底部 **Debug log** 与 **Copy debug** 可直接复制安全诊断快照。
 
-![Codex Auto Router 本地 Credit 页面](docs/assets/codex-auto-router-dashboard.png)
+![Codex Auto Router 本地 Dashboard：订阅配额与 Luna 44.9%、Terra 31.0%、Sol 24.1% 的模型份额](docs/assets/codex-auto-router-dashboard.png)
 
 订阅模式导出的 JSON 使用 `officialCredit.kind = "subscription-quota"` 和 `localModelShare`；只有 Credit 模式才会在 `estimatedCreditAttribution` 中提供 `credits`。Dashboard 只绑定 `127.0.0.1`、只读运行，也不会反过来控制路由。协议见 [Codex app-server 文档](https://learn.chatgpt.com/docs/app-server)。

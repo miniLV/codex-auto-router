@@ -120,6 +120,6 @@ It requires Node.js 22+ and a signed-in Codex CLI. `ccusage` is installed as an 
 
 The page distinguishes **Subscription usage** from **Credit** and never mixes either with OpenAI Platform API token billing. **Model mix** comes from local session token share, not an official per-task bill. If refresh fails, **Debug log** and **Copy debug** provide a safe copyable diagnostic snapshot.
 
-![Codex Auto Router local Credit page](docs/assets/codex-auto-router-dashboard.png)
+![Codex Auto Router local Dashboard with subscription quota and Luna 44.9%, Terra 31.0%, and Sol 24.1% model shares](docs/assets/codex-auto-router-dashboard.png)
 
 Subscription exports use `officialCredit.kind = "subscription-quota"` and `localModelShare`; only Credit mode exposes `credits` in `estimatedCreditAttribution`. The Dashboard binds only to `127.0.0.1`, is read-only, and never controls routing. See the [Codex app-server documentation](https://learn.chatgpt.com/docs/app-server) for the protocol.
