@@ -52,7 +52,7 @@ AI 编程助手不应该把每个任务都交给最贵的模型，也不应该�
 
 ```text
 请安装这个 Codex skill：
-https://github.com/miniLV/codex-auto-router/tree/master/skills/codex-auto-router
+https://github.com/miniLV/codex-auto-router/tree/v0.1.1/skills/codex-auto-router
 ```
 
 安装完成后，从下一条 task 开始即可使用。路由能力来自 skill；不需要启动 Node 服务，也不需要打开 Dashboard。
@@ -60,7 +60,7 @@ https://github.com/miniLV/codex-auto-router/tree/master/skills/codex-auto-router
 如果希望把它作为 Codex plugin marketplace 安装，也可以使用：
 
 ```sh
-codex plugin marketplace add miniLV/codex-auto-router --ref master
+codex plugin marketplace add miniLV/codex-auto-router --ref v0.1.1
 codex plugin add codex-auto-router@codex-auto-router
 ```
 

@@ -9,7 +9,7 @@
       "source": {
         "source": "url",
         "url": "https://github.com/miniLV/codex-auto-router.git",
-        "ref": "master"
+        "ref": "v0.1.1"
       },
       "policy": {
         "installation": "AVAILABLE",

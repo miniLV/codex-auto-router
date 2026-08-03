@@ -52,7 +52,7 @@ Most users only need to paste this into Codex:
 
 ```text
 Install this Codex skill:
-https://github.com/miniLV/codex-auto-router/tree/master/skills/codex-auto-router
+https://github.com/miniLV/codex-auto-router/tree/v0.1.1/skills/codex-auto-router
 ```
 
 The skill is available from the next task. Routing comes from the skill; no Node service or Dashboard is required.
@@ -60,7 +60,7 @@ The skill is available from the next task. Routing comes from the skill; no Node
 If you prefer to install it as a Codex plugin from its marketplace, run:
 
 ```sh
-codex plugin marketplace add miniLV/codex-auto-router --ref master
+codex plugin marketplace add miniLV/codex-auto-router --ref v0.1.1
 codex plugin add codex-auto-router@codex-auto-router
 ```
 
