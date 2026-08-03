@@ -1,131 +1,94 @@
-# Codex Auto Router — V1 Solution
+# Codex Auto Router — v2.1 Solution
 
-Status: the Personal Usage Dashboard is implemented. The explicit Auto Router
-Skill is packaged in this repository and must be installed before Codex can
-discover it.
+Status: the repository ships a static contract for automatic routing. It has
+no executable router engine. The [Runtime Router
+Policy](../skills/codex-auto-router/references/routing-policy.md) is the sole
+canonical deep runtime Module; metadata and the other references are shallow
+Adapters, Interfaces, or the native-invocation Seam.
 
 ## Outcome
 
-V1 reduces unnecessary work on an expensive Root Model without introducing a
-second scheduler or second routing authority. Root keeps user intent,
-integration, verification, and final delivery.
+Every Main Task is automatically considered. Only a substantial, independent,
+restorable unit with deterministic verification and strict positive break-even
+may leave Root. Root retains intent, planning, high-judgment decisions,
+external actions, integration, final verification, and delivery. The Root Model never changes.
 
-## P1 invariant: one routing authority
+The exact route decisions and native tuples live only in the Policy:
+`ROOT_DIRECT`, `LUNA_XHIGH_BACKGROUND`, and `TERRA_HIGH_BACKGROUND`. Luna is
+limited to `READ_LOG_WINDOW` and `WRITE_UNIT_TESTS`; every other eligible
+bounded execution unit uses Terra. There is at most one active child and no
+child delegation.
 
-[Runtime Router Policy](../skills/codex-auto-router/references/routing-policy.md)
-is the only normative source for route eligibility, the Worker model and
-effort, and fallback behavior. `SKILL.md`, lifecycle references, this solution,
-research notes, diagrams, Dashboard, and Wiki pages are explanatory or
-mechanical; they cannot override the Policy.
+## Deep-module boundaries
 
-The Policy cannot run for a task while another active policy selects models or
-routes for that same task. An unrelated installed package does not need to be
-uninstalled. A platform-level rejection or mandatory runtime constraint causes
-the safe `ROOT_DIRECT` fallback.
+- **Module:** `references/routing-policy.md` owns the hard-to-change routing
+  contract: activation, stand-down, all-required gate, break-even, route
+  selection, limits, and failure behavior.
+- **Interface:** `references/task-packet.md` defines the complete handoff
+  fields, including exact paths, baselines, verification, restoration, Luna
+  allowlist data, and Terra-after-Luna evidence.
+- **Seam:** `references/native-subagent-lifecycle.md` defines ownership
+  transitions around native child invocation and closes every writable path.
+- **Adapters:** `SKILL.md` and `agents/openai.yaml` expose the Module without
+  duplicating a route table or independent state machine.
+- **Depth and locality:** one active child, no Worker descendants, mutually
+  exclusive paths, captured baselines, deterministic checks, and explicit
+  adopt-or-restore state.
 
-## Runtime
+## Illustrative flow (non-authoritative)
+
+The following diagram is illustrative only. It cannot select a route or replace
+the canonical Policy linked above.
 
 ```mermaid
 flowchart TD
-    A["Explicit $codex-auto-router invocation"] --> P["Read the Runtime Router Policy"]
-    P --> D{"Route Decision"}
-    D -->|"ROOT_DIRECT"| R["Root performs the work"]
-    D -->|"TERRA_HIGH_BACKGROUND"| K["Build one self-contained Task Packet"]
-    K --> S["Create one fresh-context native Subagent"]
-    S --> V["Root verifies the result"]
-    V -->|"Accepted"| I["Root integrates and delivers"]
-    V -->|"One missing detail"| F["Follow up with the same Worker once"]
-    F --> V2["Root verifies the follow-up"]
-    V2 -->|"Accepted"| I
-    V2 -->|"Not accepted"| C["Adopt or restore owned files"]
-    V -->|"Failed or rejected"| C
-    C --> R
+    A["Every Main Task considered"] --> B{"Stand-down condition?"}
+    B -->|"yes"| R["ROOT_DIRECT"]
+    B -->|"no"| G{"All gate conditions and strict break-even?"}
+    G -->|"no"| R
+    G -->|"yes"| L{"Exact Luna allowlist unit?"}
+    L -->|"yes"| U["LUNA_XHIGH_BACKGROUND"]
+    L -->|"no"| T["TERRA_HIGH_BACKGROUND"]
+    U --> Q{"Root can verify Luna output?"}
+    Q -->|"yes"| V["Adopt verified output"]
+    Q -->|"no"| X["Record diff; adopt verified; restore rest; resolve baseline"]
+    X -->|"remaining bounded work"| T
+    X -->|"Root takes over"| V
+    T --> W["Root verifies; repair at most twice"]
+    W --> V
+    V --> E["Root integrates and delivers"]
 ```
 
-V1 selects at most one bounded work unit for a Terra High Worker; all other
-work remains with Root. The Worker receives a fresh context and never creates
-descendants. Root issues a compact, task-local route receipt in commentary for
-each decision. The receipt is not persisted, does not reach the Dashboard, and
-is never a routing input.
+## Failure and recovery
 
-## Cost and correctness guard
+Luna ends after success; Root inspects, verifies, and adopts only verified
+output. After Luna failure or unverifiable output, Root records the complete
+diff, independently verifies candidates, adopts verified candidates, restores
+every non-adopted path, and records a resolved baseline. Root may then create
+exactly one fresh Terra child for a remaining bounded remnant, with explicit
+adoption/restoration evidence and no unverified Luna changes. No second Luna
+or other fallback is allowed.
 
-Delegation is allowed only when the exact owned paths are exclusive, the work
-is restorable or safely discardable, and Root can mechanically verify the
-output without reproducing the Worker’s reasoning. This prevents the most
-expensive failure shape: costly delegation followed by costly Root rework.
+Terra keeps the same child, tuple, surface, and fresh-context boundary for its
+initial attempt and at most two focused repair follow-ups. Root then resolves
+all paths and takes over. No unresolved writable path may cross a lifecycle
+transition.
 
-Terra High is a quality-first V1 setting rather than a claim that every High
-effort task is cheaper. After a human reviews at least five available route
-receipts and outcomes, the team may decide whether to test a lower effort. V1
-does not collect those records automatically or adapt its routing.
+## Pilot boundary
 
-## Install and enable
+The current global `codex-orchestration` policy conflicts with this v2.1
+automatic-routing contract and blocks a runtime pilot. This repository makes
+no global configuration edits. Sol Medium is only an external-deployment
+assumption, not a local route or Root-model change.
 
-`skills/codex-auto-router` is the project-controlled source, not an automatic
-Codex discovery location. Install one copy or symlink into Codex’s Skill home,
-then restart or reload Codex.
+Dashboard is an independent, read-only observer and never a routing input or control. Credits, history, labels, and local estimates remain outside the
+Route Request.
 
-The following symlink procedure is deliberately non-overwriting. It stops if
-the destination already exists, including an existing symlink:
+## Validation and proof
 
-```sh
-router_source="$(git rev-parse --show-toplevel)/skills/codex-auto-router"
-router_skill_home="${CODEX_HOME:-$HOME/.codex}/skills"
-router_target="$router_skill_home/codex-auto-router"
-
-test -d "$router_source"
-test ! -e "$router_target" && test ! -L "$router_target" || {
-  echo "Refusing to replace existing $router_target" >&2
-  exit 1
-}
-mkdir -p "$router_skill_home"
-ln -s "$router_source" "$router_target"
-test "$(realpath "$router_source")" = "$(realpath "$router_target")"
-```
-
-For a copied installation, use the same preflight through `mkdir -p`, then run
-`cp -R "$router_source" "$router_target"` only when the destination is absent.
-After restart/reload, invoke it only with `$codex-auto-router`. A real explicit
-invocation remains the required integration proof; static metadata and a
-successful symlink do not prove runtime discovery.
-
-## Relationship to Codex Model Routing Team
-
-This Skill is a controlled, reduced adaptation of
-[`zjp1997720/zhijian-skills`](https://github.com/zjp1997720/zhijian-skills/tree/main/skills/codex-model-routing-team)
-at commit `eff93b823980a3cdadd1e362e54dc364553cc718`.
-
-It adapts a self-contained Worker Task Packet and the native Subagent
-lifecycle. It does not import the upstream route policy, App Thread lifecycle,
-provider registry, durable mode, route scripts, or Worker ledger. The upstream
-Skill is not invoked at runtime, and updates never merge automatically into the
-Runtime Router Policy. File-level provenance and the scoped upstream MIT notice
-are in the [Skill source record](../skills/codex-auto-router/SOURCE.json).
-
-## Dashboard boundary
-
-The Dashboard is an independent, local observation tool. Codex App Server
-supplies aggregate Credit, local session summaries supply model-token shares,
-and per-model Credit remains an estimate. Refresh and JSON export are user
-initiated.
-
-No Dashboard value is read during a Route Request. Model history, current
-Credit pressure, Jira content, and personal behavior do not modify V1 routing.
-
-## V1 boundaries
-
-- Explicit invocation only.
-- One native Worker at most per invocation and one follow-up at most.
-- One Worker model and reasoning effort.
-- No Luna route, App Thread route, replacement Worker, or automatic escalation.
-- No routing telemetry, personalization, Jira adapter, or dynamic Credit rule.
-- Safe fallback is `ROOT_DIRECT`.
-
-## Validation
-
-Repository tests enforce the Runtime Router Policy marker, exact decision
-tokens, native parameters, one-Worker/one-follow-up limits, local Skill links,
-and absence of known stale documents or references. They also verify that a
-route receipt cannot be persisted, read by the Dashboard, or reused as a route
-input. The Skill folder is validated with the official Skill validator.
+`test/policy.test.ts` performs focused semantic static checks for the canonical
+Module, metadata, Interface, Seam, route boundaries, Dashboard isolation, and
+absence of prohibited executable artifacts. `npm run typecheck`, `npm test`,
+and `git diff --check` validate the repository. These checks establish the
+static contract only; runtime enforcement requires a real platform invocation
+and Root's deterministic verification.

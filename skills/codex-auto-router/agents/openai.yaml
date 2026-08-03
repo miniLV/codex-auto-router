@@ -1,7 +1,8 @@
+# Shallow Adapter metadata only; the canonical Policy owns routing state.
 interface:
   display_name: "Codex Auto Router"
-  short_description: "Explicitly route bounded work to Terra"
-  default_prompt: "Use $codex-auto-router to decide whether this task should stay with Root or run through a Terra worker."
+  short_description: "Consider safe bounded native delegation"
+  default_prompt: "Apply the canonical Codex Auto Router Policy to the Main Task."
 
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true

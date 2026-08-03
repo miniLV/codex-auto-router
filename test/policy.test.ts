@@ -1,12 +1,15 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
-import { dirname, join, relative, resolve } from "node:path";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { join, relative } from "node:path";
 import test from "node:test";
 
 const repoRoot = process.cwd();
 const skillRoot = join(repoRoot, "skills", "codex-auto-router");
 const policyPath = join(skillRoot, "references", "routing-policy.md");
+const packetPath = join(skillRoot, "references", "task-packet.md");
+const lifecyclePath = join(skillRoot, "references", "native-subagent-lifecycle.md");
+const skillPath = join(skillRoot, "SKILL.md");
+const metadataPath = join(skillRoot, "agents", "openai.yaml");
 
 function filesUnder(path: string): string[] {
   return readdirSync(path).flatMap((name) => {
@@ -15,100 +18,188 @@ function filesUnder(path: string): string[] {
   });
 }
 
-function section(markdown: string, heading: string): string {
-  const start = markdown.indexOf(heading);
-  assert.notEqual(start, -1, `missing ${heading}`);
-  const end = markdown.indexOf("\n## ", start + heading.length);
-  return markdown.slice(start, end === -1 ? undefined : end);
+function read(path: string): string {
+  return readFileSync(path, "utf8");
 }
 
-test("Runtime Router Policy is the only Skill routing authority", () => {
-  const files = filesUnder(skillRoot);
-  const declarations = files.filter((path) =>
-    readFileSync(path, "utf8").includes("# Runtime Router Policy")
-  );
-  const modelMentions = files.flatMap((path) =>
-    readFileSync(path, "utf8").match(/\bgpt-\d+(?:\.\d+)?-[a-z0-9-]+\b/gi) ?? []
+test("the Policy is the sole canonical deep Module", () => {
+  const declarations = filesUnder(skillRoot).filter((path) =>
+    read(path).includes("sole canonical deep runtime Module")
   );
 
-  assert.deepEqual(declarations.map((path) => relative(skillRoot, path)), ["references/routing-policy.md"]);
-  assert.deepEqual(modelMentions, ["gpt-5.6-terra"]);
+  assert.deepEqual(
+    declarations.map((path) => relative(skillRoot, path)),
+    ["references/routing-policy.md"]
+  );
+  assert.match(read(policyPath), /Policy version: `2\.1\.0`/);
 });
 
-test("Policy fixes V1 routes, native parameters, limits, and receipt boundary", () => {
-  const policy = readFileSync(policyPath, "utf8");
-  const nativeParameters = section(policy, "## Native child parameters");
-  const limits = section(policy, "## Root policy limits");
-  const receipt = section(policy, "## Route receipt");
+test("metadata enables implicit consideration without duplicating policy state", () => {
+  const policy = read(policyPath);
+  const skill = read(skillPath);
+  const metadata = read(metadataPath);
 
-  assert.match(policy, /`ROOT_DIRECT`/);
-  assert.match(policy, /`TERRA_HIGH_BACKGROUND`/);
-  assert.match(nativeParameters, /model: gpt-5\.6-terra/);
-  assert.match(nativeParameters, /reasoning_effort: high/);
-  assert.match(nativeParameters, /fork_turns: none/);
-  assert.doesNotMatch(nativeParameters, /maximum_(workers|followups)/);
-  assert.match(limits, /Maximum active children: `1`/);
-  assert.match(limits, /Maximum follow-ups to that child: `1`/);
-  assert.match(receipt, /Main Task commentary/);
-  assert.match(receipt, /never writes it to a file/i);
-  assert.match(receipt, /Dashboard/);
-  assert.match(receipt, /later Route Decision/);
+  assert.match(metadata, /allow_implicit_invocation: true/);
+  assert.match(policy, /every Main Task is\s+automatically considered/i);
+  assert.match(policy, /Consideration is not delegation/i);
+  assert.match(skill, /shallow Adapter/);
+  assert.doesNotMatch(skill, /ROOT_DIRECT|LUNA_XHIGH_BACKGROUND|TERRA_HIGH_BACKGROUND/);
+  assert.doesNotMatch(metadata, /ROOT_DIRECT|LUNA_XHIGH_BACKGROUND|TERRA_HIGH_BACKGROUND/);
+  assert.doesNotMatch(skill, /## (?:Route decisions|Failure behavior)/);
 });
 
-test("Skill is explicit-only and all local entrypoint links resolve", () => {
-  const skill = readFileSync(join(skillRoot, "SKILL.md"), "utf8");
-  const metadata = readFileSync(join(skillRoot, "agents", "openai.yaml"), "utf8");
-  const localLinks = [...skill.matchAll(/\]\(([^)#]+)(?:#[^)]+)?\)/g)]
-    .map((match) => match[1])
-    .filter((href) => !/^[a-z]+:/i.test(href));
+test("v2.1 route tuples, stand-down rules, gate, and break-even are explicit", () => {
+  const policy = read(policyPath);
 
-  assert.match(skill, /user explicitly invokes `\$codex-auto-router`/);
-  assert.match(skill, /Do not infer invocation from task characteristics/);
-  assert.match(metadata, /allow_implicit_invocation: false/);
-
-  for (const href of localLinks) {
-    assert.ok(existsSync(resolve(dirname(join(skillRoot, "SKILL.md")), href)), href);
+  for (const decision of ["ROOT_DIRECT", "LUNA_XHIGH_BACKGROUND", "TERRA_HIGH_BACKGROUND"]) {
+    assert.match(policy, new RegExp("`" + decision + "`"));
   }
+  assert.match(policy, /LUNA_XHIGH_BACKGROUND:\s+model: gpt-5\.6-luna\s+reasoning_effort: xhigh\s+fork_turns: none/);
+  assert.match(policy, /TERRA_HIGH_BACKGROUND:\s+model: gpt-5\.6-terra\s+reasoning_effort: high\s+fork_turns: none/);
+  assert.match(policy, /another active routing or orchestration authority governs/i);
+  assert.match(policy, /active merge or rebase conflict/i);
+  assert.match(policy, /ownership, scope, baseline, or restore state is ambiguous/i);
+
+  for (const gate of [
+    "substantial and bounded",
+    "repository is safe",
+    "Exact, mutually exclusive Worker-owned writable paths",
+    "read-only unit declares its exact path and time/line window",
+    "captured preflight baseline",
+    "Fresh-context suitability",
+    "Deterministic verification",
+    "safely restored or discarded",
+    "self-contained Task Packet",
+    "positive break-even"
+  ]) {
+    assert.match(policy, new RegExp(gate, "i"));
+  }
+  assert.match(policy, /expected benefit > packet preparation \+ supervision\/review \+ likely recovery/);
+  assert.match(policy, /strictly greater/i);
+  assert.match(policy, /Missing,\s*incomparable,\s*or materially uncertain estimates[\s\S]*ROOT_DIRECT/s);
 });
 
-test("lifecycle keeps one Worker ownership boundary and resolves partial writes", () => {
-  const packet = readFileSync(join(skillRoot, "references", "task-packet.md"), "utf8");
-  const lifecycle = readFileSync(join(skillRoot, "references", "native-subagent-lifecycle.md"), "utf8");
+test("Luna is an exact allowlist and Terra owns other eligible bounded execution", () => {
+  const policy = read(policyPath);
 
-  assert.match(packet, /exact Worker-owned paths/i);
-  assert.match(packet, /captured preflight baseline/i);
-  assert.match(lifecycle, /Root must not edit a Worker-owned path/i);
-  assert.match(lifecycle, /explicitly adopt/i);
-  assert.match(lifecycle, /restore it to the captured preflight baseline/i);
-  assert.match(lifecycle, /one focused\nfollow-up/i);
+  assert.match(policy, /`READ_LOG_WINDOW`:[\s\S]*?declared log path[\s\S]*?time\/line\s+window[\s\S]*?timeline metrics or facts[\s\S]*?no writes and no broader judgment/i);
+  assert.match(policy, /`WRITE_UNIT_TESTS`:[\s\S]*?declared test paths[\s\S]*?explicit test\s+names[\s\S]*?no production changes[\s\S]*?old and new\s+tests pass/i);
+  assert.match(policy, /No other action is Luna-eligible/i);
+  assert.match(policy, /Every other eligible bounded unit selects Terra/i);
+  assert.match(policy, /at most one active child/i);
+  assert.match(policy, /may not create descendants/i);
 });
 
-test("known superseded routing artifacts and references remain absent", () => {
-  const stalePaths = [
-    ["docs", "claude-code-review-packet.md"].join("/"),
-    ["docs", "adr", "0001-root-role-capability-and-routing-levels.md"].join("/"),
-    ["docs", "adr", "0002-personal-dashboard-credit-boundary.md"].join("/"),
-    ["docs", "adr", "0003-short-lived-app-server-adapter.md"].join("/"),
-    ["docs", "adr", "0004-loopback-only-dashboard.md"].join("/")
+test("Task Packet contains complete scope, break-even, and specialized fields", () => {
+  const packet = read(packetPath);
+  for (const field of [
+    "Route decision",
+    "Selected native tuple",
+    "Main objective",
+    "Bounded responsibility",
+    "Fresh-context suitability evidence",
+    "Read:",
+    "Write:",
+    "Exact file ownership",
+    "Do not touch:",
+    "Captured preflight baseline",
+    "Relevant facts",
+    "User authorization and constraints",
+    "Upstream Skill requirements",
+    "Prohibitions and non-goals",
+    "Required result",
+    "Deterministic commands",
+    "Expected verification results",
+    "Safe restore/discard procedure",
+    "Evidence to return"
+  ]) {
+    assert.match(packet, new RegExp(field.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"));
+  }
+  assert.match(packet, /Expected benefit/);
+  assert.match(packet, /Packet preparation cost/);
+  assert.match(packet, /Supervision\/review cost/);
+  assert.match(packet, /Likely recovery cost/);
+  assert.match(packet, /Total cost \(sum of the three costs above\)/);
+  assert.match(packet, /strict comparison/i);
+  assert.match(packet, /Missing, incomparable, or materially uncertain estimate/i);
+  assert.match(packet, /READ_LOG_WINDOW/);
+  assert.match(packet, /WRITE_UNIT_TESTS/);
+  assert.match(packet, /Terra-after-Luna/);
+  assert.match(packet, /resolved post-Luna baseline/i);
+  assert.match(packet, /no unverified Luna changes/i);
+});
+
+test("lifecycle makes every child transition and writable-path resolution explicit", () => {
+  const lifecycle = read(lifecyclePath);
+
+  for (const heading of ["Prepare", "Create", "Collect and verify", "Focused repair", "Luna failure", "Close"]) {
+    assert.match(lifecycle, new RegExp(`## \\d+\\. ${heading}`));
+  }
+  assert.match(lifecycle, /Root owns/);
+  assert.match(lifecycle, /child owns/);
+  assert.match(lifecycle, /Root must not edit those paths while the child is active/i);
+  assert.match(lifecycle, /explicitly adopted or restored/i);
+  assert.match(lifecycle, /No unresolved writable path may\s+remain/i);
+  assert.match(lifecycle, /same child, retaining the same model,\s*effort, execution surface, and\s+fresh-context boundary/i);
+  assert.match(lifecycle, /initial attempt plus at most two focused repair\s+follow-ups/i);
+  assert.match(lifecycle, /exactly one fresh Terra child/i);
+  assert.match(lifecycle, /no unverified Luna changes/i);
+  assert.match(lifecycle, /static lifecycle documents the contract; it is not runtime\s+proof/i);
+});
+
+test("Root ownership, static-versus-runtime boundary, and Dashboard isolation align", () => {
+  const policy = read(policyPath);
+  const context = read(join(repoRoot, "CONTEXT.md"));
+  const solution = read(join(repoRoot, "docs", "solution.md"));
+  const dashboardBoundary = "Dashboard is an independent, read-only observer";
+
+  for (const document of [policy, solution]) {
+    assert.match(document, /Root (?:keeps|retains)\s+intent/i);
+    assert.match(document, /Root\s+Model (?:never changes|does not change)/i);
+    assert.match(document, new RegExp(dashboardBoundary));
+  }
+  assert.match(context, /Root Model/);
+  assert.match(context, /Automatic routing never changes it/i);
+  assert.match(context, new RegExp(dashboardBoundary));
+  for (const term of ["Module", "Interface", "Seam", "Adapter", "Depth", "Locality"]) {
+    assert.match(context, new RegExp(`\\b${term}\\b`));
+  }
+  assert.match(context, /Static contract/);
+  assert.match(context, /Runtime proof/);
+  assert.match(context, /current global `codex-orchestration` policy conflict blocks the v2\.1 pilot/i);
+  assert.match(solution, /illustrative only/i);
+  assert.match(solution, /cannot select a route or replace\s+the canonical Policy/i);
+  assert.match(solution, /no global configuration edits/i);
+});
+
+test("prohibited executable routing artifacts and imports are absent", () => {
+  const prohibitedPaths = [
+    "src/router.ts",
+    "src/classifier.ts",
+    "src/registry.ts",
+    "src/llm-router.ts",
+    "src/telemetry.ts",
+    "src/dashboard-control.ts"
   ];
-  const trackedFiles = execFileSync("git", ["ls-files", "-z"], {
-    cwd: repoRoot,
-    encoding: "utf8"
-  })
-    .split("\0")
-    .filter(Boolean);
+  for (const path of prohibitedPaths) assert.equal(existsSync(join(repoRoot, path)), false, path);
 
-  for (const stalePath of stalePaths) {
-    assert.ok(!existsSync(join(repoRoot, stalePath)), stalePath);
+  const sourceFiles = filesUnder(join(repoRoot, "src"));
+  for (const path of sourceFiles) {
+    const source = read(path);
+    assert.doesNotMatch(source, /from ["'][^"']*(?:router|classifier|registry|llm-router|telemetry|dashboard-control)[^"']*["']/i, path);
+    assert.doesNotMatch(source, /require\(["'][^"']*(?:router|classifier|registry|llm-router|telemetry|dashboard-control)[^"']*["']\)/i, path);
   }
 
-  for (const path of trackedFiles) {
-    if (path === "test/policy.test.ts") continue;
-    const absolutePath = join(repoRoot, path);
-    if (!existsSync(absolutePath)) continue;
-    const contents = readFileSync(absolutePath, "utf8");
-    for (const stalePath of stalePaths) {
-      assert.ok(!contents.includes(stalePath), `${path} references ${stalePath}`);
-    }
-  }
+  const packageJson = JSON.parse(read(join(repoRoot, "package.json"))) as {
+    dependencies?: Record<string, string>;
+  };
+  assert.deepEqual(Object.keys(packageJson.dependencies ?? {}), ["ccusage"]);
+});
+
+test("route receipts stay commentary-only and are not durable routing state", () => {
+  const policy = read(policyPath);
+  assert.match(policy, /concise commentary receipt/i);
+  assert.match(policy, /never\s+written to a file/i);
+  assert.match(policy, /never\s+[\s\S]*sent to the Dashboard/i);
+  assert.match(policy, /never\s+[\s\S]*read as input to a later Route\s+Decision/i);
 });

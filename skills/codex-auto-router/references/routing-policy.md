@@ -1,105 +1,168 @@
 # Runtime Router Policy
 
-Policy version: `1.0.0`
+Policy version: `2.1.0`
 
-This file is the sole runtime authority for route eligibility, Worker model,
-reasoning effort, and fallback behavior. If any other file conflicts with it,
-this file wins.
+This file is the sole canonical deep runtime Module for automatic routing. It
+owns route eligibility, the route tuple, and fallback behavior. The Route
+Decision and Task Packet are Interfaces; native child invocation is the
+Lifecycle Seam; and `SKILL.md` plus `openai.yaml` are shallow Adapters. No
+other document, Dashboard, model history, or task label may override this
+Module.
 
-## Invocation
+This is a static contract for the packaged Skill. It does not create an
+executable router engine, classifier, registry, LLM router, telemetry system,
+or Dashboard control path.
 
-V1 runs only when the user explicitly invokes `$codex-auto-router`. It must not
-activate from task characteristics alone.
+## Activation and stand-down
 
-Auto Router preserves the Route Request and any upstream Skill. It does not
-judge whether a ticket is complete, redesign the upstream workflow, or change
-the Root Model.
+The Skill metadata sets `allow_implicit_invocation: true`: every Main Task is
+automatically considered once. Consideration is not delegation. Delegation
+occurs only when the complete gate below passes.
 
-Do not use this Policy for a task while another active policy selects routes or
-models for that same task. Merely having another package installed is not a
-conflict. If the platform or a mandatory runtime constraint rejects this
-Policy's delegation, choose `ROOT_DIRECT`.
+Stand down to `ROOT_DIRECT` without delegating when:
+
+- another active routing or orchestration authority governs the same task;
+- an active merge or rebase conflict exists; or
+- ownership, scope, baseline, or restore state is ambiguous.
+
+Preserve the user's request, authorization, constraints, and every upstream
+Skill. Automatic routing changes only where one bounded unit runs. Root keeps
+intent, planning, high-judgment decisions, external actions, integration,
+final verification, and delivery. The Root Model never changes. Sol Medium is
+only an external-deployment assumption; it is not a route or a Root-model
+override.
+
+Dashboard is an independent, read-only observer and never a routing input or
+control. Dashboard history, credits, task labels, and model history cannot
+affect a Route Decision.
 
 ## Route decisions
 
-Return exactly one decision:
+Return exactly one of these decisions:
 
 - `ROOT_DIRECT`
+- `LUNA_XHIGH_BACKGROUND`
 - `TERRA_HIGH_BACKGROUND`
 
-Choose `TERRA_HIGH_BACKGROUND` only when every condition is true:
+The native child tuple is fixed:
 
-1. One substantial work unit can be separated without changing the user's
-   objective or the upstream workflow.
-2. The work unit has exact, exclusive Worker-owned paths and can be retried,
-   safely discarded, or restored to its captured preflight state.
-3. The work unit can be expressed in a self-contained Task Packet without
-   copying most of the Main Task history.
-4. Root can verify the result with a deterministic command, test, or output
-   comparison without rederiving the Worker’s answer.
-5. Expected execution work materially exceeds child startup, handoff, and Root
-   verification overhead.
-6. The current native child tool accepts the native parameters below with fresh
-   context.
+```yaml
+LUNA_XHIGH_BACKGROUND:
+  model: gpt-5.6-luna
+  reasoning_effort: xhigh
+  fork_turns: none
+TERRA_HIGH_BACKGROUND:
+  model: gpt-5.6-terra
+  reasoning_effort: high
+  fork_turns: none
+```
 
-Otherwise choose `ROOT_DIRECT`. In particular, keep tiny changes, strongly
-sequential work, context-heavy judgment, external or destructive actions, and
-work without a mechanical verification method with Root.
+Choose a background route only when **all** gate conditions are true:
 
-Do not use task labels, file count, Jira issue type, personal model history, or
-Dashboard Credit values as automatic proxies for this decision.
+1. The unit is substantial and bounded, and can be separated without changing
+   the user's objective or upstream workflow.
+2. The repository is safe for delegation: no active merge/rebase conflict and
+   no unresolved ownership or scope ambiguity.
+3. Exact, mutually exclusive Worker-owned writable paths are declared, or a
+   read-only unit declares its exact path and time/line window.
+4. A captured preflight baseline exists for every writable path.
+5. Fresh-context suitability is confirmed for the selected native tuple.
+6. Deterministic verification and expected results are named.
+7. Every owned path can be safely restored or discarded if the child fails.
+8. A self-contained Task Packet contains all material facts and prohibitions.
+9. Delegation has positive break-even.
 
-## Route receipt
+Record break-even in one consistent unit, preferably minutes:
 
-For every Route Decision, Root emits a compact receipt in Main Task commentary:
+```text
+expected benefit > packet preparation + supervision/review + likely recovery
+```
+
+Expected benefit must be strictly greater than the sum of all three costs. Missing,
+incomparable, or materially uncertain estimates are not positive break-even;
+choose `ROOT_DIRECT`.
+
+Tiny changes, sequential judgment, external or destructive actions, work that
+cannot be mechanically verified, and work requiring most of the Main Task
+history stay with Root.
+
+## Route-specific selection
+
+After the all-required gate passes, select Luna only for one exact allowlisted
+unit. Every other eligible bounded unit selects Terra.
+
+### Luna allowlist
+
+`LUNA_XHIGH_BACKGROUND` is allowed only for these actions:
+
+- `READ_LOG_WINDOW`: read only the declared log path and declared time/line
+  window; return timeline metrics or facts and exact evidence locations; make
+  no writes and no broader judgment.
+- `WRITE_UNIT_TESTS`: write only the declared test paths and explicit test
+  names; make no production changes; report that the declared old and new
+  tests pass.
+
+No other action is Luna-eligible. An action that is eligible but not exactly on
+this allowlist uses `TERRA_HIGH_BACKGROUND`.
+
+### Terra execution
+
+`TERRA_HIGH_BACKGROUND` handles every remaining eligible bounded execution
+unit. It uses a fresh context and the fixed Terra tuple above.
+
+There is at most one active child at a time. A child is never a Worker
+delegator and may not create descendants.
+
+## Receipts and boundaries
+
+For every decision, Root emits only this concise commentary receipt:
 
 ```text
 Auto Router: <decision>; reason: <short reason>
 ```
 
-For `TERRA_HIGH_BACKGROUND`, append the bounded responsibility and mechanical
-verification target. A receipt is transparency for the current task only. This
-Policy never writes it to a file, sends it to the Dashboard, or reads it as
-input to a later Route Decision.
+For a background decision, append the bounded responsibility and deterministic
+verification target. A receipt is current-task commentary only: it is never
+written to a file, sent to the Dashboard, or read as input to a later Route
+Decision.
 
-## Native child parameters
-
-Use exactly these native child-tool parameters:
-
-```yaml
-model: gpt-5.6-terra
-reasoning_effort: high
-fork_turns: none
-```
-
-`reasoning_effort: high` is a V1 quality-first default: avoiding Worker rework
-is more important than tuning effort before evidence exists. Reconsider it
-only after a human has reviewed at least five available route receipts and
-outcomes. This Policy does not collect receipts automatically or adapt routes.
-
-## Root policy limits
-
-- Maximum active children: `1`.
-- Maximum follow-ups to that child: `1`.
-- The Worker must not create descendants.
-
-Root owns planning, external actions, integration, final verification, and user
-delivery.
-
-V1 has no alternate model, App Thread surface, replacement Worker, or automatic
-model escalation.
+This Module does not add `src/router`, a classifier, registry, dependency,
+LLM router, telemetry, Dashboard input/control, or any other executable route
+artifact. Static tests can check this contract's shape; they cannot claim that
+runtime routing is enforced.
 
 ## Failure behavior
 
-- Unsupported or rejected route tuple: use `ROOT_DIRECT`.
-- Child creation result is missing or uncertain: use `ROOT_DIRECT`; do not
-  retry creation.
-- Child output lacks information: follow up with the same child once while it
-  retains exclusive ownership.
-- Child remains incomplete, incorrect, or unverifiable: resolve its owned-file
-  state before Root takes over, as defined by the Native Subagent Lifecycle.
-- User requests no delegation or a conflicting execution constraint: use
-  `ROOT_DIRECT`.
+Unsupported or rejected route parameters, a missing or uncertain child result,
+an incomplete packet, or a failed gate means `ROOT_DIRECT` before delegation.
 
-Never silently change the model, effort, execution surface, or number of
-Workers during fallback.
+### Luna outcome
+
+On Luna success, Luna ends. Root inspects, deterministically verifies, and
+adopts only verified output.
+
+On Luna failure or unverifiable output, Luna ends. Root must:
+
+1. record the complete diff against the captured baseline;
+2. independently verify every candidate change;
+3. adopt only independently verified candidates;
+4. restore every non-adopted owned path;
+5. record the resolved post-Luna baseline;
+6. optionally create exactly one fresh Terra child for remaining bounded work,
+   using a packet that names the resolved baseline, explicit adoption and
+   restoration decisions, every remnant, and that it contains no unverified
+   Luna changes.
+
+There is no second Luna attempt and no other fallback child.
+
+### Terra outcome
+
+Within the same session, Terra may receive its initial packet and at most two
+focused repair follow-ups. A follow-up keeps the same child, model, effort,
+execution surface, and fresh-context boundary; it does not replace or switch
+the child. After the second focused repair, or any definite failure, Root
+resolves every owned path and takes over.
+
+No unresolved writable path may remain when child ownership ends. Root adopts
+only verified output, restores all non-adopted output, runs final checks, and
+delivers the result.

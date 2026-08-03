@@ -1,5 +1,9 @@
 # codex-auto-router
 
+<p align="center">
+  <img src="docs/diagrams/codex-auto-router-cover.png" alt="Codex Auto Router — Root、Luna 与 Terra 的安全路由" width="720">
+</p>
+
 一个面向 Codex 主任务（Main Task）的安全自动路由约定：只有在任务足够独立、边界清晰且可以验证时，才交给一个原生子 Agent 在后台执行；否则由 Root 直接完成。
 
 <p>

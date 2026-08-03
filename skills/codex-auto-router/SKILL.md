@@ -1,34 +1,25 @@
 ---
 name: codex-auto-router
-description: Use only when the user message literally includes $codex-auto-router. It routes one substantial, bounded work unit to a Terra child while Root retains intent, integration, verification, and final delivery; never activate it from task characteristics alone.
+description: Automatically consider every Main Task for one safe, bounded native child execution; the canonical routing policy and lifecycle references define eligibility and execution.
 ---
 
 # Codex Auto Router
 
-Use this Skill only when the user explicitly invokes `$codex-auto-router`.
-Do not infer invocation from task characteristics, model cost, or another Skill.
+This Skill is a shallow Adapter around the canonical [Runtime Router
+Policy](references/routing-policy.md). Its metadata enables implicit
+consideration for every Main Task. It does not duplicate route rules, model
+tuples, fallback state, or an independent state machine.
 
-Read [references/routing-policy.md](references/routing-policy.md) completely
-before making a Route Decision. It is the only routing authority. Do not read
-any other reference to decide `ROOT_DIRECT`.
+## Use
 
-## Execute
+1. Preserve the user's request, authorization, constraints, and upstream Skill.
+2. Read the Runtime Router Policy and apply its complete gate once.
+3. For a background decision, read the [Task Packet](references/task-packet.md)
+   and [Native Subagent Lifecycle](references/native-subagent-lifecycle.md),
+   then invoke the selected native child with a fresh context.
+4. Keep Root ownership of intent, planning, judgment, external actions,
+   integration, final verification, and delivery.
+5. Verify, adopt, or restore child output before closing the task.
 
-1. Preserve the user's request, authorization, constraints, and every active
-   upstream Skill. Auto Router changes only where one bounded work unit runs.
-2. Apply the Router Policy once.
-3. For Root Direct, continue the requested work in the Main Task.
-4. For Terra Background:
-   - read [references/task-packet.md](references/task-packet.md);
-   - read
-     [references/native-subagent-lifecycle.md](references/native-subagent-lifecycle.md);
-   - state the bounded responsibility being delegated;
-   - create exactly one native child using the exact route tuple in the Router
-     Policy and a fresh context;
-   - verify the returned work before adopting it.
-5. Return one self-contained final answer from Root.
-
-No other documentation, usage source, or Skill config participates in a Route
-Decision. Do not invoke another routing or orchestration Skill for the same
-task. Do not create an App Background Thread as a substitute for the native
-child.
+The packaged Skill contains no executable router engine. Static checks verify
+the contract's shape; a successful runtime invocation is separate proof.
