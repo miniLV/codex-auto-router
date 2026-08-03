@@ -152,8 +152,9 @@
     .n1 { left: 34px; top: 55px; --tilt: -1.1deg; }
     .n2 { left: 286px; top: 55px; width: 248px; --tilt: 1deg; }
     .n3 { left: 570px; top: 55px; width: 240px; --tilt: -.7deg; }
-    .n5 { left: 870px; top: 218px; width: 286px; --tilt: -.8deg; }
-    .n6 { left: 870px; top: 424px; width: 286px; --tilt: 1deg; }
+    .n4 { left: 900px; top: 12px; width: 286px; --tilt: 1.1deg; }
+    .n5 { left: 900px; top: 218px; width: 286px; --tilt: -.8deg; }
+    .n6 { left: 900px; top: 424px; width: 286px; --tilt: 1deg; }
     .n7 { left: 1220px; top: 218px; width: 230px; --tilt: -.7deg; }
     .n8 { left: 1220px; top: 498px; width: 230px; --tilt: 1deg; }
 
@@ -196,6 +197,7 @@
     .arrow.orange { stroke: var(--orange); }
     .arrow.green { stroke: var(--green); }
     .arrow.blue { stroke: var(--blue); }
+    .arrow.dashed { stroke: var(--pink); stroke-dasharray: 9 8; }
   </style>
 </head>
 <body>
@@ -221,15 +223,16 @@
         </defs>
         <path class="arrow orange" d="M 254 116 L 286 116"></path>
         <path class="arrow orange" d="M 534 116 L 570 116"></path>
-        <!-- Only Gate-approved work enters the compact background-worker bus. -->
-        <path class="bus" d="M 810 116 L 834 116 L 834 488"></path>
-        <path class="arrow teal" d="M 834 282 L 862 282"></path>
-        <path class="arrow blue" d="M 834 488 L 862 488"></path>
-        <path class="bus" d="M 1156 282 L 1172 282"></path>
-        <path class="bus" d="M 1156 488 L 1172 488 L 1172 282"></path>
-        <path class="arrow green" d="M 1172 282 L 1212 282"></path>
-        <!-- Validation produces one final outcome: adopt or restore. -->
-        <path class="arrow blue" d="M 1335 344 L 1335 490"></path>
+        <path class="bus" d="M 810 116 L 858 116 L 858 483"></path>
+        <path class="arrow green" d="M 858 76 L 900 76"></path>
+        <path class="arrow teal" d="M 858 282 L 900 282"></path>
+        <path class="arrow blue" d="M 858 488 L 900 488"></path>
+        <path class="bus" d="M 1186 76 L 1202 76 L 1202 282"></path>
+        <path class="bus" d="M 1186 282 L 1202 282"></path>
+        <path class="bus" d="M 1186 488 L 1202 488 L 1202 282"></path>
+        <path class="arrow green" d="M 1202 282 L 1220 282"></path>
+        <path class="arrow blue" d="M 1335 336 L 1335 498"></path>
+        <path class="arrow dashed" d="M 1335 336 C 1490 365, 1490 610, 1450 610 L 1450 558"></path>
       </svg>
 
       <article class="node n1 orange">
@@ -247,12 +250,18 @@
       <article class="node n3 green">
         <h2>Complete Gate</h2>
         <p>独立、有界、可验证、有 baseline、有恢复路径。</p>
-        <span class="path">未通过：Root 继续处理</span>
+        <span class="path">不确定 = ROOT_DIRECT</span>
+      </article>
+
+      <article class="node n4 green">
+        <h2>ROOT_DIRECT</h2>
+        <p>微小任务、判断、外部动作、破坏性或不可验证工作。</p>
+        <span class="path">Root 直接处理</span>
       </article>
 
       <article class="node n5 teal">
-        <h2>LUNA 白名单</h2>
-        <p>用户可配置的低风险、简单任务，<br>如读日志窗口、补单元测试。<br>gpt-5.6-luna · xhigh</p>
+        <h2>LUNA BACKGROUND</h2>
+        <p>仅 `READ_LOG_WINDOW` 或<br>`WRITE_UNIT_TESTS`。<br>gpt-5.6-luna · xhigh</p>
         <span class="path">LUNA_XHIGH_BACKGROUND</span>
       </article>
 

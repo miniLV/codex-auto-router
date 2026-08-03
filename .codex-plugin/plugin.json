@@ -8,7 +8,7 @@
   },
   "homepage": "https://github.com/miniLV/codex-auto-router",
   "repository": "https://github.com/miniLV/codex-auto-router",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "keywords": [
     "codex",
     "routing",
@@ -34,6 +34,8 @@
     "screenshots": [
       "./assets/auto-router-cover.png"
     ],
-    "defaultPrompt": "Apply the Codex Auto Router policy to the Main Task."
+    "defaultPrompt": [
+      "Apply the Codex Auto Router policy to the Main Task."
+    ]
   }
 }

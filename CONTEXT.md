@@ -30,6 +30,3 @@ and cannot define a route.
 
 The contract deliberately has no executable router engine, classifier, registry,
 LLM router, routing dependency, telemetry, or Dashboard control artifact.
-
-If a competing routing authority governs the current task, the Auto Router
-stands down to `ROOT_DIRECT`.

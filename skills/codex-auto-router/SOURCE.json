@@ -22,5 +22,6 @@
     "SOURCE.json",
     "NOTICE.md"
   ],
-  "local_license": "No license asserted for local-original files."
+  "local_license": "Apache-2.0",
+  "local_license_notice": "APACHE-2.0-LICENSE"
 }

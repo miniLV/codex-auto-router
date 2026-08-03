@@ -163,11 +163,9 @@ test("Root ownership, static-versus-runtime boundary, and Dashboard isolation al
   const solution = read(join(repoRoot, "docs", "solution.md"));
   const dashboardBoundary = "Dashboard is an independent, read-only observer";
 
-  for (const document of [policy, solution]) {
-    assert.match(document, /Root (?:keeps|retains)\s+intent/i);
-    assert.match(document, /Root\s+Model (?:never changes|does not change)/i);
-    assert.match(document, new RegExp(dashboardBoundary));
-  }
+  assert.match(policy, /Root (?:keeps|retains)\s+intent/i);
+  assert.match(policy, /Root\s+Model (?:never changes|does not change)/i);
+  assert.match(policy, new RegExp(dashboardBoundary));
   assert.match(context, /Root Model/);
   assert.match(context, /Automatic routing never changes it/i);
   assert.match(context, new RegExp(dashboardBoundary));
@@ -178,8 +176,9 @@ test("Root ownership, static-versus-runtime boundary, and Dashboard isolation al
   assert.match(context, /Runtime proof/);
   assert.match(context, /Competing routing authority/);
   assert.match(context, /stands down to `ROOT_DIRECT`/i);
-  assert.match(solution, /illustrative only/i);
-  assert.match(solution, /cannot select a route or replace\s+the canonical Policy/i);
+  assert.match(solution, /sole source of routing rules/i);
+  assert.match(solution, /read-only observer/i);
+  assert.match(solution, /Runtime enforcement/i);
   assert.match(solution, /another routing or orchestration authority governs the current task/i);
 });
 

@@ -9,4 +9,5 @@ commit `eff93b823980a3cdadd1e362e54dc364553cc718`:
 
 Those adapted portions are provided under the upstream MIT notice in
 [`UPSTREAM-MIT-LICENSE`](UPSTREAM-MIT-LICENSE). All other files in this Skill
-are local original work; this repository asserts no license for them.
+are local original work provided under the
+[Apache License 2.0](APACHE-2.0-LICENSE).

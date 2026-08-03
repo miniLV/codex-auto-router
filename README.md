@@ -31,18 +31,20 @@
 
 AI 编程助手不应该把每个任务都交给最贵的模型，也不应该为了省成本牺牲 Root 的判断和最终验证。这个项目把两件事分开：
 
-- **Sol / Root 保质量**：保留用户意图、授权解释、复杂判断、外部动作、整合、最终验证和交付。
+- **Root / 当前模型保质量**：保留用户意图、授权解释、复杂判断、外部动作、整合、最终验证和交付。
 - **Terra / Luna 降成本**：只把独立、有界、可恢复、可确定性验证的执行单元放到后台；通常更轻量、更快，也更适合重复性工程工作。
 - **安全优先于价格**：成本不是单独的路由条件。只要边界、baseline、恢复路径或验收方式不清楚，就回到 `ROOT_DIRECT`。
 - **本地可审计**：路由规则、Task Packet 和生命周期都在仓库内；另有可选 Dashboard，不依赖黑盒调度服务。
 
+> **推荐配置：** 建议选择 Sol 作为 Root，让它负责策略、复杂判断、整合和最终验证；Auto Router 再把满足 Gate 的有界执行交给 Terra 或 Luna。这是推荐而非前置条件，Skill 不会更换用户已经选择的 Root 模型。
+
 ### 为什么现在值得路由
 
-下图把取舍画得更直接：越靠左上，单位任务成本越低、能力越高。Sol 负责高判断工作，Luna 适合低风险执行，Terra 位于两者之间；路由的价值就是在边界清楚时选对模型。
+下图把取舍画得更直接：越靠左上，单位任务成本越低、能力越高。Sol 适合高判断工作，Luna 适合低风险执行，Terra 位于两者之间；路由的价值就是在边界清楚时选对模型。
 
 [![GPT-5.6 Sol、Terra、Luna 的能力与单任务成本对比](docs/assets/gpt-models.avif)](https://artificialanalysis.ai/articles/gpt-5-6-has-landed/)
 
-这正是本项目的价值：不是把任务盲目降级，而是在 Gate、精确路径、baseline、恢复与确定性验证都满足时，才把执行从 Sol 分流到 Luna 或 Terra。订阅制 Codex 的官方 Credit 与 API token 账单是两条不同口径；Dashboard 会明确显示数据源，绝不把 API 单价伪装成订阅额度的线性换算。模型定位见 [OpenAI GPT-5.6 发布说明](https://openai.com/index/gpt-5-6/)，图表与独立分析来自 [Artificial Analysis](https://artificialanalysis.ai/articles/gpt-5-6-has-landed/)。
+这正是本项目的价值：不是把任务盲目降级，而是在 Gate、精确路径、baseline、恢复与确定性验证都满足时，才把执行从当前 Root 分流到 Luna 或 Terra。订阅制 Codex 的官方 Credit 与 API token 账单是两条不同口径；Dashboard 会明确显示数据源，绝不把 API 单价伪装成订阅额度的线性换算。模型定位见 [OpenAI GPT-5.6 发布说明](https://openai.com/index/gpt-5-6/)，图表与独立分析来自 [Artificial Analysis](https://artificialanalysis.ai/articles/gpt-5-6-has-landed/)。
 
 ## 安装 Skill
 
@@ -75,15 +77,15 @@ codex plugin add codex-auto-router@codex-auto-router
 
 | 路由 | 模型 tuple | 适用范围 |
 | --- | --- | --- |
-| `ROOT_DIRECT` | 当前 Root / Sol | 复杂判断、外部动作、不可验证或不值得拆分的工作 |
+| `ROOT_DIRECT` | 当前 Root 模型 | 复杂判断、外部动作、不可验证或不值得拆分的工作 |
 | `LUNA_XHIGH_BACKGROUND` | `gpt-5.6-luna` · `xhigh` · `fork_turns: none` | 仅 `READ_LOG_WINDOW`、`WRITE_UNIT_TESTS` |
 | `TERRA_HIGH_BACKGROUND` | `gpt-5.6-terra` · `high` · `fork_turns: none` | 其他满足 Gate 的有界执行 |
 
 5. 同一时间最多一个 child。完成后 Root 对照 baseline 检查 diff，运行确定性验证，再决定采纳或恢复。
 
-### 为什么 Sol 不应该承担所有执行
+### 为什么 Root 不应该承担所有执行
 
-Sol 更适合高判断、复杂上下文和最终责任，但把它用于每个机械、可复现的后台单元会增加成本。Terra 和 Luna 的定位是用更低的执行成本覆盖清晰、可验证的工作；这不是无条件降级：
+当 Root 使用 Sol 等高能力模型时，它更适合保留高判断、复杂上下文和最终责任；让它承担每个机械、可复现的后台单元会增加成本。Terra 和 Luna 用更低的执行成本覆盖清晰、可验证的工作；这不是无条件降级：
 
 - Luna 只处理精确白名单任务。
 - Terra 承担其他通过 Gate 的有界执行，最多两次聚焦修复。
@@ -127,3 +129,7 @@ npm run dashboard
 ![Codex Auto Router 本地 Dashboard：订阅配额与 Luna 44.9%、Terra 31.0%、Sol 24.1% 的模型份额](docs/assets/codex-auto-router-dashboard.png)
 
 订阅模式导出的 JSON 使用 `officialCredit.kind = "subscription-quota"` 和 `localModelShare`；只有 Credit 模式才会在 `estimatedCreditAttribution` 中提供 `credits`。Dashboard 只绑定 `127.0.0.1`、只读运行，也不会反过来控制路由。协议见 [Codex app-server 文档](https://learn.chatgpt.com/docs/app-server)。
+
+## License
+
+本项目采用 [Apache License 2.0](LICENSE)；改编内容的上游 MIT 声明见 [Skill NOTICE](skills/codex-auto-router/NOTICE.md)。
