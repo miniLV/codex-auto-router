@@ -1,5 +1,7 @@
 <h1 align="center">Codex Auto Router</h1>
-
+<p align="center">
+  <img src="docs/diagrams/auto-routing-en.png" alt="Codex Auto Router hand-drawn main flow" width="900">
+</p>
 <p align="center">
   <strong>Route Codex Main Tasks across quality, cost, and safety boundaries.</strong>
 </p>
@@ -19,9 +21,7 @@
   <a href="#optional-local-dashboard"><strong>Optional Dashboard</strong></a>
 </p>
 
-<p align="center">
-  <img src="docs/diagrams/auto-routing-en.png" alt="Codex Auto Router hand-drawn main flow" width="900">
-</p>
+
 
 <p align="center">
   <img src="assets/auto-router-cover.png" alt="Codex Auto Router plugin cover" width="420">
