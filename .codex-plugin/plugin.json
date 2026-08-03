@@ -28,6 +28,12 @@
       "skills"
     ],
     "websiteURL": "https://github.com/miniLV/codex-auto-router",
+    "composerIcon": "./assets/auto-router-cover.png",
+    "logo": "./assets/auto-router-cover.png",
+    "logoDark": "./assets/auto-router-cover.png",
+    "screenshots": [
+      "./assets/auto-router-cover.png"
+    ],
     "defaultPrompt": "Apply the Codex Auto Router policy to the Main Task."
   }
 }

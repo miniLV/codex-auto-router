@@ -23,6 +23,10 @@
   <img src="docs/diagrams/auto-routing-en.png" alt="Codex Auto Router hand-drawn main flow" width="900">
 </p>
 
+<p align="center">
+  <img src="assets/auto-router-cover.png" alt="Codex Auto Router plugin cover" width="420">
+</p>
+
 ## What it solves
 
 An AI coding assistant should not send every task to the most expensive model, and it should not trade away Root's judgment or final verification just to save cost. This project separates those responsibilities:

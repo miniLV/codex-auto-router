@@ -23,6 +23,10 @@
   <img src="docs/diagrams/auto-routing-zh.png" alt="Codex Auto Router 中文手绘主流程图" width="900">
 </p>
 
+<p align="center">
+  <img src="assets/auto-router-cover.png" alt="Codex Auto Router plugin cover" width="420">
+</p>
+
 ## 它解决什么
 
 AI 编程助手不应该把每个任务都交给最贵的模型，也不应该为了省成本牺牲 Root 的判断和最终验证。这个项目把两件事分开：
