@@ -1,5 +1,7 @@
 <h1 align="center">Codex Auto Router</h1>
-
+<p align="center">
+  <img src="assets/auto-router-cover.png" alt="Codex Auto Router plugin cover" width="420">
+</p>
 <p align="center">
   <strong>让 Codex 的 Main Task 在质量、成本和安全边界之间自动分流。</strong>
 </p>
@@ -23,9 +25,7 @@
   <img src="docs/diagrams/auto-routing-zh.png" alt="Codex Auto Router 中文手绘主流程图" width="900">
 </p>
 
-<p align="center">
-  <img src="assets/auto-router-cover.png" alt="Codex Auto Router plugin cover" width="420">
-</p>
+
 
 ## 它解决什么
 
