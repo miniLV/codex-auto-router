@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Codex Auto Router Main Flow</title>
+  <style>
+    :root {
+      --paper: #f8f5ec;
+      --ink: #1f2328;
+      --muted: #716b61;
+      --grid: rgba(31, 35, 40, 0.055);
+      --orange: #d76838;
+      --orange-soft: #ffe0c6;
+      --yellow: #e8c547;
+      --yellow-soft: #fff1a8;
+      --green: #3f8f52;
+      --green-soft: #d8f0cf;
+      --blue: #3867d6;
+      --blue-soft: #dbe7ff;
+      --teal: #20898d;
+      --teal-soft: #d2f0ef;
+      --pink: #d35f84;
+      --pink-soft: #ffe0eb;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+        var(--paper);
+      background-size: 34px 34px;
+      color: var(--ink);
+      font-family: "Chalkboard SE", "Comic Sans MS", "Marker Felt", "Avenir Next", sans-serif;
+    }
+
+    .page {
+      width: 1600px;
+      height: 1000px;
+      margin: 0 auto;
+      padding: 44px 52px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kicker {
+      color: var(--orange);
+      font: 900 15px/1 "Avenir Next", "PingFang SC", sans-serif;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+
+    h1 { margin: 10px 0 0; font-size: 58px; line-height: 1; }
+
+    .subtitle {
+      width: 1010px;
+      margin: 16px 0 0;
+      color: var(--muted);
+      font: 650 21px/1.45 "Avenir Next", sans-serif;
+    }
+
+    .stamp {
+      position: absolute;
+      top: 48px;
+      right: 54px;
+      width: 300px;
+      padding: 16px 19px;
+      border: 3px solid var(--ink);
+      border-radius: 22px 17px 24px 18px;
+      background: rgba(255, 252, 243, .9);
+      transform: rotate(1.8deg);
+      box-shadow: 8px 9px 0 rgba(31, 35, 40, .11);
+    }
+
+    .stamp strong { display: block; margin-bottom: 7px; font-size: 21px; }
+    .stamp span {
+      display: block;
+      color: var(--muted);
+      font: 650 14px/1.4 "Avenir Next", sans-serif;
+    }
+
+    .board { position: relative; height: 710px; margin-top: 38px; }
+
+    .lane {
+      position: absolute;
+      left: 0;
+      right: 0;
+      border: 2px dashed rgba(31, 35, 40, .24);
+      border-radius: 28px;
+      background: rgba(255, 255, 255, .28);
+    }
+
+    .lane.preflight { top: 0; height: 214px; }
+    .lane.execute { top: 238px; height: 300px; }
+    .lane.close { bottom: 0; height: 142px; }
+
+    .lane-label {
+      position: absolute;
+      left: 22px;
+      top: -17px;
+      z-index: 6;
+      padding: 5px 13px;
+      border: 2.5px solid var(--ink);
+      border-radius: 12px 16px 11px 15px;
+      background: var(--paper);
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .node {
+      position: absolute;
+      width: 240px;
+      min-height: 118px;
+      padding: 16px 18px;
+      border: 3px solid var(--stroke);
+      border-radius: 19px 16px 21px 17px;
+      background: var(--fill);
+      box-shadow: 8px 9px 0 rgba(31, 35, 40, .11);
+      transform: rotate(var(--tilt));
+      z-index: 3;
+    }
+
+    .node h2 { margin: 0; font-size: 25px; line-height: 1.05; overflow-wrap: anywhere; }
+    .n5 h2, .n6 h2 { font-size: 21px; letter-spacing: -.02em; }
+    .node p {
+      margin: 10px 0 0;
+      color: #3d3b36;
+      font: 650 14px/1.4 "Avenir Next", "PingFang SC", sans-serif;
+    }
+
+    .path {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 4px 7px;
+      border: 1.8px solid rgba(31, 35, 40, .32);
+      border-radius: 9px;
+      background: rgba(255, 255, 255, .45);
+      font: 800 12px/1.1 ui-monospace, "SFMono-Regular", Menlo, monospace;
+    }
+
+    .orange { --stroke: var(--orange); --fill: var(--orange-soft); }
+    .yellow { --stroke: var(--yellow); --fill: var(--yellow-soft); }
+    .green { --stroke: var(--green); --fill: var(--green-soft); }
+    .blue { --stroke: var(--blue); --fill: var(--blue-soft); }
+    .teal { --stroke: var(--teal); --fill: var(--teal-soft); }
+    .pink { --stroke: var(--pink); --fill: var(--pink-soft); }
+
+    .n1 { left: 34px; top: 55px; --tilt: -1.1deg; }
+    .n2 { left: 286px; top: 55px; width: 248px; --tilt: 1deg; }
+    .n3 { left: 570px; top: 55px; width: 240px; --tilt: -.7deg; }
+    .n4 { left: 900px; top: 12px; width: 286px; --tilt: 1.1deg; }
+    .n5 { left: 900px; top: 218px; width: 286px; --tilt: -.8deg; }
+    .n6 { left: 900px; top: 424px; width: 286px; --tilt: 1deg; }
+    .n7 { left: 1220px; top: 218px; width: 230px; --tilt: -.7deg; }
+    .n8 { left: 1220px; top: 498px; width: 230px; --tilt: 1deg; }
+
+    .note {
+      position: absolute;
+      left: 44px;
+      bottom: 26px;
+      width: 760px;
+      padding: 16px 20px;
+      border: 3px solid var(--pink);
+      border-radius: 22px 18px 25px 19px;
+      background: var(--pink-soft);
+      transform: rotate(-.7deg);
+      z-index: 5;
+      color: #403a3d;
+      font: 650 14px/1.45 "Avenir Next", sans-serif;
+    }
+
+    .note b { display: block; margin-bottom: 5px; color: var(--pink); font-size: 19px; }
+
+    svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .arrow {
+      fill: none;
+      stroke: var(--ink);
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      marker-end: url(#arrow);
+    }
+
+    .bus { fill: none; stroke: rgba(31,35,40,.62); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+    .arrow.orange { stroke: var(--orange); }
+    .arrow.green { stroke: var(--green); }
+    .arrow.blue { stroke: var(--blue); }
+    .arrow.dashed { stroke: var(--pink); stroke-dasharray: 9 8; }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="kicker">Codex Auto Router · Main Flow</div>
+    <h1>One decision, safe routing</h1>
+    <p class="subtitle">Every Main Task passes the full gate first; only independent, bounded, verifiable work enters one native background sub-agent.</p>
+    <aside class="stamp">
+      <strong>Core boundary</strong>
+      <span>Root keeps intent, authorization, judgment, integration, verification, and delivery. A child only touches the declared packet surface.</span>
+    </aside>
+
+    <section class="board" aria-label="Codex Auto Router Main Flow">
+      <div class="lane preflight"><div class="lane-label">01 PREFLIGHT</div></div>
+      <div class="lane execute"><div class="lane-label">02 EXECUTE</div></div>
+      <div class="lane close"><div class="lane-label">03 CLOSE</div></div>
+
+      <svg viewBox="0 0 1496 710" aria-hidden="true">
+        <defs>
+          <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto" markerUnits="userSpaceOnUse">
+            <path d="M0,0 L10,5 L0,10 Z" fill="#1f2328"></path>
+          </marker>
+        </defs>
+        <path class="arrow orange" d="M 254 116 L 286 116"></path>
+        <path class="arrow orange" d="M 534 116 L 570 116"></path>
+        <path class="bus" d="M 810 116 L 858 116 L 858 483"></path>
+        <path class="arrow green" d="M 858 76 L 900 76"></path>
+        <path class="arrow teal" d="M 858 282 L 900 282"></path>
+        <path class="arrow blue" d="M 858 488 L 900 488"></path>
+        <path class="bus" d="M 1186 76 L 1202 76 L 1202 282"></path>
+        <path class="bus" d="M 1186 282 L 1202 282"></path>
+        <path class="bus" d="M 1186 488 L 1202 488 L 1202 282"></path>
+        <path class="arrow green" d="M 1202 282 L 1220 282"></path>
+        <path class="arrow blue" d="M 1335 336 L 1335 498"></path>
+        <path class="arrow dashed" d="M 1335 336 C 1490 365, 1490 610, 1450 610 L 1450 558"></path>
+      </svg>
+
+      <article class="node n1 orange">
+        <h2>Main Task</h2>
+        <p>Root keeps the user goal, authorization, and constraints.</p>
+        <span class="path">consider once</span>
+      </article>
+
+      <article class="node n2 yellow">
+        <h2>Runtime Policy</h2>
+        <p>Read the one canonical rule; never duplicate routing state.</p>
+        <span class="path">allow_implicit_invocation</span>
+      </article>
+
+      <article class="node n3 green">
+        <h2>Complete Gate</h2>
+        <p>Independent, bounded, verifiable, baselined, and restorable.</p>
+        <span class="path">uncertainty = ROOT_DIRECT</span>
+      </article>
+
+      <article class="node n4 green">
+        <h2>ROOT_DIRECT</h2>
+        <p>Tiny work, judgment, external actions, destructive or unverifiable work.</p>
+        <span class="path">Root handles it</span>
+      </article>
+
+      <article class="node n5 teal">
+        <h2>LUNA BACKGROUND</h2>
+        <p>Only `READ_LOG_WINDOW` or `WRITE_UNIT_TESTS`.<br>gpt-5.6-luna · xhigh</p>
+        <span class="path">LUNA_XHIGH_BACKGROUND</span>
+      </article>
+
+      <article class="node n6 blue">
+        <h2>TERRA BACKGROUND</h2>
+        <p>Other bounded execution units that pass the gate.<br>gpt-5.6-terra · high</p>
+        <span class="path">TERRA_HIGH_BACKGROUND</span>
+      </article>
+
+      <article class="node n7 blue">
+        <h2>Root verifies</h2>
+        <p>Compare the diff with the baseline and run deterministic checks.</p>
+      </article>
+
+      <article class="node n8 pink">
+        <h2>Adopt / restore</h2>
+        <p>Ship verified work; restore or take over when it fails.</p>
+      </article>
+
+      <aside class="note">
+        <b>Fallback rules</b>
+        Only one child may be active. Terra gets at most two focused repairs; after Luna fails, Root resolves its paths and may create one fresh Terra task.
+      </aside>
+    </section>
+  </main>
+</body>
+</html>

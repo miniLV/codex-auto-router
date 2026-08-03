@@ -1,27 +1,42 @@
-# codex-auto-router
+<h1 align="center">Codex Auto Router</h1>
 
 <p align="center">
-  <img src="docs/diagrams/codex-auto-router-cover.png" alt="Codex Auto Router — Root、Luna 与 Terra 的安全路由" width="720">
+  <strong>让 Codex 的 Main Task 在质量、成本和安全边界之间自动分流。</strong>
 </p>
 
-一个面向 Codex 主任务（Main Task）的安全自动路由约定：只有在任务足够独立、边界清晰且可以验证时，才交给一个原生子 Agent 在后台执行；否则由 Root 直接完成。
-
-<p>
-  <a href="#zh">中文（默认）</a> · <a href="#en">English</a>
+<p align="center">
+  Root 保留高判断质量；Terra / Luna 负责更轻量、更高性价比的有界后台执行。
 </p>
 
-GitHub README 不执行自定义 JavaScript/CSS，因此这里使用可展开的语言切换；打开页面时默认展示中文。
+<p align="center">
+  <a href="https://github.com/miniLV/codex-auto-router">GitHub</a> ·
+  <strong>简体中文</strong> · <a href="README.en.md">English</a>
+</p>
 
-<a id="zh"></a>
-<details open>
-<summary><strong>中文（默认）</strong></summary>
+<p align="center">
+  <a href="#3-分钟开始"><strong>3 分钟开始</strong></a> ·
+  <a href="#核心流程"><strong>核心流程</strong></a> ·
+  <a href="#本地页面怎么自查"><strong>自查成本</strong></a>
+</p>
 
-## 先决条件
+<p align="center">
+  <img src="docs/diagrams/auto-routing-zh.png" alt="Codex Auto Router 中文手绘主流程图" width="900">
+</p>
 
-- Node.js 22 或更高版本
-- Codex CLI（用于 `codex app-server` 的官方 Credit，以及生成供本地 `ccusage` 读取的会话日志）
+<sub>上图使用 <a href="https://github.com/miniLV/sketchboard-diagram">sketchboard-diagram</a> 绘制；对应的可编辑 HTML 在 <a href="docs/diagrams/auto-routing-zh.html">docs/diagrams/auto-routing-zh.html</a>。</sub>
 
-请先自行安装并登录 Codex CLI，项目不会替用户安装或升级它：
+## 它解决什么
+
+AI 编程助手不应该把每个任务都交给最贵的模型，也不应该为了省成本牺牲 Root 的判断和最终验证。这个项目把两件事分开：
+
+- **Sol / Root 保质量**：保留用户意图、授权解释、复杂判断、外部动作、整合、最终验证和交付。
+- **Terra / Luna 降成本**：只把独立、有界、可恢复、可确定性验证的执行单元放到后台；通常更轻量、更快，也更适合重复性工程工作。
+- **安全优先于价格**：成本不是单独的路由条件。只要边界、baseline、恢复路径或验收方式不清楚，就回到 `ROOT_DIRECT`。
+- **本地可审计**：路由规则、Task Packet、生命周期和 Dashboard 都在仓库内；不依赖一个黑盒调度服务。
+
+## 3 分钟开始
+
+前置条件：Node.js 22+、已经安装并登录的 Codex CLI。项目不会替用户安装或升级 Codex CLI：
 
 ```sh
 # macOS / Linux
@@ -39,121 +54,64 @@ npm run setup
 npm start
 ```
 
-`npm run setup` 会检查 Node.js、npm 和 Codex CLI，安装项目锁定的依赖并运行检查。缺少前置条件时，它只打印对应的安装命令并停止。项目使用精确锁定的本地 `ccusage` 包读取已有会话日志，不依赖全局安装、`npx` 或运行时下载。
+`npm run setup` 只检查 Node.js、npm 和 Codex CLI，安装锁定依赖并运行检查。缺少前置条件时，它会打印安装命令后停止，不会自动安装。项目使用精确锁定、项目内的 `ccusage` 离线读取 Codex session logs，不使用全局安装、`npx` 或运行时下载。
 
-## 核心流程：Main Task 如何自动路由
+## 核心流程
 
-每个 Main Task 会被自动**考虑一次**，但“考虑”不等于“委派”。路由器先读取唯一的 Runtime Router Policy；完整 Gate 不通过时，任务留在 Root，不会创建子 Agent。
+每个 Main Task 会自动**考虑一次**，但考虑不等于委派：
 
-```mermaid
-flowchart TD
-  A[Main Task] --> B[Root 保留目标、授权、约束]
-  B --> C{完整 Gate 通过?}
-  C -- 否 --> D[ROOT_DIRECT<br/>Root 直接完成]
-  C -- 是 --> E{是否 Luna 白名单?}
-  E -- READ_LOG_WINDOW 或 WRITE_UNIT_TESTS --> F[LUNA_XHIGH_BACKGROUND<br/>gpt-5.6-luna / xhigh]
-  E -- 其他有界执行单元 --> G[TERRA_HIGH_BACKGROUND<br/>gpt-5.6-terra / high]
-  F --> H[Root 检查 diff 并验证]
-  G --> H
-  H --> I{结果可验证?}
-  I -- 是 --> J[Root 采纳并交付]
-  I -- 否 --> K[恢复或接管<br/>Terra 最多两次聚焦修复]
-```
+1. Root 先保留用户目标、授权和约束。
+2. 读取唯一的 Runtime Router Policy，并检查完整 Gate。
+3. Gate 不通过，或任务需要判断、外部操作、破坏性操作、强上下文协作时，使用 `ROOT_DIRECT`。
+4. Gate 通过后，只有两个明确的后台 tuple：
 
-### 什么时候会委派
-
-以下条件必须全部满足：
-
-1. 工作量足够大，并且可以切成独立、有界的执行单元。
-2. 仓库没有 merge/rebase、所有权或基线歧义。
-3. 可以写出精确的读写路径；写入路径必须互斥。
-4. 已为每个写入路径保存 preflight baseline。
-5. 子 Agent 能在 fresh context 中完成，不依赖 Root 的隐含上下文。
-6. 有确定的验收方式、预期结果和安全恢复方式。
-7. Task Packet 完整，且预期收益大于准备、监督、复核和恢复成本。
-
-任何一项不确定，路由结果就是 `ROOT_DIRECT`。以下任务默认留在 Root：细小或强顺序任务、产品判断、外部操作、破坏性操作、无法可靠验证的任务，以及上下文耦合过深的任务。
-
-### 三种路由
-
-| 决策 | 原生 tuple | 使用范围 |
+| 路由 | 模型 tuple | 适用范围 |
 | --- | --- | --- |
-| `ROOT_DIRECT` | 当前 Root 模型 | 不满足 Gate，或需要 Root 判断/外部操作 |
+| `ROOT_DIRECT` | 当前 Root / Sol | 复杂判断、外部动作、不可验证或不值得拆分的工作 |
 | `LUNA_XHIGH_BACKGROUND` | `gpt-5.6-luna` · `xhigh` · `fork_turns: none` | 仅 `READ_LOG_WINDOW`、`WRITE_UNIT_TESTS` |
 | `TERRA_HIGH_BACKGROUND` | `gpt-5.6-terra` · `high` · `fork_turns: none` | 其他满足 Gate 的有界执行 |
 
-同一时间最多一个活跃子 Agent。子 Agent 不能继续委派、不能改变路由 tuple、不能扩大范围；它只负责 packet 中声明的路径和责任。
+5. 同一时间最多一个 child。完成后 Root 对照 baseline 检查 diff，运行确定性验证，再决定采纳或恢复。
 
-### Root 始终负责什么
+### 为什么 Sol 不应该承担所有执行
 
-Root 始终拥有用户意图、计划、授权和约束解释、高判断决策、外部动作、结果整合、最终验证与交付。子 Agent 的输出不会自动视为可信结果；Root 会对照 baseline 检查 diff，运行确定性验证，然后选择采纳或恢复。
+Sol 更适合高判断、复杂上下文和最终责任，但把它用于每个机械、可复现的后台单元会增加成本。Terra 和 Luna 的定位是用更低的执行成本覆盖清晰、可验证的工作；这不是无条件降级：
 
-### 失败回退
+- Luna 只处理精确白名单任务。
+- Terra 承担其他通过 Gate 的有界执行，最多两次聚焦修复。
+- Luna 失败后，Root 先解决其 diff，再最多创建一次新的 Terra；不会再次创建 Luna。
+- 任意不确定都回到 Root。
 
-- Luna 失败：Root 先解决其路径上的 diff，随后最多为剩余的有界工作创建一次全新的 Terra 任务；不会再次创建 Luna。
-- Terra 失败：同一个子 Agent 最多进行两次聚焦修复，保持相同 tuple、上下文和工作面；仍失败则由 Root 接管。
+完整规则见 [Runtime Router Policy](skills/codex-auto-router/references/routing-policy.md)、[Task Packet](skills/codex-auto-router/references/task-packet.md) 和 [Native Subagent Lifecycle](skills/codex-auto-router/references/native-subagent-lifecycle.md)。
 
-路由决定会以简短 receipt 出现在 Root 的 commentary 中，例如：
+## 本地页面怎么自查
 
-```text
-Auto Router: TERRA_HIGH_BACKGROUND; reason: bounded independent implementation
-```
+运行 `npm start` 后，打开终端打印的 `127.0.0.1` 地址。页面中的 **Official Credit** 是官方权威来源，**Model mix** 是基于本地 token share 的估算，不是官方逐任务账单。
 
-完整规则见 [Runtime Router Policy](skills/codex-auto-router/references/routing-policy.md)、[Task Packet](skills/codex-auto-router/references/task-packet.md) 和 [Native Subagent Lifecycle](skills/codex-auto-router/references/native-subagent-lifecycle.md)。本仓库提供的是 Codex skill 与契约，不是一个独立的后台调度服务；实际路由发生在 Codex 的 Main Task 执行过程中。
+![Codex Auto Router 本地 Credit 页面](docs/assets/codex-auto-router-dashboard.png)
 
-</details>
+上图是当前仓库实际运行截图：官方 Credit 和本地模型归因均暂不可用。因此这时只能确认数据源状态，**不能据此判断 Sol 用得多还是少**。自查步骤：
 
-<a id="en"></a>
-<details>
-<summary><strong>English</strong></summary>
+1. 点击 **Refresh**，确认 Codex CLI 已登录，并等待 Model mix 出现模型列表。
+2. 看 **Top local share** 和右侧模型列表；如果 Sol 长期占据大部分本地估算，而任务本应是机械、有界、可验证的，就检查路由 receipt 和任务拆分。
+3. 用 **Export JSON** 保存当前快照，查看 `estimatedCreditAttribution` 中各模型的 `share` 和 `credits`。
+4. 如果页面仍显示 `No local model attribution is available`，先修复 Codex session / 数据源；不要把空数据误判为 Sol 成本为零。
 
-## Prerequisites
+Dashboard 只是只读观察器，不会反过来控制路由。官方 Credit 不可用时，页面必须明确显示不可用；本地估算可用时，也只能用来发现趋势，不能替代官方账单。
 
-- Node.js 22 or newer
-- Codex CLI, which provides official Credit through `codex app-server` and creates the session logs read by local `ccusage`
-
-Install and sign in to Codex CLI yourself; setup never installs or upgrades it for you:
+## 验证
 
 ```sh
-# macOS / Linux
-curl -fsSL https://chatgpt.com/codex/install.sh | sh
-
-# macOS / Homebrew
-brew install codex
-
-# Windows, or any platform with npm
-npm install --global @openai/codex
-
-codex
-codex --version
-npm run setup
-npm start
+npm test
+npm run typecheck
+git diff --check
 ```
 
-`npm run setup` checks Node.js, npm, and Codex CLI, installs locked project dependencies, and runs the checks. If a prerequisite is missing, it prints the relevant command and stops. The project uses an exact, local `ccusage` dependency in offline mode; it does not use a global install, `npx`, or runtime downloads.
+测试覆盖路由契约、模型 tuple、Task Packet、生命周期边界、Dashboard 隔离和本地 `ccusage` 适配。
 
-## Core flow: how a Main Task is routed
+## 隐私与边界
 
-Every Main Task is automatically **considered once**. Consideration does not imply delegation. The router reads the single canonical Runtime Router Policy and creates a child only when every gate passes; otherwise the task stays with Root as `ROOT_DIRECT`.
-
-### Delegation gates
-
-The unit must be substantial and bounded, the repository must be safe, read/write ownership must be exact, writable paths must have a captured baseline, fresh-context execution must be suitable, verification and restoration must be deterministic, the Task Packet must be complete, and the expected benefit must exceed preparation, supervision, review, and recovery cost. Uncertainty means `ROOT_DIRECT`.
-
-### Route decisions
-
-| Decision | Native tuple | Scope |
-| --- | --- | --- |
-| `ROOT_DIRECT` | Current Root model | Gate failure, judgment, external or destructive work |
-| `LUNA_XHIGH_BACKGROUND` | `gpt-5.6-luna` · `xhigh` · `fork_turns: none` | Only `READ_LOG_WINDOW` and `WRITE_UNIT_TESTS` |
-| `TERRA_HIGH_BACKGROUND` | `gpt-5.6-terra` · `high` · `fork_turns: none` | Other eligible bounded execution |
-
-Only one child may be active. A child cannot delegate, change its tuple, or expand its scope. Root keeps intent, planning, high-judgment decisions, external actions, integration, final verification, and delivery. Root compares the child output with the baseline before adopting or restoring it.
-
-### Recovery
-
-After a Luna failure, Root resolves its paths and may create one fresh Terra task for the remaining bounded work. Terra gets at most two focused repairs with the same tuple and context; after that Root takes over.
-
-The full contract is documented in [Runtime Router Policy](skills/codex-auto-router/references/routing-policy.md), [Task Packet](skills/codex-auto-router/references/task-packet.md), and [Native Subagent Lifecycle](skills/codex-auto-router/references/native-subagent-lifecycle.md). This repository supplies the Codex skill and contract, not a standalone background scheduler; routing happens while Codex executes the Main Task.
-
-</details>
+- Dashboard 只绑定 `127.0.0.1`。
+- 原始 Codex session logs 保留在本机原位置。
+- 本地模型归因只读取已有日志，不上传 session。
+- 本仓库提供 Codex skill 与静态契约，不是独立的后台调度服务。
