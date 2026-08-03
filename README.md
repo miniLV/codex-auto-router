@@ -23,8 +23,6 @@
   <img src="docs/diagrams/auto-routing-zh.png" alt="Codex Auto Router 中文手绘主流程图" width="900">
 </p>
 
-<sub>上图使用 <a href="https://github.com/miniLV/sketchboard-diagram">sketchboard-diagram</a> 绘制；对应的可编辑 HTML 在 <a href="docs/diagrams/auto-routing-zh.html">docs/diagrams/auto-routing-zh.html</a>。</sub>
-
 ## 它解决什么
 
 AI 编程助手不应该把每个任务都交给最贵的模型，也不应该为了省成本牺牲 Root 的判断和最终验证。这个项目把两件事分开：
@@ -36,9 +34,11 @@ AI 编程助手不应该把每个任务都交给最贵的模型，也不应该�
 
 ### 为什么现在值得路由
 
-同一代模型已经有清晰的能力/成本台阶：公开 API 定价中，GPT-5.6 Sol 为每百万 token 输入 $5、输出 $30；Terra 为 $2.50 / $15；Luna 为 $1 / $6。也就是说，Terra 约为 Sol 的一半，Luna 约为其五分之一。把日志窗口读取、单测补齐等**有界且可机械验收**的单元交给合适模型，能让同一笔 API token 预算覆盖更多实际工作；一次无法验证的返工则足以吃掉这些节省。
+下图把取舍画得更直接：越靠左上，单位任务成本越低、能力越高。Sol 负责高判断工作，Luna 适合低风险执行，Terra 位于两者之间；路由的价值就是在边界清楚时选对模型。
 
-这正是本项目的价值：不是把任务盲目降级，而是在 Gate、精确路径、baseline、恢复与确定性验证都满足时，才把执行从 Sol 分流到 Luna 或 Terra。订阅制 Codex 的官方 Credit 与 API token 账单是两条不同口径；Dashboard 会明确显示数据源，绝不把 API 单价伪装成订阅额度的线性换算。定价和模型定位见 [OpenAI GPT-5.6 发布说明](https://openai.com/index/gpt-5-6/)；能力/成本的独立比较见 [Artificial Analysis](https://artificialanalysis.ai/articles/gpt-5-6-has-landed/)。
+[![GPT-5.6 Sol、Terra、Luna 的能力与单任务成本对比](docs/assets/gpt-models.avif)](https://artificialanalysis.ai/articles/gpt-5-6-has-landed/)
+
+这正是本项目的价值：不是把任务盲目降级，而是在 Gate、精确路径、baseline、恢复与确定性验证都满足时，才把执行从 Sol 分流到 Luna 或 Terra。订阅制 Codex 的官方 Credit 与 API token 账单是两条不同口径；Dashboard 会明确显示数据源，绝不把 API 单价伪装成订阅额度的线性换算。模型定位见 [OpenAI GPT-5.6 发布说明](https://openai.com/index/gpt-5-6/)，图表与独立分析来自 [Artificial Analysis](https://artificialanalysis.ai/articles/gpt-5-6-has-landed/)。
 
 ## 安装 Skill
 

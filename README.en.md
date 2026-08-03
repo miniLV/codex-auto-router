@@ -23,8 +23,6 @@
   <img src="docs/diagrams/auto-routing-en.png" alt="Codex Auto Router hand-drawn main flow" width="900">
 </p>
 
-<sub>Rendered with <a href="https://github.com/miniLV/sketchboard-diagram">sketchboard-diagram</a>; the editable source is <a href="docs/diagrams/auto-routing-en.html">docs/diagrams/auto-routing-en.html</a>.</sub>
-
 ## What it solves
 
 An AI coding assistant should not send every task to the most expensive model, and it should not trade away Root's judgment or final verification just to save cost. This project separates those responsibilities:
@@ -36,9 +34,11 @@ An AI coding assistant should not send every task to the most expensive model, a
 
 ### Why routing matters now
 
-The same model generation now has a meaningful capability/cost ladder. In public API pricing, GPT-5.6 Sol is $5 input / $30 output per million tokens; Terra is $2.50 / $15; Luna is $1 / $6. Terra is therefore about half of Sol's price and Luna about one fifth. Assigning bounded, mechanically verifiable units—such as log-window reads and unit-test work—to the appropriate model lets the same API token budget cover more real work; one unverifiable rework can erase those savings.
+The trade-off is clearer in the chart: points farther toward the upper-left deliver more intelligence at a lower cost per task. Sol owns high-judgment work, Luna fits low-risk execution, and Terra sits between them; routing chooses the right model when the boundaries are clear.
 
-That is this project's value: it does not blindly downgrade tasks. It moves execution from Sol to Luna or Terra only after the Gate, exact paths, baselines, recovery, and deterministic verification are satisfied. Subscription Codex Credit and API token billing are separate measures; the Dashboard identifies its data source and never presents API prices as a linear conversion of subscription allowance. See OpenAI's [GPT-5.6 announcement](https://openai.com/index/gpt-5-6/) for pricing and positioning, and [Artificial Analysis](https://artificialanalysis.ai/articles/gpt-5-6-has-landed/) for an independent capability/cost comparison.
+[![Intelligence and cost per task for GPT-5.6 Sol, Terra, and Luna](docs/assets/gpt-models.avif)](https://artificialanalysis.ai/articles/gpt-5-6-has-landed/)
+
+That is this project's value: it does not blindly downgrade tasks. It moves execution from Sol to Luna or Terra only after the Gate, exact paths, baselines, recovery, and deterministic verification are satisfied. Subscription Codex Credit and API token billing are separate measures; the Dashboard identifies its data source and never presents API prices as a linear conversion of subscription allowance. See OpenAI's [GPT-5.6 announcement](https://openai.com/index/gpt-5-6/) for model positioning; the chart and independent analysis come from [Artificial Analysis](https://artificialanalysis.ai/articles/gpt-5-6-has-landed/).
 
 ## Install the Skill
 
