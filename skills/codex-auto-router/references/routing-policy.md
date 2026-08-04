@@ -167,8 +167,9 @@ Mechanical verification cannot catch one specific defect: Root wrote both the
 specification and the verification commands, so Root checking its own
 specification cannot detect that the specification was wrong.
 
-Run **at most one** semantic review, and only when the change is persistent
-(intended for delivery, not exploration) **and** at least one of:
+Run **at most one** semantic review for each candidate, and only when the
+change is persistent (intended for delivery, not exploration) **and** at least
+one of:
 
 - it touches a public interface, data structure, permission, or security path;
 - the child returned a non-empty `JUDGMENT CALLS` or `GAPS`.
@@ -179,7 +180,8 @@ already inspects. The triggers above are the signals that the specification —
 not just the code — may be wrong.
 
 Otherwise section 6 is sufficient. Skipping review under these rules is not a
-claim that the change was reviewed.
+claim that the change was reviewed. A Main Task may run at most five semantic
+reviews, one for each of its at most five candidates.
 
 Dispatch the reviewer with the fixed tuple:
 
@@ -224,27 +226,29 @@ enforced read-only unless the observed sandbox policy type is exactly
 `read-only`. If any mutation occurred, stop the lane; do not hide or repair it
 under the verdict.
 
-Any change made after a verdict voids that verdict. Either review again or treat
-the change as unreviewed.
+Any change made after a verdict voids that verdict. A corrected candidate is a
+new candidate: it must be verified mechanically and, when the trigger applies,
+reviewed independently within the remaining task budget.
 
 ## 8. Failure, correction, and takeover
 
 - `ACCEPT`, or review not triggered and section 6 passed → adopt.
-- `REVISE`, or section 6 failed → **restore the baseline, correct the
-  specification, and dispatch one new child.** The corrected dispatch is a fresh
-  child starting from the restored baseline, not a resumed one, so it needs no
-  same-child follow-up capability. The retry's specification must differ from
-  the one that failed — resending the same instructions and hoping for a
-  different result is not a correction. Never silently repair the child's
-  patch to avoid an unresolved correction.
-- Still failing after that one corrected dispatch → restore the baseline and
-  continue in Root under the original authorization.
+- `REVISE`, or section 6 failed, before the fifth dispatch → **restore the
+  baseline, correct the specification, and dispatch one new child.** The
+  corrected dispatch is a fresh candidate starting from the restored baseline,
+  not a resumed one, so it needs no same-child follow-up capability. Its
+  specification must differ from the one that failed — resending the same
+  instructions and hoping for a different result is not a correction. Never
+  silently repair the child's patch to avoid an unresolved correction.
+- `REVISE`, or section 6 failed, on the fifth dispatch → restore the baseline
+  and continue in Root under the original authorization.
 - `RECONSIDER` → stop, return to architecture, and consult the user.
 
-At most two dispatches per Main Task: the original and one corrected retry.
-Failed, timed-out, unverifiable, and rejected dispatches all count. No
-replacement child is created automatically, and no channel converts into
-another.
+At most five dispatches per Main Task: the original and up to four corrected
+retries. Failed, timed-out, unverifiable, and rejected dispatches all count.
+No replacement child is created automatically, and no channel converts into
+another. A candidate receives at most one semantic review, and the task may
+run at most five semantic reviews total.
 
 Restoring a candidate and continuing in Root is not termination of the user's
 goal and needs no new authorization. Broadening scope, changing the
@@ -278,13 +282,13 @@ deliberate choice below:
 - **Every writable path gets a baseline before dispatch**, and restore is the
   primary recovery from a bad result — a failed attempt is undone, not
   re-specified in place.
-- **The dispatch limit is two per Main Task**: the original attempt and one
-  corrected retry. Unbounded retries would erase the cost savings this policy
-  exists to capture.
-- **Semantic review is triggered by risk, not run on every change.** Running
-  it unconditionally would spend the strong model on exactly the work this
-  policy is trying to avoid spending it on; skipping it under these rules
-  never counts as having reviewed the change.
+- **The dispatch limit is five per Main Task**: the original attempt and up to
+  four corrected retries. Unbounded retries would erase the cost savings this
+  policy exists to capture.
+- **Semantic review is triggered by risk, not run on every change.** Each
+  eligible candidate receives at most one review, with at most five reviews per
+  Main Task; skipping it under these rules never counts as having reviewed the
+  change.
 - **Exactly one child runs at a time, with no descendants**, keeping the
   ownership and recovery model in section 3 simple enough to verify by
   inspection.

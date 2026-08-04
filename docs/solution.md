@@ -34,15 +34,16 @@ other or unverified Root stays `ROOT_DIRECT`.
 
 ## Delivery lifecycle
 
-Each Main Task allows at most two dispatches: the original child and one
-corrected retry from the restored baseline. Every writable path gets a baseline
-before dispatch, and restore is the primary recovery from a bad result.
+Each Main Task allows at most five dispatches: the original child and up to four
+corrected retries from the restored baseline. Every writable path gets a
+baseline before dispatch, and restore is the primary recovery from a bad result.
 
 Root verifies every delegated result mechanically — it reads the complete diff
 and reruns the verification commands the child's owned paths could affect,
 reusing the pre-dispatch results for the rest. A `gpt-5.6-sol` / `medium`
-fresh-context reviewer is dispatched only when the Policy's risk triggers fire;
-it judges both the diff and whether the specification itself was adequate, and
+fresh-context reviewer is dispatched only when the Policy's risk triggers fire.
+Each candidate gets at most one review and a Main Task gets at most five; it
+judges both the diff and whether the specification itself was adequate, and
 returns exactly `ACCEPT`, `REVISE`, or `RECONSIDER`.
 
 Exactly one child runs at a time, no child may delegate, and reviewer and

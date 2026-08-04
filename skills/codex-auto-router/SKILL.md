@@ -6,7 +6,7 @@ description: Automatically consider every Main Task once, and delegate implement
 # Codex Auto Router
 
 A shallow Adapter around the canonical [Runtime Router
-Policy](routing-policy.md). Its metadata enables implicit consideration for
+Policy](references/routing-policy.md). Its metadata enables implicit consideration for
 every Main Task. It does not restate route rules, tuples, or fallback state.
 
 This is a static contract interpreted by Root. It adds no router engine,
@@ -38,7 +38,8 @@ unavailable, keep the work in Root; it is not a setup prerequisite.
    is recorded as residual risk, not treated as a rejection.
 7. Verify mechanically: read the complete diff and rerun the specification's
    verification commands yourself. Treat the child's report as a claim.
-8. Run one semantic review only when the policy's trigger conditions are met.
+8. Run at most one semantic review for each eligible candidate, within the
+   Policy's five-review task budget.
 9. Adopt, correct once, or restore the baseline and continue in Root.
 
 ## What Root never delegates

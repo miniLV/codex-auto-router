@@ -59,6 +59,13 @@ test("SKILL.md and metadata stay shallow Adapters", () => {
   assert.doesNotMatch(metadata, /ROOT_DIRECT|gpt-5\.6-/);
 });
 
+test("SKILL.md links to the canonical Policy", () => {
+  const policyLink = read(skillPath).match(/\[Runtime Router\s+Policy\]\(([^)]+)\)/);
+  assert.ok(policyLink);
+  assert.equal(policyLink[1], "references/routing-policy.md");
+  assert.equal(existsSync(join(skillRoot, policyLink[1])), true);
+});
+
 test("ROOT_DIRECT is the terminal state of every failure path", () => {
   const policy = read(policyPath);
   assert.match(policy, /`ROOT_DIRECT` is not a route chosen for economy/);
@@ -158,10 +165,11 @@ test("mechanical verification cannot be skipped or self-reported", () => {
   );
 });
 
-test("semantic review is risk triggered and skipping it never counts as review", () => {
+test("semantic review is risk triggered, candidate-scoped, and skipping it never counts as review", () => {
   const policy = read(policyPath);
   assert.match(policy, /Root wrote both the\s+specification and the verification commands/);
-  assert.match(policy, /Run \*\*at most one\*\* semantic review/);
+  assert.match(policy, /at most one\*\* semantic review for each candidate/);
+  assert.match(policy, /at most five semantic\s+reviews, one for each of its at most five candidates/);
   assert.match(policy, /Spanning multiple files is not a trigger by itself/);
   assert.doesNotMatch(policy, /- it spans multiple files/);
   assert.match(policy, /public interface, data structure, permission, or security path/);
@@ -196,13 +204,19 @@ test("reviewer creation offers an optional profile without ever claiming isolati
   assert.match(policy, /do not hide or repair it\s+under the verdict/);
 });
 
-test("failure handling is bounded and never silently repaired", () => {
+test("retry state machine gives each corrected candidate an independent review within five attempts", () => {
   const policy = read(policyPath);
-  assert.match(policy, /At most two dispatches per Main Task/);
+  assert.match(policy, /A corrected candidate is a\s+new candidate/);
+  assert.match(policy, /reviewed independently within the remaining task budget/);
+  assert.match(policy, /before the fifth dispatch/);
+  assert.match(policy, /on the fifth dispatch/);
+  assert.match(policy, /At most five dispatches per Main Task/);
+  assert.match(policy, /up to four corrected\s+retries/);
+  assert.match(policy, /A candidate receives at most one semantic review, and the task may\s+run at most five semantic reviews total/);
   assert.match(policy, /Failed, timed-out, unverifiable, and rejected dispatches all count/);
-  assert.match(policy, /The retry's specification must differ from\s+the one that failed/);
-  assert.match(policy, /Never silently repair the child's\s+patch/);
-  assert.match(policy, /fresh\s+child starting from the restored baseline, not a resumed one/);
+  assert.match(policy, /Its\s+specification must differ from\s+the one that failed/);
+  assert.match(policy, /Never\s+silently repair the child's\s+patch/);
+  assert.match(policy, /a\s+fresh\s+candidate starting from the restored baseline,\s+not a resumed one/);
   assert.match(policy, /needs no\s+same-child follow-up capability/);
   assert.match(
     policy,
@@ -242,7 +256,7 @@ test("the policy states its own design rationale without naming another project"
   for (const point of [
     "A cheaper channel is selected by verifiable task shape",
     "Every writable path gets a baseline before dispatch",
-    "The dispatch limit is two per Main Task",
+    "The dispatch limit is five per Main Task",
     "Semantic review is triggered by risk",
     "Exactly one child runs at a time",
     "Every failure path resolves to `ROOT_DIRECT`",

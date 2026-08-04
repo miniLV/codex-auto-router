@@ -70,9 +70,9 @@ codex plugin add codex-auto-router@codex-auto-router
 | `TERRA` | `gpt-5.6-terra` · `high` · `fork_turns: none` | 其他通过门的有界实现 |
 
 6. 派发门是**一份必填模板**而不是判断题：五段式 spec 的每一段都要能被具体填满，其中"每个 owned path 能解析"、"每条验证命令 Root 已经先跑过一遍并记录结果"、"仓库干净且 baseline 已存"三条是纯机械检查。任何一条不成立就自己做。
-7. 一个 Main Task 最多派发 2 次：原始一次，加上一次改过 spec 的重试（禁止原样重派）。仍不通过则恢复 baseline，由 Root 在原授权范围内完成。
+7. 一个 Main Task 最多派发 5 次：原始一次，加上最多 4 次改过 spec 的重试（禁止原样重派）。第 5 次仍不通过则恢复 baseline，由 Root 在原授权范围内完成。
 8. 同时只有一个 active child，且 child 不能再生 child。子 agent 结束并解决归属之后才可能启动语义 review，因此 reviewer 与 worker 永不并存。
-9. 回收时先做 Root 机械验证（自己读完整 diff，重跑子 agent 改动可能影响的验证命令，未受影响的命令复用派发前记录的结果）。只有在改动是持久化的、且触及公开接口／数据结构／权限或安全路径，或子 agent 报了非空 `JUDGMENT CALLS` / `GAPS` 时，才额外跑一次语义 review：它同时判断 diff 是否成立、以及 spec 本身是否足以达成目标，返回 `ACCEPT` / `REVISE` / `RECONSIDER`。跨多文件本身不是触发条件。按规则跳过 review 不等于"已审查"。
+9. 回收时先做 Root 机械验证（自己读完整 diff，重跑子 agent 改动可能影响的验证命令，未受影响的命令复用派发前记录的结果）。只有在改动是持久化的、且触及公开接口／数据结构／权限或安全路径，或子 agent 报了非空 `JUDGMENT CALLS` / `GAPS` 时，才额外跑语义 review：每个候选最多一次、整个 Main Task 最多 5 次。它同时判断 diff 是否成立、以及 spec 本身是否足以达成目标，返回 `ACCEPT` / `REVISE` / `RECONSIDER`。跨多文件本身不是触发条件。按规则跳过 review 不等于"已审查"。
 
 ### 为什么 Root 不应该承担所有执行
 
@@ -111,7 +111,7 @@ npm run typecheck
 git diff --check
 ```
 
-测试覆盖路由契约、模型 tuple、派发模板、两次派发上限、review 触发条件、profile exactness、Dashboard 隔离和本地 `ccusage` 适配。它只验证静态契约，不证明任何一次真实派发或 review 已经发生。
+测试覆盖路由契约、模型 tuple、派发模板、五次派发／review 上限、review 触发条件、profile exactness、Dashboard 隔离和本地 `ccusage` 适配。它只验证静态契约，不证明任何一次真实派发或 review 已经发生。
 
 ## 隐私与边界
 
