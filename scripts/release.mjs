@@ -17,13 +17,56 @@ function capture(command, args) {
   return result.stdout.trim();
 }
 
-function bumpVersionField(path, nextVersion) {
+function readVersionField(path) {
   const text = readFileSync(path, "utf8");
   const match = text.match(/"version":\s*"(\d+\.\d+\.\d+)"/);
   if (!match) fail(`no "version" field found in ${path}`);
-  const updated = text.replace(match[0], `"version": "${nextVersion}"`);
-  writeFileSync(path, updated);
   return match[1];
+}
+
+function writeVersionField(path, nextVersion) {
+  const text = readFileSync(path, "utf8");
+  const match = text.match(/"version":\s*"\d+\.\d+\.\d+"/);
+  if (!match) fail(`no "version" field found in ${path}`);
+  writeFileSync(path, text.replace(match[0], `"version": "${nextVersion}"`));
+}
+
+function readLockVersion(path) {
+  const lock = JSON.parse(readFileSync(path, "utf8"));
+  if (!/^\d+\.\d+\.\d+$/.test(lock.version ?? "") || lock.packages?.[""]?.version !== lock.version) {
+    fail(`${path} has inconsistent root versions.`);
+  }
+  return lock.version;
+}
+
+function writeLockVersion(path, nextVersion) {
+  const lock = JSON.parse(readFileSync(path, "utf8"));
+  lock.version = nextVersion;
+  lock.packages[""].version = nextVersion;
+  writeFileSync(path, `${JSON.stringify(lock, null, 2)}\n`);
+}
+
+function readMarketplaceRef(path) {
+  const marketplace = JSON.parse(readFileSync(path, "utf8"));
+  const ref = marketplace.plugins?.find(({ name }) => name === "codex-auto-router")?.source?.ref;
+  if (typeof ref !== "string") fail(`no codex-auto-router source ref found in ${path}`);
+  return ref;
+}
+
+function writeMarketplaceRef(path, tag) {
+  const marketplace = JSON.parse(readFileSync(path, "utf8"));
+  const plugin = marketplace.plugins?.find(({ name }) => name === "codex-auto-router");
+  if (!plugin?.source) fail(`no codex-auto-router source found in ${path}`);
+  plugin.source.ref = tag;
+  writeFileSync(path, `${JSON.stringify(marketplace, null, 2)}\n`);
+}
+
+function compareVersions(left, right) {
+  for (let index = 0; index < 3; index += 1) {
+    const difference = Number(left.split(".")[index]) - Number(right.split(".")[index]);
+    if (difference !== 0) return Math.sign(difference);
+  }
+  return 0;
 }
 
 const nextVersion = process.argv[2];
@@ -41,15 +84,31 @@ if (capture("git", ["tag", "--list", tag]) !== "") {
 
 const packagePath = "package.json";
 const pluginManifestPath = ".codex-plugin/plugin.json";
-const currentVersion = bumpVersionField(packagePath, nextVersion);
-if (currentVersion === nextVersion) fail(`package.json is already at ${nextVersion}.`);
-bumpVersionField(pluginManifestPath, nextVersion);
+const packageLockPath = "package-lock.json";
+const marketplacePath = ".agents/plugins/marketplace.json";
+const currentVersion = readVersionField(packagePath);
+const currentTag = `v${currentVersion}`;
+if (
+  readVersionField(pluginManifestPath) !== currentVersion ||
+  readLockVersion(packageLockPath) !== currentVersion ||
+  readMarketplaceRef(marketplacePath) !== currentTag
+) {
+  fail("package, plugin manifest, lockfile, and marketplace ref must match before release.");
+}
+if (compareVersions(nextVersion, currentVersion) <= 0) {
+  fail(`next version must be greater than ${currentVersion}.`);
+}
+writeVersionField(packagePath, nextVersion);
+writeVersionField(pluginManifestPath, nextVersion);
+writeLockVersion(packageLockPath, nextVersion);
+writeMarketplaceRef(marketplacePath, tag);
 
 console.log(`release: ${currentVersion} -> ${nextVersion}`);
-run("npm", ["run", "build"]);
-run("node", ["--test", "dist/test/policy.test.js"]);
+run("npm", ["test"]);
+run("npm", ["run", "typecheck"]);
+run("git", ["diff", "--check"]);
 
-run("git", ["add", packagePath, pluginManifestPath]);
+run("git", ["add", packagePath, pluginManifestPath, packageLockPath, marketplacePath]);
 run("git", ["commit", "-m", `release: ${tag}`]);
 run("git", ["tag", "-a", tag, "-m", tag]);
 

@@ -60,6 +60,17 @@ agent to install, no `jq`, no Node service, and no Dashboard. Model, reasoning
 effort, and fresh context are all supplied as `spawn_agent` parameters, so
 nothing depends on a configuration file in a user directory.
 
+## Release
+
+Create the version commit and tag locally, then push both:
+
+```sh
+npm run release -- 0.1.2
+git push origin master v0.1.2
+```
+
+The release script aligns `package.json`, `package-lock.json`, the plugin manifest, and the marketplace tag, then runs the full test gate. A pushed tag triggers GitHub Actions to verify the metadata on Node 22, run tests and typechecking, and create the GitHub Release. The public Plugins Directory still requires review and publication through the OpenAI submission portal.
+
 ## Core flow
 
 Every Main Task is automatically **considered once**, but consideration does not imply delegation:

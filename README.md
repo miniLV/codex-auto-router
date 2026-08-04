@@ -53,6 +53,17 @@ codex plugin add codex-auto-router@codex-auto-router
 
 **到这里就可以用了。** 新建一条 Codex task 即生效 —— 不需要安装 custom agent、不需要 `jq`、不需要 Node 服务或 Dashboard。模型、reasoning effort 和 fresh context 都通过 `spawn_agent` 的参数指定，不依赖任何用户目录里的配置文件。
 
+## 发布
+
+发布者先在本地创建版本提交和 tag，再一起推送：
+
+```sh
+npm run release -- 0.1.2
+git push origin master v0.1.2
+```
+
+发布脚本会同步 `package.json`、`package-lock.json`、插件 manifest 和 marketplace 指向的 tag，并运行完整测试。tag 推送会触发 GitHub Actions：使用 Node 22 复核版本一致性、跑测试与 typecheck，再创建 GitHub Release。公开 Plugins Directory 仍需在 OpenAI 提交门户审核和发布。
+
 ## 核心流程
 
 每个 Main Task 会自动**考虑一次**，但考虑不等于委派：
