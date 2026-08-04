@@ -1,6 +1,6 @@
 {
   "name": "codex-auto-router",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Automatic, safety-gated routing of bounded Codex work to native Terra or Luna background agents.",
   "author": {
     "name": "miniLV",
