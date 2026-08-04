@@ -5,6 +5,7 @@ import test from "node:test";
 
 const release = readFileSync("scripts/release.mjs", "utf8");
 const workflow = readFileSync(".github/workflows/release.yml", "utf8");
+const version = JSON.parse(readFileSync("package.json", "utf8")).version;
 
 test("release keeps version metadata aligned and runs the complete verification gate", () => {
   assert.match(release, /const packageLockPath = "package-lock\.json"/);
@@ -27,5 +28,5 @@ test("tag workflow verifies aligned metadata before creating a GitHub release", 
   assert.match(workflow, /npm run typecheck/);
   assert.match(workflow, /verify-release-version\.mjs "\$GITHUB_REF_NAME"/);
   assert.match(workflow, /gh release create "\$GITHUB_REF_NAME" --generate-notes/);
-  assert.match(execFileSync("node", ["scripts/verify-release-version.mjs", "v0.1.1"], { encoding: "utf8" }), /metadata is aligned/);
+  assert.match(execFileSync("node", ["scripts/verify-release-version.mjs", `v${version}`], { encoding: "utf8" }), /metadata is aligned/);
 });
