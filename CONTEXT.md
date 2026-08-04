@@ -1,6 +1,6 @@
 # Shared Context
 
-This glossary describes the v2.1 automatic-routing contract. The
+This glossary describes the automatic-routing contract. The
 [Runtime Router Policy](skills/codex-auto-router/references/routing-policy.md)
 is the sole canonical deep runtime Module; this file is explanatory context
 and cannot define a route.
@@ -8,22 +8,22 @@ and cannot define a route.
 | Term | Definition |
 | --- | --- |
 | Main Task | The user-visible task in which the request is received and the final result is delivered. |
-| Root Agent | The owner of intent, planning, high-judgment decisions, external actions, integration, final verification, and delivery. |
+| Root Agent | The owner of intent, planning, judgment decisions, the dispatch specification, external actions, verification, and delivery. |
 | Root Model | The model selected for the Main Task. Automatic routing never changes it. |
+| Root Condition | Background routing requires trusted current-task evidence for `gpt-5.6-sol` at `medium`, `high`, `xhigh`, `max`, or `ultra`. Any other or unverified tuple stays `ROOT_DIRECT`. |
 | Auto Router | The shallow Adapter that automatically considers every Main Task and delegates only when the canonical Policy gate passes. |
-| Runtime Router Policy | The sole canonical deep runtime Module for route eligibility, fixed native tuples, break-even, and fallback. |
-| Interface | The Task Packet contract between Root and a bounded child. It carries objective, exact scope, baseline, constraints, verification, restore, and evidence fields. |
-| Seam | The native-subagent lifecycle boundary where Root creates, collects, verifies, adopts, or restores child output. |
+| Runtime Router Policy | The sole canonical deep runtime Module for eligibility, the dispatch template, fixed child tuples, verification, review triggering, and failure behavior. |
 | Adapter | A shallow integration layer such as Skill metadata. An Adapter points to the Module and cannot duplicate its state machine or route table. |
-| Depth | The number of delegation layers. v2.1 permits at most one active child, and a child may not delegate. |
-| Locality | The bounded ownership rule: exact mutually exclusive paths, captured baselines, deterministic checks, and explicit restore/adoption state. |
-| Route Request | The current user request together with every upstream Skill and constraint that routing must preserve. |
-| Route Decision | Exactly `ROOT_DIRECT`, `LUNA_XHIGH_BACKGROUND`, or `TERRA_HIGH_BACKGROUND`, as returned by the Policy. |
-| Task Packet | A self-contained handoff that gives one child its route tuple, objective, scope, baseline, constraints, prohibitions, break-even, acceptance, verification, restore, and evidence contract. |
-| Luna allowlist | The two exact units eligible for the Luna tuple: `READ_LOG_WINDOW` and `WRITE_UNIT_TESTS`. Every other eligible bounded execution unit uses Terra. |
-| Terra repair budget | The same-session limit of an initial Terra attempt plus at most two focused repair follow-ups. |
-| Delegation Break-even | A strict comparison in one consistent unit, preferably minutes: expected benefit must exceed the sum of packet preparation, supervision/review, and likely recovery. Missing or uncertain values mean Root Direct. |
-| Dashboard | Dashboard is an independent, read-only observer and never a routing input or control. Its history, credits, labels, and estimates cannot affect a decision. |
+| Route Decision | Exactly `ROOT_DIRECT`, Luna, or Terra, as returned by the Policy gate. |
+| Dispatch template | The five-section specification (OBJECTIVE, FILES AND OWNERSHIP, INTERFACES, CONSTRAINTS, VERIFICATION) plus its structured RETURN fields. Delegation is permitted only when every section passes the Policy's three mechanical checks. |
+| Luna shapes | The two dispatch shapes eligible for the Luna tuple: bounded read-only evidence, or a single-file (or same-directory, same-kind) write with no public-interface change and one binary verification command. Everything else eligible goes to Terra. |
+| Baseline | The captured state of every writable path before dispatch. Restore from the baseline is the primary recovery from a failed or rejected result. |
+| Mechanical verification | Root's own adoption gate: read the complete diff, confirm scope, and rerun the verification commands the child's owned paths could affect. It is never satisfied by the child's self-report. |
+| Semantic review | The single risk-triggered `gpt-5.6-sol` / `medium` fresh-context review of a persistent change. It judges both the diff and whether the specification itself was adequate, and returns exactly `ACCEPT`, `REVISE`, or `RECONSIDER`. |
+| Dispatch budget | At most two dispatches per Main Task: the original child and one corrected retry from the restored baseline. Failed, timed-out, unverifiable, and rejected dispatches all count. |
+| Depth | One active delegated child at a time. Reviewer and worker never run concurrently, and no child may delegate. |
+| Residual risk | A condition the host cannot make observable, such as an unlabeled child tuple or an unenforced reviewer sandbox. It is recorded and reported — never silently assumed safe, and never a reason by itself to discard independently verified output. |
+| Dashboard | Dashboard, `ccusage`, `src/credit.ts`, and any Credit or usage estimate are independent observers or product implementation, never routing input or control. |
 | Static contract | Documentation, metadata, and static tests that validate shapes and boundaries. They do not prove runtime enforcement. |
 | Runtime proof | Evidence from a real platform invocation and Root verification; it is separate from static contract checks. |
 | Competing routing authority | Any other routing or orchestration policy governing the current task. The Auto Router stands down to `ROOT_DIRECT` instead of competing with it. |

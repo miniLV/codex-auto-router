@@ -207,7 +207,7 @@
     <p class="subtitle">Main Task 先过完整 Gate；只有独立、有界、可验证的工作，才进入一个原生后台子 Agent。</p>
     <aside class="stamp">
       <strong>核心边界</strong>
-      <span>Root 始终保留意图、授权、判断、整合、验证和交付。子 Agent 只执行 packet 中声明的工作面。</span>
+      <span>Root 始终保留意图、授权、判断、整合、验证和交付。子 Agent 只执行派发 spec 中声明的工作面。</span>
     </aside>
 
     <section class="board" aria-label="Codex Auto Router Main Flow">
@@ -261,14 +261,14 @@
 
       <article class="node n5 teal">
         <h2>LUNA BACKGROUND</h2>
-        <p>仅 `READ_LOG_WINDOW` 或<br>`WRITE_UNIT_TESTS`。<br>gpt-5.6-luna · xhigh</p>
-        <span class="path">LUNA_XHIGH_BACKGROUND</span>
+        <p>只读证据窗口，或单文件、<br>不动接口的有界写入。<br>gpt-5.6-luna · xhigh</p>
+        <span class="path">LUNA</span>
       </article>
 
       <article class="node n6 blue">
         <h2>TERRA BACKGROUND</h2>
         <p>其他满足 Gate 的有界执行单元。<br>gpt-5.6-terra · high</p>
-        <span class="path">TERRA_HIGH_BACKGROUND</span>
+        <span class="path">TERRA</span>
       </article>
 
       <article class="node n7 blue">
@@ -283,7 +283,7 @@
 
       <aside class="note">
         <b>回退规则</b>
-        同一时间最多一个 child。Terra 最多两次聚焦修复；Luna 失败后，Root 解决其路径，再最多创建一次全新的 Terra 任务。
+        同一时间一个 active child；每个 Main Task 最多原始派发加一次修正重试，只有命中风险触发条件时才运行一次新的 Sol / Medium review。
       </aside>
     </section>
   </main>

@@ -207,7 +207,7 @@
     <p class="subtitle">Every Main Task passes the full gate first; only independent, bounded, verifiable work enters one native background sub-agent.</p>
     <aside class="stamp">
       <strong>Core boundary</strong>
-      <span>Root keeps intent, authorization, judgment, integration, verification, and delivery. A child only touches the declared packet surface.</span>
+      <span>Root keeps intent, authorization, judgment, integration, verification, and delivery. A child only touches the surface declared in its dispatch spec.</span>
     </aside>
 
     <section class="board" aria-label="Codex Auto Router Main Flow">
@@ -261,14 +261,14 @@
 
       <article class="node n5 teal">
         <h2>LUNA BACKGROUND</h2>
-        <p>Only `READ_LOG_WINDOW` or `WRITE_UNIT_TESTS`.<br>gpt-5.6-luna · xhigh</p>
-        <span class="path">LUNA_XHIGH_BACKGROUND</span>
+        <p>Read-only evidence, or a bounded<br>single-file write with no interface change.<br>gpt-5.6-luna · xhigh</p>
+        <span class="path">LUNA</span>
       </article>
 
       <article class="node n6 blue">
         <h2>TERRA BACKGROUND</h2>
         <p>Other bounded execution units that pass the gate.<br>gpt-5.6-terra · high</p>
-        <span class="path">TERRA_HIGH_BACKGROUND</span>
+        <span class="path">TERRA</span>
       </article>
 
       <article class="node n7 blue">
@@ -283,7 +283,7 @@
 
       <aside class="note">
         <b>Fallback rules</b>
-        Only one child may be active. Terra gets at most two focused repairs; after Luna fails, Root resolves its paths and may create one fresh Terra task.
+        One active child at a time; each Main Task allows the original dispatch plus one corrected retry, and a fresh Sol / Medium review runs only when the Policy's risk triggers fire.
       </aside>
     </section>
   </main>

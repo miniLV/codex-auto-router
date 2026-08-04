@@ -1,33 +1,48 @@
 ---
 name: codex-auto-router
-description: Automatically consider every Main Task for one safe, bounded native child execution; the canonical routing policy and lifecycle references define eligibility and execution.
+description: Automatically consider every Main Task once, and delegate implementation work to a fixed Luna or Terra native child while Root keeps all judgment and final verification.
 ---
 
 # Codex Auto Router
 
-This Skill is a shallow Adapter around the canonical [Runtime Router
-Policy](references/routing-policy.md). Its metadata enables implicit
-consideration for every Main Task. It does not duplicate route rules, model
-tuples, fallback state, or an independent state machine.
+A shallow Adapter around the canonical [Runtime Router
+Policy](routing-policy.md). Its metadata enables implicit consideration for
+every Main Task. It does not restate route rules, tuples, or fallback state.
 
-The metadata hook is the automatic entry point: when this Skill is loaded,
-Codex considers the Main Task for native background execution without waiting
-for a Dashboard or `npm run setup`. The policy and lifecycle references define
-the route, and the native-subagent surface performs the invocation. If that
-surface is unavailable, keep the work in Root rather than treating setup as a
-skill prerequisite.
+This is a static contract interpreted by Root. It adds no router engine,
+classifier, registry, telemetry, or Dashboard control path. No Node service,
+Dashboard, `npm run setup`, or `ccusage` install is required.
+
+## Prerequisite
+
+Root must be `gpt-5.6-sol` at `medium` reasoning or higher, confirmed from
+trusted current-task runtime metadata. If it is lower, or cannot be confirmed,
+do nothing and keep the work in Root.
+
+Delegation uses the native `spawn_agent` surface. If that surface is
+unavailable, keep the work in Root; it is not a setup prerequisite.
 
 ## Use
 
 1. Preserve the user's request, authorization, constraints, and upstream Skill.
-2. Read the Runtime Router Policy and apply its complete gate once.
-3. For a background decision, read the [Task Packet](references/task-packet.md)
-   and [Native Subagent Lifecycle](references/native-subagent-lifecycle.md),
-   then invoke the selected native child with a fresh context.
-4. Keep Root ownership of intent, planning, judgment, external actions,
-   integration, final verification, and delivery.
-5. Verify, adopt, or restore child output before closing the task.
+2. Apply the Runtime Router Policy gate once. Classify by **nature**
+   (implementation vs. judgment), not by difficulty.
+3. Judgment work stays in Root, always. This includes writing the dispatch
+   specification itself.
+4. For implementation work, fill the five-section dispatch template. If any
+   section cannot be filled concretely, do the work in Root instead.
+5. Capture a baseline for every writable path, then dispatch exactly one child
+   using the Policy's fixed tuple for the selected channel.
+6. Compare the child's observed model and effort against what was requested.
+   A reported mismatch rejects the output; metadata the host does not expose
+   is recorded as residual risk, not treated as a rejection.
+7. Verify mechanically: read the complete diff and rerun the specification's
+   verification commands yourself. Treat the child's report as a claim.
+8. Run one semantic review only when the policy's trigger conditions are met.
+9. Adopt, correct once, or restore the baseline and continue in Root.
 
-The packaged Skill contains no executable router engine or Dashboard
-dependency. Static checks verify the contract's shape; a successful runtime
-invocation is separate proof of the host's native-subagent integration.
+## What Root never delegates
+
+Requirements and ambiguity resolution, architecture and decomposition, writing
+the dispatch specification, mechanical verification, external actions (push, PR,
+messages), conversational turns, and final delivery.
