@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  这是一条 Codex 原生的能力路由工作流。你带来目标与约束；Root（<code>gpt-6-astra</code>）拥有计划、派发、验证与验收。
+  这是一条 Codex 原生的能力路由工作流。你带来目标与约束；Root（<code>gpt-6-astra</code> 或 <code>gpt-5.6-sol</code>）拥有计划、派发、验证与验收。
 </p>
 
 <p align="center">
@@ -24,7 +24,7 @@
 
 ## 快速开始
 
-前置条件：装有插件的当前版 Codex CLI，Root 会话为 GPT-6 Astra / Medium 或更高（从可信的当前任务 runtime metadata 确认），以及 `spawn_agent` 原生委派面。GPT-5.6 Luna / Terra 的访问只在选中路由真的委派时才需要。**不需要 `jq`，也不需要安装任何 companion 角色** —— 模型、effort 与 fresh context 全部通过 `spawn_agent` 参数逐次指定。
+前置条件：装有插件的当前版 Codex CLI，Root 会话为 GPT-6 Astra 或 GPT-5.6 Sol 的 Medium 或更高（从可信的当前任务 runtime metadata 确认），以及 `spawn_agent` 原生委派面。GPT-5.6 Luna / Terra 的访问只在选中路由真的委派时才需要。**不需要 `jq`，也不需要安装任何 companion 角色** —— 模型、effort 与 fresh context 全部通过 `spawn_agent` 参数逐次指定。
 
 ```sh
 codex plugin marketplace add miniLV/codex-auto-router --ref main
@@ -52,14 +52,14 @@ sh skills/codex-auto-router/scripts/install-reviewer-agent.sh --check
 
 ## 你要做什么
 
-把结果、约束和重要的仓库上下文交给 Root。你不需要选择或管理 lane；Root 从可信的当前任务 metadata 确认自己为 `Astra / Medium` 或更高，记录路由结论，并拥有验证与验收。
+把结果、约束和重要的仓库上下文交给 Root。你不需要选择或管理 lane；Root 从可信的当前任务 metadata 确认自己为 `Astra` 或 `Sol` 的 `Medium` 或更高，记录路由结论，并拥有验证与验收。
 
 ## 路由
 
 | 路由结论 | 什么时候 | 交付方式 |
 | --- | --- | --- |
 | `ROOT_DIRECT` | 默认；风险未受控，或五段式模板任何一段填不具体。 | Root 自己计划、实现、测试、自审并交付。 |
-| `LUNA` | 有界且完全可机械核验：只读证据窗口，或单文件（同目录同类）写入、不动公开接口、一条二元验证命令。 | `gpt-5.6-luna` · `xhigh` · `fork_turns: none`；Root 机械验证。 |
+| `LUNA` | 有界且完全可机械核验：只读证据窗口，或单文件（同目录同类）写入、不动公开接口、一条二元验证命令。 | `gpt-5.6-luna` · `max` · `fork_turns: none`；Root 机械验证。 |
 | `TERRA` | 其他通过门的有界实现：判断更多、风险更高、跨文件。 | `gpt-5.6-terra` · `high` · `fork_turns: none`；Root 机械验证。 |
 
 `ROOT_DIRECT` 不是为省钱选的路线，而是本契约所有失败路径的终点。路由按**任务性质**分流（实现 vs 判断），不按感知难度；一个复杂但纯机械的重构照样委派，一个取决于用户意图的琐碎问题照样留在 Root。

@@ -12,10 +12,10 @@ explicitly downgrades an unobservable signal to recorded residual risk.
 
 ## 1. Root condition
 
-Root must be `gpt-6-astra` at `medium`, `high`, `xhigh`, `max`, or `ultra`,
-confirmed from trusted current-task runtime metadata. A Skill cannot change the
-Root model; never assume or claim this prerequisite is satisfied. If it is lower
-or unconfirmable, choose `ROOT_DIRECT`.
+Root must be `gpt-6-astra` or `gpt-5.6-sol` at `medium`, `high`, `xhigh`, `max`,
+or `ultra`, confirmed from trusted current-task runtime metadata. A Skill cannot
+change the Root model; never assume or claim this prerequisite is satisfied. If
+it is another model, lower, or unconfirmable, choose `ROOT_DIRECT`.
 
 ## 2. Classify by nature, not difficulty
 
@@ -106,7 +106,7 @@ Exactly one child per Main Task at a time. A child may not create descendants.
 ```yaml
 LUNA:
   model: gpt-5.6-luna
-  reasoning_effort: xhigh
+  reasoning_effort: max
   fork_turns: none
 TERRA:
   model: gpt-5.6-terra

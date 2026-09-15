@@ -77,13 +77,13 @@ test("ROOT_DIRECT is the terminal state of every failure path", () => {
     policy,
     /explicitly downgrades an unobservable signal to recorded residual risk/
   );
-  assert.match(policy, /gpt-6-astra` at `medium`, `high`, `xhigh`, `max`, or `ultra`/);
-  assert.match(policy, /A Skill cannot change the\s+Root model/);
+  assert.match(policy, /gpt-6-astra` or `gpt-5\.6-sol` at `medium`, `high`, `xhigh`, `max`,\s+or `ultra`/);
+  assert.match(policy, /A Skill cannot\s+change the Root model/);
 });
 
 test("channel tuples are exact and every child gets a fresh context", () => {
   const policy = read(policyPath);
-  assert.match(policy, /LUNA:\s+model: gpt-5\.6-luna\s+reasoning_effort: xhigh\s+fork_turns: none/);
+  assert.match(policy, /LUNA:\s+model: gpt-5\.6-luna\s+reasoning_effort: max\s+fork_turns: none/);
   assert.match(policy, /TERRA:\s+model: gpt-5\.6-terra\s+reasoning_effort: high\s+fork_turns: none/);
   assert.match(policy, /REVIEWER:\s+model: gpt-6-astra\s+reasoning_effort: medium\s+fork_turns: none/);
   assert.match(policy, /Exactly one child per Main Task at a time/);

@@ -15,9 +15,9 @@ Dashboard, `npm run setup`, or `ccusage` install is required.
 
 ## Prerequisite
 
-Root must be `gpt-6-astra` at `medium` reasoning or higher, confirmed from
-trusted current-task runtime metadata. If it is lower, or cannot be confirmed,
-do nothing and keep the work in Root.
+Root must be `gpt-6-astra` or `gpt-5.6-sol` at `medium` reasoning or higher,
+confirmed from trusted current-task runtime metadata. If it is another model or
+cannot be confirmed, do nothing and keep the work in Root.
 
 Delegation uses the native `spawn_agent` surface. If that surface is
 unavailable, keep the work in Root; it is not a setup prerequisite.

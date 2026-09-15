@@ -29,8 +29,8 @@ implementation. Their history, labels, model mix, latency, and estimates never
 influence a routing decision.
 
 Background routing also requires trusted current-task evidence for `gpt-6-astra`
-at Medium reasoning or higher. The Skill never changes the Root tuple; any
-other or unverified Root stays `ROOT_DIRECT`.
+or `gpt-5.6-sol` at Medium reasoning or higher. The Skill never changes the Root
+tuple; any other or unverified Root stays `ROOT_DIRECT`.
 
 ## Delivery lifecycle
 

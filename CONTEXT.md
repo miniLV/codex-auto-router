@@ -10,7 +10,7 @@ and cannot define a route.
 | Main Task | The user-visible task in which the request is received and the final result is delivered. |
 | Root Agent | The owner of intent, planning, judgment decisions, the dispatch specification, external actions, verification, and delivery. |
 | Root Model | The model selected for the Main Task. Automatic routing never changes it. |
-| Root Condition | Background routing requires trusted current-task evidence for `gpt-6-astra` at `medium`, `high`, `xhigh`, `max`, or `ultra`. Any other or unverified tuple stays `ROOT_DIRECT`. |
+| Root Condition | Background routing requires trusted current-task evidence for `gpt-6-astra` or `gpt-5.6-sol` at `medium`, `high`, `xhigh`, `max`, or `ultra`. Any other or unverified tuple stays `ROOT_DIRECT`. |
 | Auto Router | The shallow Adapter that automatically considers every Main Task and delegates only when the canonical Policy gate passes. |
 | Runtime Router Policy | The sole canonical deep runtime Module for eligibility, the dispatch template, fixed child tuples, verification, review triggering, and failure behavior. |
 | Adapter | A shallow integration layer such as Skill metadata. An Adapter points to the Module and cannot duplicate its state machine or route table. |

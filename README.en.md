@@ -24,11 +24,12 @@
 
 ## Quick start
 
-You need a current Codex CLI with plugins enabled, GPT-6 Astra / Medium or higher
-for the primary session (confirmed from trusted current-task runtime metadata), and
-the native `spawn_agent` surface. GPT-5.6 Luna / Terra access is needed only when
-the selected route delegates. **No `jq` and no companion roles to install** — model,
-effort, and fresh context are supplied per spawn as `spawn_agent` parameters.
+You need a current Codex CLI with plugins enabled, GPT-6 Astra or GPT-5.6 Sol at
+Medium or higher for the primary session (confirmed from trusted current-task
+runtime metadata), and the native `spawn_agent` surface. GPT-5.6 Luna / Terra
+access is needed only when the selected route delegates. **No `jq` and no
+companion roles to install** — model, effort, and fresh context are supplied per
+spawn as `spawn_agent` parameters.
 
 ```sh
 codex plugin marketplace add miniLV/codex-auto-router --ref main
@@ -66,15 +67,15 @@ new task afterwards, because custom agents are discovered at task creation.
 
 Give Root the outcome, constraints, and any important repository context. You do not
 need to select or manage a lane; Root confirms from trusted current-task metadata
-that it is `Astra / Medium` or higher, records the route decision, and owns
-verification and acceptance.
+that it is `Astra` or `Sol` at `Medium` or higher, records the route decision, and
+owns verification and acceptance.
 
 ## Routes
 
 | Route decision | Use it when | Delivery |
 | --- | --- | --- |
 | `ROOT_DIRECT` | Default; risk is not contained, or any section of the five-part template cannot be filled concretely. | Root plans, implements, tests, self-reviews, and delivers. |
-| `LUNA` | Bounded and fully mechanically checkable: a read-only evidence window, or a single-file (same-directory, same-kind) write that changes no public interface and verifies with one binary command. | `gpt-5.6-luna` · `xhigh` · `fork_turns: none`; Root verifies mechanically. |
+| `LUNA` | Bounded and fully mechanically checkable: a read-only evidence window, or a single-file (same-directory, same-kind) write that changes no public interface and verifies with one binary command. | `gpt-5.6-luna` · `max` · `fork_turns: none`; Root verifies mechanically. |
 | `TERRA` | Other implementation that passes the gate: more judgment, higher risk, multi-file. | `gpt-5.6-terra` · `high` · `fork_turns: none`; Root verifies mechanically. |
 
 `ROOT_DIRECT` is not a route chosen for economy; it is the terminal state of every
