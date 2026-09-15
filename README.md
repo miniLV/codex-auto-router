@@ -84,14 +84,14 @@ Root / Astra 把架构、分解、路由结论、派发模板、机械验证、�
 
 有三个观测面可以把收益读出来。它们都只是**观察者**：按 Policy 的设计，Dashboard、`ccusage`、Credit 估算、model mix 和时延永远不回流为路由输入，所以这些读数是复盘证据，不是控制回路。
 
-1. **Model mix 份额迁移**（最直接）。本地会话的 token share 会随使用演进：委派真的发生时，Terra / Luna 的 token share 上升、Astra 份额下降。
+1. **Model mix 份额迁移**（最直接）。本地会话的 token share 随使用演进：委派真的发生时，Terra / Luna 的 token share 上升、Astra 份额下降。页面 **Per-task usage** 表还能看到逐 task 的按模型消耗明细。
 
    ```sh
    npm run setup
    npm run dashboard
    ```
 
-   前置条件是 Node.js 22+ 和已登录的 Codex CLI。页面区分 **Subscription usage** 与 **Credit**，`Model mix` 来自本地 session token share，不是官方逐任务账单。
+   前置条件是 Node.js 22+ 和已登录的 Codex CLI。页面区分 **Subscription usage** 与 **Credit**，`Model mix` 来自本地 session token share，不是官方逐任务账单。**Per-task usage** 表按最近时间列出每个本地 session（≈ 一个 task）的按模型 token 消耗与 task 总量，不显示 prompt、sessionId 或目录。
 
    ![Codex Auto Router 本地 Dashboard：订阅配额与 Luna 44.9%、Terra 31.0%、Sol 24.1% 的模型份额](docs/assets/codex-auto-router-dashboard.png)
 

@@ -34,10 +34,19 @@ export interface UsageViewModel {
   estimatedCreditAttribution: Array<{ model: string; credits: string; share: number }>;
   /** Local model-token shares retained when the official source has no credit amount. */
   localModelShare?: Array<{ model: string; share: number }>;
+  /** Per-task local token consumption, most recent first, when the local source reported any. */
+  localTaskUsage?: Array<LocalTaskUsage>;
   localUsageSummary: { modelCount: number; tokenCount: number };
   attributionQuality: { status: "estimated" | "unavailable"; message: string };
   diagnostics: ReadinessDiagnostic[];
   setupStatus?: SetupStatus;
+}
+
+/** One local Codex session, treated as one task, with its per-model token counts. */
+export interface LocalTaskUsage {
+  lastActivity: string;
+  models: Array<{ model: string; tokens: number }>;
+  tokens: number;
 }
 
 export interface ReadinessDiagnostic {
@@ -59,6 +68,8 @@ export interface OfficialSnapshot {
 
 export interface LocalUsage {
   models: Array<{ model: string; tokens: number }>;
+  /** Per-task rows, most recent first; only sessions that reported valid model usage. */
+  sessions: Array<LocalTaskUsage>;
   skippedEntries: number;
   diagnostic?: ReadinessDiagnostic;
 }

@@ -67,12 +67,14 @@ export function makeViewModel(official: OfficialSnapshot, local: LocalUsage | un
     modelCount: local?.models.length ?? 0,
     tokenCount: local?.models.reduce((total, model) => total + model.tokens, 0) ?? 0
   };
+  const localTaskUsage = local?.sessions.length ? local.sessions : undefined;
   if (!official.rateLimit) {
     return {
       observationWindow,
       officialCredit: { status: "unavailable" },
       estimatedCreditAttribution: [],
       localUsageSummary,
+      ...(localTaskUsage ? { localTaskUsage } : {}),
       attributionQuality: { status: "unavailable", message: official.diagnostic?.message ?? "Official credit is unavailable, so estimates are unavailable." },
       diagnostics
     };
@@ -86,6 +88,7 @@ export function makeViewModel(official: OfficialSnapshot, local: LocalUsage | un
       estimatedCreditAttribution: [],
       localModelShare,
       localUsageSummary,
+      ...(localTaskUsage ? { localTaskUsage } : {}),
       attributionQuality: {
         status: "unavailable",
         message: localModelShare.length > 0
@@ -113,6 +116,7 @@ export function makeViewModel(official: OfficialSnapshot, local: LocalUsage | un
       officialCredit,
       estimatedCreditAttribution: [],
       localUsageSummary,
+      ...(localTaskUsage ? { localTaskUsage } : {}),
       attributionQuality: { status: "unavailable", message: local?.diagnostic?.message ?? "Local model attribution is unavailable." },
       diagnostics
     };
@@ -122,6 +126,7 @@ export function makeViewModel(official: OfficialSnapshot, local: LocalUsage | un
     officialCredit,
     estimatedCreditAttribution: allocateCredits(used, local.models),
     localUsageSummary,
+    ...(localTaskUsage ? { localTaskUsage } : {}),
     attributionQuality: {
       status: "estimated",
       message: official.usageAvailable

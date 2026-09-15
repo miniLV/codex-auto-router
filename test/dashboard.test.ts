@@ -20,6 +20,10 @@ const available: UsageViewModel = {
     { model: "gpt-5.6-terra", credits: "1.23", share: 0.1 },
     { model: "gpt-6-astra", credits: "11.11", share: 0.9 }
   ],
+  localTaskUsage: [
+    { lastActivity: "2026-08-28T15:07:26.950Z", models: [{ model: "gpt-6-astra", tokens: 158656 }, { model: "gpt-5.6-terra", tokens: 4120 }], tokens: 162776 },
+    { lastActivity: "2026-08-27T09:30:00.000Z", models: [{ model: "gpt-5.6-terra", tokens: 2100 }], tokens: 2100 }
+  ],
   localUsageSummary: { modelCount: 2, tokenCount: 3 },
   attributionQuality: { status: "estimated", message: "Estimated from local model-token shares; official credit remains authoritative." },
   diagnostics: [],
@@ -80,6 +84,12 @@ test("GET / renders one fresh snapshot with the three primary blocks", async () 
   assert.match(body, /model-donut/);
   assert.match(body, /id="donut-model">gpt-6-astra/);
   assert.match(body, /90\.0%/);
+  assert.match(body, /Per-task usage/);
+  assert.match(body, /2026-08-28 15:07 UTC/);
+  assert.match(body, /2026-08-27 09:30 UTC/);
+  assert.match(body, /<b>gpt-6-astra<\/b> 158,656/);
+  assert.match(body, /162,776/);
+  assert.match(body, /prompts excluded/);
   assert.match(body, /data-model=/);
   assert.match(body, /pointerenter/);
   assert.match(body, /Credit used/);
@@ -139,6 +149,7 @@ test("GET / renders the current subscription quota instead of invented credits",
     assert.match(body, /Weekly quota window/);
     assert.match(body, /Local token share/);
     assert.match(body, /of the locally observed model-token share/);
+    assert.match(body, /No per-task usage is available/);
     assert.doesNotMatch(body, /CR current-cycle limit/);
     assert.doesNotMatch(body, /CR est\./);
   } finally {

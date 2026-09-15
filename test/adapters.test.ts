@@ -57,8 +57,31 @@ test("local aggregation retains only named model totals and generic skip counts"
       }
     }]
   });
-  assert.deepEqual(result, { models: [{ model: "gpt-5.6-terra", tokens: 16 }], skippedEntries: 1 });
+  assert.deepEqual(result, { models: [{ model: "gpt-5.6-terra", tokens: 16 }], sessions: [], skippedEntries: 1 });
   assert.doesNotMatch(JSON.stringify(result), /privacy-canary|mystery/);
+});
+
+test("per-task rows keep per-model tokens, sort most recent first, and stay private", () => {
+  const result = aggregateLocalUsage({
+    sessions: [
+      { sessionId: "canary-a", prompt: "canary-a", directory: "canary-a", lastActivity: "2026-08-28T15:07:26.950Z", models: { "gpt-6-astra": { totalTokens: 158656 }, "gpt-5.6-terra": { totalTokens: 4120 } } },
+      { sessionId: "canary-b", prompt: "canary-b", directory: "canary-b", lastActivity: "2026-08-30T09:00:00.000Z", models: { "gpt-5.6-luna": { inputTokens: 10, cachedInputTokens: 0, outputTokens: 5, reasoningOutputTokens: 5 } } },
+      { lastActivity: "2026-08-29T00:00:00.000Z", models: { "gpt-5.6-terra": { totalTokens: 999 } } },
+      { models: { "gpt-5.6-terra": { totalTokens: 7 } } }
+    ]
+  });
+  assert.deepEqual(result.models, [
+    { model: "gpt-5.6-luna", tokens: 20 },
+    { model: "gpt-5.6-terra", tokens: 5126 },
+    { model: "gpt-6-astra", tokens: 158656 }
+  ]);
+  assert.deepEqual(result.sessions, [
+    { lastActivity: "2026-08-30T09:00:00.000Z", models: [{ model: "gpt-5.6-luna", tokens: 20 }], tokens: 20 },
+    { lastActivity: "2026-08-29T00:00:00.000Z", models: [{ model: "gpt-5.6-terra", tokens: 999 }], tokens: 999 },
+    { lastActivity: "2026-08-28T15:07:26.950Z", models: [{ model: "gpt-6-astra", tokens: 158656 }, { model: "gpt-5.6-terra", tokens: 4120 }], tokens: 162776 }
+  ]);
+  assert.equal(result.skippedEntries, 0);
+  assert.doesNotMatch(JSON.stringify(result), /canary|prompt|directory|sessionId/i);
 });
 
 test("local usage invokes project-local ccusage for Codex sessions offline", () => {
@@ -114,6 +137,7 @@ test("the public view model rounds every credit value to an integer before expor
     usageAvailable: true
   }, {
     models: [{ model: "gpt-6-astra", tokens: 2 }, { model: "gpt-5.6-terra", tokens: 1 }],
+    sessions: [],
     skippedEntries: 0
   }, { since: "2026-07-16", until: "2026-07-30", timezone: "UTC" });
   assert.deepEqual(view.officialCredit, {
@@ -139,6 +163,7 @@ test("subscription quota never turns used percentage into per-model credit", () 
     usageAvailable: true
   }, {
     models: [{ model: "gpt-6-astra", tokens: 2 }, { model: "gpt-5.6-terra", tokens: 1 }],
+    sessions: [],
     skippedEntries: 0
   }, { since: "2026-07-16", until: "2026-07-30", timezone: "UTC" });
   assert.deepEqual(view.officialCredit, {
@@ -165,6 +190,7 @@ test("availability diagnostics are preserved for the dashboard and API", () => {
     diagnostic: { source: "official", code: "read-timeout", message: "Official usage did not respond within 8 seconds.", remediation: "Restart or update Codex, then retry." }
   }, {
     models: [],
+    sessions: [],
     skippedEntries: 0,
     diagnostic: { source: "local", code: "codex-missing", message: "Local session usage could not start because Codex was not found.", remediation: "Install or repair the Codex CLI, then run npm run setup." }
   }, { since: "2026-08-01", until: "2026-08-01", timezone: "UTC" });

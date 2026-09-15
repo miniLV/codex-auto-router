@@ -137,7 +137,8 @@ retrospective evidence, not a control loop.
 
 1. **Model mix migration** (the most direct). Local session token share shifts as
    you use it: when delegation actually happens, Terra / Luna token share rises and
-   Astra's share falls.
+   Astra's share falls. The **Per-task usage** table on the page shows the exact
+   per-model consumption of every task.
 
    ```sh
    npm run setup
@@ -146,7 +147,9 @@ retrospective evidence, not a control loop.
 
    Requires Node.js 22+ and a signed-in Codex CLI. The page distinguishes
    **Subscription usage** from **Credit**, and `Model mix` comes from local session
-   token share, not an official per-task bill.
+   token share, not an official per-task bill. The **Per-task usage** table lists
+   each local session (≈ one task), most recent first, with per-model token counts
+   and the task total; prompts, session ids, and directories are never shown.
 
    ![Codex Auto Router local Dashboard with subscription quota and Luna 44.9%, Terra 31.0%, and Sol 24.1% model shares](docs/assets/codex-auto-router-dashboard.png)
 

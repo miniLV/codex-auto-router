@@ -2,10 +2,11 @@ import { spawn } from "node:child_process";
 import type { ChildProcessWithoutNullStreams } from "node:child_process";
 import { readFileSync, realpathSync, statSync } from "node:fs";
 import { dirname, isAbsolute, relative, resolve } from "node:path";
-import type { LocalUsage, ObservationWindow, ReadinessDiagnostic } from "./types.js";
+import type { LocalTaskUsage, LocalUsage, ObservationWindow, ReadinessDiagnostic } from "./types.js";
 
 const MAX_OUTPUT_BYTES = 512 * 1024;
 const LOCAL_TIMEOUT_MS = 8_000;
+const MAX_TASK_ROWS = 50;
 
 function numberValue(value: unknown): number {
   return typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : 0;
@@ -16,12 +17,16 @@ function isNamedModel(model: string): boolean {
 }
 
 export function aggregateLocalUsage(value: unknown): LocalUsage {
-  if (!value || typeof value !== "object" || !Array.isArray((value as Record<string, unknown>).sessions)) return { models: [], skippedEntries: 0 };
+  if (!value || typeof value !== "object" || !Array.isArray((value as Record<string, unknown>).sessions)) return { models: [], sessions: [], skippedEntries: 0 };
   const totals = new Map<string, number>();
+  const tasks: LocalTaskUsage[] = [];
   let skippedEntries = 0;
   for (const session of (value as { sessions: unknown[] }).sessions) {
-    const models = session && typeof session === "object" ? (session as Record<string, unknown>).models : undefined;
+    const record = session && typeof session === "object" ? (session as Record<string, unknown>) : undefined;
+    const models = record?.models;
     if (!models || typeof models !== "object" || Array.isArray(models)) continue;
+    const taskModels: Array<{ model: string; tokens: number }> = [];
+    let taskTokens = 0;
     for (const [model, counts] of Object.entries(models as Record<string, unknown>)) {
       if (!isNamedModel(model) || !counts || typeof counts !== "object") {
         skippedEntries += 1;
@@ -33,10 +38,21 @@ export function aggregateLocalUsage(value: unknown): LocalUsage {
         skippedEntries += 1;
         continue;
       }
+      taskModels.push({ model, tokens: total });
+      taskTokens += total;
       totals.set(model, (totals.get(model) ?? 0) + total);
     }
+    const lastActivity = record?.lastActivity;
+    if (taskModels.length > 0 && typeof lastActivity === "string" && lastActivity.length > 0 && Number.isFinite(Date.parse(lastActivity))) {
+      tasks.push({
+        lastActivity,
+        models: [...taskModels].sort((left, right) => right.tokens - left.tokens || left.model.localeCompare(right.model)),
+        tokens: taskTokens
+      });
+    }
   }
-  return { models: [...totals].sort(([left], [right]) => left.localeCompare(right)).map(([model, tokens]) => ({ model, tokens })), skippedEntries };
+  const sessions = tasks.sort((left, right) => Date.parse(right.lastActivity) - Date.parse(left.lastActivity)).slice(0, MAX_TASK_ROWS);
+  return { models: [...totals].sort(([left], [right]) => left.localeCompare(right)).map(([model, tokens]) => ({ model, tokens })), sessions, skippedEntries };
 }
 
 export function buildCcusageArgs(window: ObservationWindow): string[] {
@@ -62,7 +78,7 @@ export function resolveCcusageLauncher(root = projectRoot): string | undefined {
 }
 
 function unavailable(code: ReadinessDiagnostic["code"], message: string, remediation: string): LocalUsage {
-  return { models: [], skippedEntries: 0, diagnostic: { source: "local", code, message, remediation } };
+  return { models: [], sessions: [], skippedEntries: 0, diagnostic: { source: "local", code, message, remediation } };
 }
 
 function stopChild(child: ChildProcessWithoutNullStreams): void {
