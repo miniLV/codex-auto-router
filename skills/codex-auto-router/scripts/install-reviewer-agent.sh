@@ -29,8 +29,8 @@ exists_or_linked() {
 }
 
 this_dir=$(CDPATH= cd "$(dirname "$0")" && pwd) || exit 1
-bundled_profile=$this_dir/../agents/codex-auto-router-sol-reviewer.toml
-profile_filename=codex-auto-router-sol-reviewer.toml
+bundled_profile=$this_dir/../agents/codex-auto-router-astra-reviewer.toml
+profile_filename=codex-auto-router-astra-reviewer.toml
 verify_only=0
 
 if [ -n "${CODEX_HOME-}" ]; then

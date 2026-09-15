@@ -18,7 +18,7 @@ const available: UsageViewModel = {
   officialCredit: { status: "available", kind: "credit", source: "individualLimit", limit: "500.00", used: "12.34", remaining: "487.66", remainingPercent: 97, resetsAt: "2026-08-01T00:00:00.000Z" },
   estimatedCreditAttribution: [
     { model: "gpt-5.6-terra", credits: "1.23", share: 0.1 },
-    { model: "gpt-5.6-sol", credits: "11.11", share: 0.9 }
+    { model: "gpt-6-astra", credits: "11.11", share: 0.9 }
   ],
   localUsageSummary: { modelCount: 2, tokenCount: 3 },
   attributionQuality: { status: "estimated", message: "Estimated from local model-token shares; official credit remains authoritative." },
@@ -29,7 +29,7 @@ const subscriptionAvailable: UsageViewModel = {
   observationWindow: { since: "2026-08-01", until: "2026-08-03", timezone: "UTC" },
   officialCredit: { status: "available", kind: "subscription-quota", source: "primary", usedPercent: 45, remainingPercent: 55, windowDurationMins: 10_080, resetsAt: "2026-08-10T00:00:00.000Z", planType: "plus" },
   estimatedCreditAttribution: [],
-  localModelShare: [{ model: "gpt-5.6-terra", share: 0.25 }, { model: "gpt-5.6-sol", share: 0.75 }],
+  localModelShare: [{ model: "gpt-5.6-terra", share: 0.25 }, { model: "gpt-6-astra", share: 0.75 }],
   localUsageSummary: { modelCount: 2, tokenCount: 100 },
   attributionQuality: { status: "unavailable", message: "The official subscription quota exposes usage percentage only; local model shares are available but cannot be converted to credit amounts." },
   diagnostics: [],
@@ -78,7 +78,7 @@ test("GET / renders one fresh snapshot with the three primary blocks", async () 
   assert.match(body, /Model mix/);
   assert.match(body, /Attribution quality:/);
   assert.match(body, /model-donut/);
-  assert.match(body, /id="donut-model">gpt-5\.6-sol/);
+  assert.match(body, /id="donut-model">gpt-6-astra/);
   assert.match(body, /90\.0%/);
   assert.match(body, /data-model=/);
   assert.match(body, /pointerenter/);

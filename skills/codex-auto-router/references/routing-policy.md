@@ -12,7 +12,7 @@ explicitly downgrades an unobservable signal to recorded residual risk.
 
 ## 1. Root condition
 
-Root must be `gpt-5.6-sol` at `medium`, `high`, `xhigh`, `max`, or `ultra`,
+Root must be `gpt-6-astra` at `medium`, `high`, `xhigh`, `max`, or `ultra`,
 confirmed from trusted current-task runtime metadata. A Skill cannot change the
 Root model; never assume or claim this prerequisite is satisfied. If it is lower
 or unconfirmable, choose `ROOT_DIRECT`.
@@ -187,7 +187,7 @@ Dispatch the reviewer with the fixed tuple:
 
 ```yaml
 REVIEWER:
-  model: gpt-5.6-sol
+  model: gpt-6-astra
   reasoning_effort: medium
   fork_turns: none
 ```
@@ -210,7 +210,7 @@ be described as the other:
 
 - **Named profile, when available.** If the spawn surface exposes a parameter
   that selects an installed custom agent, create the reviewer from
-  `agents/codex-auto-router-sol-reviewer.toml`, installed by
+  `agents/codex-auto-router-astra-reviewer.toml`, installed by
   `scripts/install-reviewer-agent.sh`. Its requested `read-only` sandbox may
   then be honored. This path is optional hardening, not a prerequisite.
 - **Per-spawn parameters, always available.** Otherwise create the reviewer with

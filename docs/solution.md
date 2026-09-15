@@ -28,7 +28,7 @@ any Credit or usage estimate are independent observers or product
 implementation. Their history, labels, model mix, latency, and estimates never
 influence a routing decision.
 
-Background routing also requires trusted current-task evidence for `gpt-5.6-sol`
+Background routing also requires trusted current-task evidence for `gpt-6-astra`
 at Medium reasoning or higher. The Skill never changes the Root tuple; any
 other or unverified Root stays `ROOT_DIRECT`.
 
@@ -40,7 +40,7 @@ baseline before dispatch, and restore is the primary recovery from a bad result.
 
 Root verifies every delegated result mechanically — it reads the complete diff
 and reruns the verification commands the child's owned paths could affect,
-reusing the pre-dispatch results for the rest. A `gpt-5.6-sol` / `medium`
+reusing the pre-dispatch results for the rest. A `gpt-6-astra` / `medium`
 fresh-context reviewer is dispatched only when the Policy's risk triggers fire.
 Each candidate gets at most one review and a Main Task gets at most five; it
 judges both the diff and whether the specification itself was adequate, and

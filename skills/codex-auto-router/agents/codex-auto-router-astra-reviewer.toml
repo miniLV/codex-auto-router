@@ -1,6 +1,6 @@
-name = "codex_auto_router_sol_reviewer"
+name = "codex_auto_router_astra_reviewer"
 description = "Codex Auto Router's optional installed profile for its risk-triggered semantic reviewer."
-model = "gpt-5.6-sol"
+model = "gpt-6-astra"
 model_reasoning_effort = "medium"
 sandbox_mode = "read-only"
 developer_instructions = """

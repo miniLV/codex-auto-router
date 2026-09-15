@@ -96,12 +96,12 @@ test("usage requires the exact summary and dailyUsageBuckets token shape", () =>
 
 test("estimated rows use deterministic largest remainder and sum to the integer official credit", () => {
   const allocation = allocateCredits("1.00", [
-    { model: "gpt-5.6-sol", tokens: 1 },
+    { model: "gpt-6-astra", tokens: 1 },
     { model: "gpt-5.6-terra", tokens: 1 },
     { model: "gpt-5.6", tokens: 1 }
   ]);
   assert.deepEqual(allocation, [
-    { model: "gpt-5.6-sol", credits: "1", share: 1 / 3 },
+    { model: "gpt-6-astra", credits: "1", share: 1 / 3 },
     { model: "gpt-5.6-terra", credits: "0", share: 1 / 3 },
     { model: "gpt-5.6", credits: "0", share: 1 / 3 }
   ]);
@@ -113,14 +113,14 @@ test("the public view model rounds every credit value to an integer before expor
     rateLimit: { kind: "credit", source: "individualLimit", limit: "500.49", used: "12.50", remaining: "487.99", remainingPercent: 97.5, resetsAt: "2026-08-01T00:00:00.000Z" },
     usageAvailable: true
   }, {
-    models: [{ model: "gpt-5.6-sol", tokens: 2 }, { model: "gpt-5.6-terra", tokens: 1 }],
+    models: [{ model: "gpt-6-astra", tokens: 2 }, { model: "gpt-5.6-terra", tokens: 1 }],
     skippedEntries: 0
   }, { since: "2026-07-16", until: "2026-07-30", timezone: "UTC" });
   assert.deepEqual(view.officialCredit, {
     status: "available", kind: "credit", source: "individualLimit", limit: "500", used: "13", remaining: "487", remainingPercent: 97.5, resetsAt: "2026-08-01T00:00:00.000Z"
   });
   assert.deepEqual(view.estimatedCreditAttribution, [
-    { model: "gpt-5.6-sol", credits: "9", share: 2 / 3 },
+    { model: "gpt-6-astra", credits: "9", share: 2 / 3 },
     { model: "gpt-5.6-terra", credits: "4", share: 1 / 3 }
   ]);
 });
@@ -138,7 +138,7 @@ test("subscription quota never turns used percentage into per-model credit", () 
     },
     usageAvailable: true
   }, {
-    models: [{ model: "gpt-5.6-sol", tokens: 2 }, { model: "gpt-5.6-terra", tokens: 1 }],
+    models: [{ model: "gpt-6-astra", tokens: 2 }, { model: "gpt-5.6-terra", tokens: 1 }],
     skippedEntries: 0
   }, { since: "2026-07-16", until: "2026-07-30", timezone: "UTC" });
   assert.deepEqual(view.officialCredit, {
@@ -153,7 +153,7 @@ test("subscription quota never turns used percentage into per-model credit", () 
   });
   assert.deepEqual(view.estimatedCreditAttribution, []);
   assert.deepEqual(view.localModelShare, [
-    { model: "gpt-5.6-sol", share: 2 / 3 },
+    { model: "gpt-6-astra", share: 2 / 3 },
     { model: "gpt-5.6-terra", share: 1 / 3 }
   ]);
   assert.equal(view.attributionQuality.status, "unavailable");

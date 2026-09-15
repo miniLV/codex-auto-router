@@ -8,7 +8,7 @@ const skillRoot = join(repoRoot, "skills", "codex-auto-router");
 const policyPath = join(skillRoot, "references", "routing-policy.md");
 const skillPath = join(skillRoot, "SKILL.md");
 const metadataPath = join(skillRoot, "agents", "openai.yaml");
-const reviewerPath = join(skillRoot, "agents", "codex-auto-router-sol-reviewer.toml");
+const reviewerPath = join(skillRoot, "agents", "codex-auto-router-astra-reviewer.toml");
 const installerPath = join(skillRoot, "scripts", "install-reviewer-agent.sh");
 const packagePath = join(repoRoot, "package.json");
 
@@ -77,7 +77,7 @@ test("ROOT_DIRECT is the terminal state of every failure path", () => {
     policy,
     /explicitly downgrades an unobservable signal to recorded residual risk/
   );
-  assert.match(policy, /gpt-5\.6-sol` at `medium`, `high`, `xhigh`, `max`, or `ultra`/);
+  assert.match(policy, /gpt-6-astra` at `medium`, `high`, `xhigh`, `max`, or `ultra`/);
   assert.match(policy, /A Skill cannot change the\s+Root model/);
 });
 
@@ -85,7 +85,7 @@ test("channel tuples are exact and every child gets a fresh context", () => {
   const policy = read(policyPath);
   assert.match(policy, /LUNA:\s+model: gpt-5\.6-luna\s+reasoning_effort: xhigh\s+fork_turns: none/);
   assert.match(policy, /TERRA:\s+model: gpt-5\.6-terra\s+reasoning_effort: high\s+fork_turns: none/);
-  assert.match(policy, /REVIEWER:\s+model: gpt-5\.6-sol\s+reasoning_effort: medium\s+fork_turns: none/);
+  assert.match(policy, /REVIEWER:\s+model: gpt-6-astra\s+reasoning_effort: medium\s+fork_turns: none/);
   assert.match(policy, /Exactly one child per Main Task at a time/);
   assert.match(policy, /may not create descendants/);
   assert.match(policy, /Never substitute another model, effort,\s+or context boundary/);
@@ -268,8 +268,8 @@ test("the optional reviewer profile and installer survive intact", () => {
   assert.equal(existsSync(reviewerPath), true);
   assert.equal(existsSync(installerPath), true);
   const reviewer = read(reviewerPath);
-  assert.match(reviewer, /^name = "codex_auto_router_sol_reviewer"$/m);
-  assert.match(reviewer, /^model = "gpt-5\.6-sol"$/m);
+  assert.match(reviewer, /^name = "codex_auto_router_astra_reviewer"$/m);
+  assert.match(reviewer, /^model = "gpt-6-astra"$/m);
   assert.match(reviewer, /^model_reasoning_effort = "medium"$/m);
   assert.match(reviewer, /^sandbox_mode = "read-only"$/m);
   assert.match(reviewer, /ACCEPT, REVISE, or RECONSIDER/);

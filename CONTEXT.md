@@ -10,7 +10,7 @@ and cannot define a route.
 | Main Task | The user-visible task in which the request is received and the final result is delivered. |
 | Root Agent | The owner of intent, planning, judgment decisions, the dispatch specification, external actions, verification, and delivery. |
 | Root Model | The model selected for the Main Task. Automatic routing never changes it. |
-| Root Condition | Background routing requires trusted current-task evidence for `gpt-5.6-sol` at `medium`, `high`, `xhigh`, `max`, or `ultra`. Any other or unverified tuple stays `ROOT_DIRECT`. |
+| Root Condition | Background routing requires trusted current-task evidence for `gpt-6-astra` at `medium`, `high`, `xhigh`, `max`, or `ultra`. Any other or unverified tuple stays `ROOT_DIRECT`. |
 | Auto Router | The shallow Adapter that automatically considers every Main Task and delegates only when the canonical Policy gate passes. |
 | Runtime Router Policy | The sole canonical deep runtime Module for eligibility, the dispatch template, fixed child tuples, verification, review triggering, and failure behavior. |
 | Adapter | A shallow integration layer such as Skill metadata. An Adapter points to the Module and cannot duplicate its state machine or route table. |
@@ -19,7 +19,7 @@ and cannot define a route.
 | Luna shapes | The two dispatch shapes eligible for the Luna tuple: bounded read-only evidence, or a single-file (or same-directory, same-kind) write with no public-interface change and one binary verification command. Everything else eligible goes to Terra. |
 | Baseline | The captured state of every writable path before dispatch. Restore from the baseline is the primary recovery from a failed or rejected result. |
 | Mechanical verification | Root's own adoption gate: read the complete diff, confirm scope, and rerun the verification commands the child's owned paths could affect. It is never satisfied by the child's self-report. |
-| Semantic review | The risk-triggered `gpt-5.6-sol` / `medium` fresh-context review of one persistent candidate. Each candidate receives at most one; a Main Task may run at most five. It judges both the diff and whether the specification itself was adequate, and returns exactly `ACCEPT`, `REVISE`, or `RECONSIDER`. |
+| Semantic review | The risk-triggered `gpt-6-astra` / `medium` fresh-context review of one persistent candidate. Each candidate receives at most one; a Main Task may run at most five. It judges both the diff and whether the specification itself was adequate, and returns exactly `ACCEPT`, `REVISE`, or `RECONSIDER`. |
 | Dispatch budget | At most five dispatches per Main Task: the original child and up to four corrected retries from the restored baseline. Failed, timed-out, unverifiable, and rejected dispatches all count. |
 | Depth | One active delegated child at a time. Reviewer and worker never run concurrently, and no child may delegate. |
 | Residual risk | A condition the host cannot make observable, such as an unlabeled child tuple or an unenforced reviewer sandbox. It is recorded and reported — never silently assumed safe, and never a reason by itself to discard independently verified output. |
