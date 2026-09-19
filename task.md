@@ -5,7 +5,7 @@ verification, and its acceptance condition. No speculative code before
 prerequisite tasks complete. Status reflects this iteration
 (`jev_auto_router_sdd_rearchitecture`).
 
-Legend: ✅ done · 🔜 next · ⬜ pending.
+Legend: ✅ done · 🔜 next · ⬜ pending · ◐ code/fixtures complete, live evidence pending.
 
 ## Task 0 — Inspect and preserve current staged work ✅
 
@@ -83,7 +83,11 @@ Legend: ✅ done · 🔜 next · ⬜ pending.
 - Acceptance: `codex-auto-router` appears only in historical/migration
   context.
 
-## Task 5 — Define Task Capsule 🔜
+## Task 5 — Define Task Capsule ✅
+
+- Implemented `src/capsule.ts`, canonical JSON hashing and behavioral tests.
+  Validation requires trusted baseline/pre-run bindings; external summaries
+  are explicit, allowlisted and separately approved. Eight behavioral checks pass.
 
 - Files: `src/types.ts` (or `src/capsule.ts`), `docs/sdd/task-capsule.md`
   (already written), tests.
