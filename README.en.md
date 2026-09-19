@@ -17,6 +17,7 @@
 
 <p align="center">
   <a href="#quick-start"><strong>Quick start</strong></a> ·
+  <a href="#whats-new-in-v020"><strong>What's new</strong></a> ·
   <a href="#jev-prerequisites"><strong>Jev prerequisites</strong></a> ·
   <a href="#routes"><strong>Routes</strong></a> ·
   <a href="#reading-the-payoff"><strong>Reading the payoff</strong></a> ·
@@ -26,6 +27,34 @@
 > This project was renamed from `codex-auto-router` (see the architectural
 > reset in [ADR 0013](docs/adr/0013-jev-native-routing-architecture.md)); the
 > repository now lives at `miniLV/jev-auto-router`.
+
+## What's new in v0.2.0
+
+- **Identity and install name**: `codex-auto-router` → `jev-auto-router`
+  ("Jev Auto Router"). The repository remote rename is a manual step; once it
+  lands, install from `miniLV/jev-auto-router`. The old URL only redirects
+  temporarily.
+- **Architecture reset**: the fixed Luna/Terra lane selector is gone. Jev is
+  the sole automatic selector, the Policy Guard only returns
+  `ALLOW(RoutePlan)` or `DENY(reason) → Root`, and `ROOT_DIRECT` remains a
+  first-class, fully functional path.
+- **New runtime Modules (P1–P4, test-enforced)**: Task Capsule and
+  RoutingProjection, the Capability Catalog with its evidence ladder, the
+  JevAdapter (one Choice, pinned `jev-1.13.0`, 64k/32k preflight, 20 s / two
+  attempts honoring `Retry-After`), the Policy Guard (16 deterministic
+  checks), lifecycle (two-layer state, 2/3 budgets, correction and
+  continuation proof, cancellation/cleanup), baseline/restore, Root
+  mechanical verification, risk-triggered semantic review with isolation
+  tiers, Decision Receipts, and a benchmark harness (offline dry-run,
+  ablations, anti-p-hacking config).
+- **Honest boundary**: real host invocation evidence and benchmark
+  qualification remain UNVERIFIED, so automatic delegation is closed by
+  default (the Guard returns `DENY(PROFILE_UNQUALIFIED)`) and tasks run in
+  Root.
+- **Upgrade impact**: 0.x has no compatibility alias; existing installs
+  should switch to the new plugin name via [Updating](#updating). The
+  reviewer profile and the observer Dashboard are retained; the Dashboard
+  remains an observer only.
 
 ## Quick start
 
@@ -119,13 +148,33 @@ broken.
   with free output tokens; the runtime and the Guard never read prices, and
   price weights exist only in the frozen benchmark configuration.
 
-## What you do
+## How to use: one typical task
 
-Give Root the outcome, constraints, and any important repository context. You do not
-need to select or manage a lane; Root confirms from trusted current-task metadata
-that it is `Astra` or `Sol` at `Medium` or higher, authors a bounded Task Capsule for
-each implementation unit, hands route selection to Jev and governance to the Guard,
-and owns verification and acceptance.
+Give the outcome, constraints and acceptance hints; you never pick a lane:
+
+```text
+Use $jev-auto-router:jev-auto-router to implement <feature> and verify it.
+```
+
+1. Root confirms the Root Condition (Astra/Sol at Medium or higher from trusted
+   current-task metadata) and keeps the RootIntent with stable acceptance IDs.
+2. Root authors one bounded Task Capsule; the five-section template and three
+   mechanical checks must pass before delegation (owned paths resolve,
+   verification commands already ran, baseline captured).
+3. Capability discovery builds the catalog from real host evidence; ineligible
+   combinations are excluded with recorded reasons.
+4. When the [Jev prerequisites](#jev-prerequisites) hold, the Adapter sends one
+   Choice; otherwise the unit is `ROOT_DIRECT`.
+5. The Guard validates the RoutePlan: only `ALLOW` executes in a disposable
+   isolated workspace; every `DENY` returns to Root with no substitution and no
+   resampling.
+6. Root mechanically verifies the complete diff and affected commands → one
+   fresh independent review when risk triggers → acceptance; failures restore
+   the baseline first, then decide correction or stop.
+
+Any missing link (capability evidence, authorization, isolation, qualification,
+budget) resolves to `ROOT_DIRECT`: the task always completes, but it is not
+always delegated.
 
 ## Routes
 
@@ -205,6 +254,15 @@ work substitutes for Root work; it does not duplicate it.
 
 ## Reading the payoff
 
+The value has three layers: **quality is never traded away** — capsule,
+capability and confinement gates before delegation, mechanical verification
+and risk-triggered review after it, and economics are not even evaluated
+unless quality passes; **economics** — for benchmark-qualified task shapes,
+mechanical execution tokens move off the flagship surface; **governance and
+recoverability** — one child at a time, hard budgets, `DENY` back to Root, a
+receipt per attempt, and every failure recoverable. The surfaces below are
+how you read that evidence.
+
 What routing tries to save: **for benchmark-qualified task shapes, mechanical,
 verifiable execution tokens move off the flagship model (Astra) onto cheaper
 execution surfaces, while Astra's tokens and effort concentrate on judgment,
@@ -256,9 +314,13 @@ automatic savings are claimed before benchmark qualification.
 
 ## Updating
 
-Update the marketplace plugin; there are no companion roles to reinstall. If you
-installed the reviewer profile, rerun `--check` once to confirm it still matches the
-bundled template byte for byte, then start a new task:
+Upgrading from the old identity: since v0.2.0 the package and repository name
+is `jev-auto-router`, and 0.x ships no compatibility alias — remove the old
+plugin entry and reinstall under the new name (the remote URL becomes
+`miniLV/jev-auto-router` once the manual repository rename lands). After that,
+just update the marketplace plugin; there are no companion roles to reinstall.
+If you installed the reviewer profile, rerun `--check` once to confirm it still
+matches the bundled template byte for byte, then start a new task:
 
 ```sh
 codex plugin marketplace upgrade jev-auto-router

@@ -483,11 +483,12 @@ test("the old identity survives only as recorded history or migration text", () 
     assert.doesNotMatch(read(path), stale, rel);
   }
   // Exact per-file allowances derived from intent, not a blanket constant:
-  // README ×1 rename note each; solution/spec ×1 history sentence each;
-  // plan ×3 migration runbook; task ×4 migration status + sweep list.
+  // README ×2 per language (rename note + v0.2.0 migration/upgrade bullet);
+  // solution/spec ×1 history sentence each; plan ×3 migration runbook;
+  // task ×4 migration status + sweep list.
   const expected = new Map([
-    ["README.md", 1],
-    ["README.en.md", 1],
+    ["README.md", 2],
+    ["README.en.md", 2],
     ["docs/solution.md", 1],
     ["spec.md", 1],
     ["plan.md", 3],

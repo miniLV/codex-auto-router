@@ -17,6 +17,7 @@
 
 <p align="center">
   <a href="#快速开始"><strong>快速开始</strong></a> ·
+  <a href="#v020-更新内容"><strong>更新内容</strong></a> ·
   <a href="#jev-前置条件"><strong>Jev 前置条件</strong></a> ·
   <a href="#路由"><strong>路由</strong></a> ·
   <a href="#收益怎么看"><strong>收益怎么看</strong></a> ·
@@ -24,6 +25,14 @@
 </p>
 
 > 本项目由 `codex-auto-router` 更名而来（架构重置见 [ADR 0013](docs/adr/0013-jev-native-routing-architecture.md)）；仓库已迁移到 `miniLV/jev-auto-router`。
+
+## v0.2.0 更新内容
+
+- **身份与安装名**：`codex-auto-router` → `jev-auto-router`（“Jev Auto Router”）。仓库远程改名是手动步骤；改名完成后安装地址使用 `miniLV/jev-auto-router`，旧地址只会由 GitHub 重定向一段时间。
+- **架构重置**：固定的 Luna/Terra lane 选择器被移除。Jev 是唯一的自动选路者，Policy Guard 只有 `ALLOW(RoutePlan)` / `DENY(reason) → Root`，`ROOT_DIRECT` 始终是一等且完整可用的路径。
+- **新增运行时 Modules（P1–P4，受测试约束）**：Task Capsule 与 RoutingProjection、Capability Catalog（证据阶梯）、JevAdapter（单 Choice、固定 `jev-1.13.0`、64k/32k 预检、20 秒/2 次重试、遵守 `Retry-After`）、Policy Guard（16 项确定性检查）、生命周期（两层状态、2/3 预算、纠正与续跑证明、取消/清理）、baseline/restore、Root 机械验证、风险触发语义 review 与隔离层级、Decision Receipt，以及 benchmark harness（离线 dry-run、ablations、反 p-hacking 配置）。
+- **诚实的边界**：真实 host 调用链证据与 benchmark 资格仍是 UNVERIFIED，因此自动委派默认关闭（Guard 返回 `DENY(PROFILE_UNQUALIFIED)`），任务由 Root 执行。
+- **升级影响**：0.x 没有兼容别名；旧安装请按 [更新](#更新) 一节换用新插件名。reviewer profile 与 Dashboard 继续保留，Dashboard 始终只是观察者。
 
 ## 快速开始
 
@@ -65,9 +74,22 @@ sh skills/jev-auto-router/scripts/install-reviewer-agent.sh --check
 - **资格前置**：生产委派要求该任务形态持有冻结的 benchmark 资格（`docs/benchmarks/qualification.json`）。当前仓库没有任何合格 profile，Guard 对委派计划默认 `DENY(PROFILE_UNQUALIFIED)`；因此今天的自动行为就是 Root 执行。
 - **计费与价格隔离**：Jev 输入按上游文档为 $42/Btok、输出免费；运行时与 Guard 从不读取价格，价格权重只存在于冻结的 benchmark 配置中。
 
-## 你要做什么
+## 如何使用：一次典型任务
 
-把结果、约束和重要的仓库上下文交给 Root。你不需要选择或管理 lane；Root 从可信的当前任务 metadata 确认自己为 `Astra` 或 `Sol` 的 `Medium` 或更高，把实现单元写成有界的 Task Capsule，然后把选路交给 Jev、把治理交给 Guard，并拥有验证与验收。
+给出目标、约束与验收线索即可，lane 不需要你选。例如：
+
+```text
+Use $jev-auto-router:jev-auto-router to implement <feature> and verify it.
+```
+
+1. Root 先确认 Root Condition（可信 metadata 中的 Astra/Sol 且 Medium 以上），整理 RootIntent 与稳定的验收 ID。
+2. Root 把该实现单元写成有界 Task Capsule；五段模板与三条机械检查全过才可委派（owned path 可解析、验证命令已预跑、baseline 已存）。
+3. 能力发现按本机真实证据生成 Capability Catalog；不合格组合被排除并记录原因。
+4. 满足 [Jev 前置条件](#jev-前置条件) 时 Adapter 发一次 Choice；否则该单元直接 `ROOT_DIRECT`。
+5. RoutePlan 经 Policy Guard 校验：`ALLOW` 才在一次性隔离 workspace 中执行；`DENY` 一律回 Root，不替换、不重采样。
+6. Root 机械验证完整 diff 与受影响命令 → 风险触发时一次 fresh 独立语义 review → 验收；失败先恢复 baseline，再决定纠正或停委派。
+
+任何一环缺失（能力证据、授权、隔离、资格、预算）都落在 `ROOT_DIRECT`：任务永远可以完成，只是不一定委派。
 
 ## 路由
 
@@ -102,6 +124,8 @@ Root 把架构、分解、Task Capsule、机械验证、升级决策和验收全
 
 ## 收益怎么看
 
+价值分三层：**质量不被牺牲** —— 委派前有 capsule/能力/隔离门，委派后有机械验证与风险触发 review，质量不达标时经济性根本不会被评估；**经济性** —— 只在 benchmark 已证明的任务形态上，把机械执行 token 从旗舰面移走；**治理与可恢复** —— 同时只有一个 child、预算硬顶、`DENY` 回 Root、每次尝试可出 receipt、失败可恢复。下文就是读取这三层证据的观察面。
+
 路由试图省的是什么：**在 benchmark 已证明的任务形态里，把机械、可验证的执行 token 从旗舰模型（Astra）挪到更便宜的执行面，让 Astra 的 token 与 effort 集中在判断、验证与验收上**。这不是已实现的普遍节省承诺 —— 端到端节省依赖 benchmark 资格，Task Capsule、冷启动、Root 验收与恢复都必须计入成本（见 [benchmark 契约](docs/sdd/benchmark.md)）。
 
 有三个观测面可以把收益读出来。它们都只是**观察者**：按 Policy 的设计，Dashboard、`ccusage`、Credit 估算、model mix 和时延永远不回流为路由输入，所以这些读数是复盘证据，不是控制回路。
@@ -129,7 +153,7 @@ Root 把架构、分解、Task Capsule、机械验证、升级决策和验收全
 
 ## 更新
 
-更新 marketplace 插件即可；没有 companion 角色需要重装。如果装过 reviewer profile，重跑一次 `--check` 确认它仍然与随附模板逐字节一致，然后新建一条 task：
+从旧身份升级：v0.2.0 起包名与仓库名是 `jev-auto-router`，0.x 不提供兼容别名；先移除旧插件条目，再按新名字重新安装（仓库远程改名完成后地址为 `miniLV/jev-auto-router`）。之后更新 marketplace 插件即可；没有 companion 角色需要重装。如果装过 reviewer profile，重跑一次 `--check` 确认它仍然与随附模板逐字节一致，然后新建一条 task：
 
 ```sh
 codex plugin marketplace upgrade jev-auto-router
