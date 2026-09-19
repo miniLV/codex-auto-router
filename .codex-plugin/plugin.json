@@ -1,6 +1,6 @@
 {
   "name": "jev-auto-router",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Jev-native capability and model routing for Codex: Jev selects, the Policy Guard validates, Codex executes, and Root verifies and accepts.",
   "author": {
     "name": "miniLV",
