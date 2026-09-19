@@ -120,7 +120,11 @@ Legend: ✅ done · 🔜 next · ⬜ pending · ◐ code/fixtures complete, live
 - Verification: schema round-trip + invalid-plan rejection tests.
 - Acceptance: nothing outside the adapter sees Jev wire formats.
 
-## Task 8 — Implement JevAdapter ⬜
+## Task 8 — Implement JevAdapter ◐
+
+- Implemented mocked single-Choice transport, response validation, cancellation,
+  retry/deadline and pre-egress gates. Provider-compatible sizing remains
+  UNVERIFIED: production calls fail before HTTP until approved evidence exists.
 
 - Files: `src/jev-adapter.ts`, tests (mocked HTTP).
 - Serialize RouteRequest → English JSON `state` plus **exactly one Choice
