@@ -230,94 +230,107 @@ Legend: ✅ done · 🔜 next · ⬜ pending · ◐ code/fixtures complete, live
   restore + stop.
 - Acceptance: receipt fields for both contracts populated per execution.
 
-## Task 14 — Implement baseline/restore ⬜
+## Task 14 — Implement baseline/restore ✅
 
-- Files: `src/baseline.ts`, tests.
-- Capture pre-dispatch state for every owned writable path; restore as
-  primary recovery; no invisible repair of rejected patches.
-- Completion of Tasks 14–16 (with publication) is the prerequisite that makes
-  `delegated_write` constructible (Task 11's gate flips from
-  `probe_read_only`).
-- Verification: capture/restore round-trip on temp fixtures.
-- Acceptance: every delegated write is recoverable.
+- Implemented `src/baseline.ts`: authorized literal capture of dirty,
+  untracked, type, mode and symlink state into an isolated workspace plus a
+  backup copy; output diff classifies owned/read/out-of-scope changes and
+  escaping symlinks; restore rebuilds only the isolated workspace from the
+  captured backup under trusted child-stop evidence.
+- Verification: six behavioral tests (capture, diff, symlink escape,
+  concurrent-checkout-safe restore, recovery gate, invalid inputs).
+- Acceptance: every delegated write is recoverable; the shared checkout is
+  never restored to an older baseline.
 
-## Task 15 — Implement Root mechanical verification contract ⬜
+## Task 15 — Implement Root mechanical verification contract ✅
 
-- Files: `src/verification.ts`, tests; contract text already in the Policy.
-- Encode: read complete diff, confirm scope, rerun affected commands, reuse
-  pre-dispatch results for unaffected ones; self-report never satisfies it.
-- Verification: affected/unaffected rerun tests.
-- Acceptance: verification result feeds the receipt.
+- Implemented `src/verification.ts`: branded VerifiedCandidate binding the
+  candidate and dependency digests; complete-diff read, scope confirmation,
+  rerun of commands whose dependency fingerprint changed, reuse only when the
+  full declared fingerprint is unchanged.
+- Verification: affected/unaffected rerun, out-of-scope, mutation-during-test
+  and self-report tests.
+- Acceptance: verification result feeds review, receipts and publication.
 
-## Task 16 — Implement fresh semantic review and isolation tiers ⬜
+## Task 16 — Implement fresh semantic review and isolation tiers ✅
 
-- Files: `src/review.ts`, tests.
-- Risk triggers; one review per candidate; reviewer fixed role
-  (fresh context, no descendants, verdicts ACCEPT/REVISE/RECONSIDER);
-  observed isolation tiers; mutation voids verdict.
-- Verification: trigger matrix; tier evidence tests.
-- Acceptance: Tier 2 never labeled enforced; verdict voiding on mutation.
+- Implemented `src/review.ts`: fact-driven risk triggers, fixed fresh
+  gpt-6-astra/medium reviewer packet with original intent independent of the
+  capsule, observed isolation tiers, and a verdict bound to one exact
+  candidate/dependency snapshot.
+- Verification: trigger matrix, intent-omission, behavioral-tier and
+  mutation-voiding tests.
+- Acceptance: Tier 2 never labeled enforced; unavailable review leaves
+  delivery pending.
 
-## Task 17 — Implement correction/continuation lifecycle ⬜
+## Task 17 — Implement correction/continuation lifecycle ✅
 
-- Files: `src/lifecycle.ts`, tests.
-- Structured failure evidence; re-route through Jev with attempt state;
-  same-worker continuation only under proof; corrected capsules only narrow.
-- Verification: retry-with-evidence flow tests.
+- Implemented `src/lifecycle.ts`: two-layer routing state, unit-scoped
+  closure, an operation ledger whose host completions are consumed once,
+  structured failure evidence, qualified third-correction gating,
+  cancellation/cleanup state and capsule-narrowing checks.
+- Verification: eleven transition tests including retry-with-evidence,
+  the latch list, cancellation and continuation proof.
 - Acceptance: no blind worker retries; RECONSIDER returns to Root.
 
-## Task 18 — Implement economic + hard attempt budgets ⬜
+## Task 18 — Implement economic + hard attempt budgets ✅
 
-- Files: `src/budget.ts`, tests.
-- Hard ceiling 3 executions; automatic economic ceiling 2; third execution
-  requires per-profile qualification; immediate-takeover conditions.
-- Verification: budget-exhaustion and immediate-takeover tests.
+- Implemented `src/budget.ts`: monotonic Main-Task counters, the 2/3 worker
+  regime with per-profile third-correction eligibility, decision/HTTP/review/
+  Root-review/attribution/integration accounting and closed-unit enforcement.
+- Verification: budget-exhaustion, no-refund, third-correction and closure
+  tests.
 - Acceptance: budget never consumed merely because it exists.
 
-## Task 19 — Implement Decision Receipt ⬜
+## Task 19 — Implement Decision Receipt ✅
 
-- Files: `src/receipt.ts`, tests.
-- Structured receipt per spec §13; ephemeral by default; sanitized
-  persistence only in benchmark mode; never routing input.
-- Verification: field-completeness test; no-feedback-loop static test.
-- Acceptance: every routed attempt can produce a receipt.
+- Implemented `src/receipt.ts`: discriminated outcomes, provider attempts
+  with UNKNOWN (never zero) usage, ephemeral by default, encoding only under
+  an approved sanitized benchmark policy.
+- Verification: field-completeness per outcome, malformed-evidence rejection,
+  persistence gate and a no-feedback-loop static test (no source module reads
+  receipts).
+- Acceptance: every routed attempt can produce a receipt; receipts are never
+  routing input.
 
-## Task 20 — Add Skill routing ⬜
+## Task 20 — Add Skill routing ✅
 
-- Files: `src/catalog.ts` / `src/route-plan.ts` extensions, tests.
-- Skill entries in the catalog; RoutePlan `skills[]` validated through the
-  same pipeline.
+- Extended `CandidateRules` with a required `authorized_skills` grant set;
+  skills enter candidates only through trusted catalog evidence plus capsule
+  authorization, and the Guard revalidates the same pipeline.
 - Verification: skill-selection validation tests.
 - Acceptance: no bypass of catalog → Jev → Guard.
 
-## Task 21 — Add MCP/tool/permission routing ⬜
+## Task 21 — Add MCP/tool/permission routing ✅
 
-- Files: same extensions, tests.
-- MCP/tool/permission classes with read/write/external-action evidence;
-  least-privilege Guard checks.
+- Same extension for MCPs and tools plus least-privilege read/write/network
+  grant checks; external-write and spawn effects remain unselectable.
 - Verification: permission-class validation tests.
 - Acceptance: unauthorized external action is unconstructible.
 
-## Task 22 — Build independent benchmark harness ⬜
+## Task 22 — Build independent benchmark harness ✅
 
-- Files: `bench/` (separate harness; does not mutate the runtime contract),
-  frozen corpus/strata/metrics/thresholds docs.
-- Arms A/B/C per spec §15; ablations; paired tasks from identical baselines.
-- Deterministic offline dry-run mode (fake Jev provider + fake worker
-  surface; no keys, no network — the pattern `docs/research/foreman.md`
-  observes upstream) exercising routing, guard, lifecycle, and receipts
-  end-to-end.
-- Verification: harness dry-run on fixtures.
+- Implemented `bench/` (config, fixtures, harness, README): arms A/B/C,
+  frozen strata/metrics/thresholds, diagnostic ablations, a deterministic
+  offline dry-run with an injected fake Jev provider and fake worker surface
+  (no keys, no network) exercising routing, Guard, lifecycle, correction and
+  receipts end-to-end, plus anti-p-hacking config validation and
+  quality-before-economics evaluation.
+- Verification: harness dry-run on fixtures, replay stability, ablation and
+  config-rejection tests; `src/` never imports `bench/`.
 - Acceptance: anti-p-hacking rules enforced by harness config.
 
-## Task 23 — Run benchmark/ablations and generate qualification artifact ⬜
+## Task 23 — Run benchmark/ablations and generate qualification artifact ◐
 
 - Files: `docs/benchmarks/qualification.json` (created only when evidence
   exists).
-- Quality non-inferiority first; economics only after; publish losing strata.
-- Verification: artifact schema validated by the Guard's qualification
-  reader.
-- Acceptance: automatic routing enabled only for qualified profiles.
+- The qualification reader/schema are complete and tested; the artifact is
+  deliberately absent because the deterministic dry-run cannot qualify and no
+  independently checked evidence report exists yet.
+- Verification: the reader rejects missing, overlapping, unbound or
+  untrusted evidence; the Guard denies `PROFILE_UNQUALIFIED` without it.
+- Acceptance (pending real evidence): automatic routing enabled only for
+  qualified profiles.
 
 ## Task 24 — Rename package/plugin/Skill/product to jev-auto-router ✅
 
@@ -333,7 +346,7 @@ Legend: ✅ done · 🔜 next · ⬜ pending · ◐ code/fixtures complete, live
 - Verification: forbidden-claims sweep in tests.
 - Acceptance: no pre-evidence savings language.
 
-## Task 26 — Full tests, typecheck, diff check, release consistency review 🔜
+## Task 26 — Full tests, typecheck, diff check, release consistency review ✅
 
 - Run: `npm test`, `npm run typecheck`, `git diff --check`.
 - Sweep for stale identity and stale architecture terms (spec §23/§26):
@@ -341,10 +354,10 @@ Legend: ✅ done · 🔜 next · ⬜ pending · ◐ code/fixtures complete, live
   "delegated by default", "Everything else eligible goes to Terra" — every
   remaining occurrence must be intentionally historical, migration-related, or
   explicitly justified.
-- This iteration's gates are green (49/49 tests, typecheck, diff check, sweeps
-  enforced by `test/policy.test.ts`); the task stays open as the recurring
-  final gate for P1–P6, and final acceptance belongs to the independent
-  review layer.
+- This iteration's gates are green (132/132 tests, typecheck, diff check,
+  sweeps enforced by `test/policy.test.ts`); the task remains the recurring
+  final gate for P1–P6 iterations, and final acceptance belongs to the
+  independent review layer.
 - Acceptance: all gates green; sweeps clean; the complete diff reviewed
   against handoff §25 before handoff to the independent review layer.
 
