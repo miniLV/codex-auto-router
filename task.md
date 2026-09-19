@@ -217,7 +217,11 @@ Legend: ✅ done · 🔜 next · ⬜ pending · ◐ code/fixtures complete, live
   test.
 - Acceptance: unprovable continuation is not selectable.
 
-## Task 13 — Implement requested-vs-observed execution evidence ⬜
+## Task 13 — Implement requested-vs-observed execution evidence ✅
+
+- Implemented per-dimension observations, safety violations and independent
+  adoption dispositions. Attribution-only exceptions preserve UNKNOWN; unknown
+  safety cannot be adopted. Contract matrix tests pass.
 
 - Files: `src/execution-contract.ts`, tests.
 - Track all dimensions of spec §9; produce state classes; enforce the
