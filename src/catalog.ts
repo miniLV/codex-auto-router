@@ -107,6 +107,10 @@ export interface CandidateRules {
   authorized_reads: string[];
   owned_writes: string[];
   allowed_origins: string[];
+  // Required effective grant sets: empty means none, missing is invalid.
+  authorized_skills: string[];
+  authorized_mcps: string[];
+  authorized_tools: string[];
   // Frozen family eligibility, never a ranking or a top-K filter.
   qualify: (contract: ExecutionContract) => boolean;
   describe: (contract: ExecutionContract) => string;
@@ -131,6 +135,9 @@ export function configurationReason(c: ExecutionContract, catalog: CapabilityCat
   if (!subset(c.filesystem.read_roots, rules.authorized_reads) ||
       !subset(c.filesystem.write_paths, rules.owned_writes) ||
       !subset(c.network.allowed_origins, rules.allowed_origins) ||
+      !subset(c.skills, rules.authorized_skills) ||
+      !subset(c.mcps, rules.authorized_mcps) ||
+      !subset(c.tools, rules.authorized_tools) ||
       (c.network.mode === "disabled" && c.network.allowed_origins.length !== 0)) return "EXCESS_GRANT";
   if (!c.filesystem.workspace_id || !c.filesystem.baseline_id) return "BASELINE_UNSAFE";
   const requests: Array<[Capability["kind"], string]> = [

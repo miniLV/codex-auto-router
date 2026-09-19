@@ -22,6 +22,7 @@ export function execution(): ExecutionContract {
 export const rules: CandidateRules = {
   construction_rule_digest: "construction", qualification_binding_ref: "qualification",
   authorized_reads: ["src"], owned_writes: ["src/file.ts"], allowed_origins: [],
+  authorized_skills: [], authorized_mcps: [], authorized_tools: [],
   qualify: () => true, describe: () => "Authorized isolated file update.", continuation_proven: () => false
 };
 export function catalog() {
