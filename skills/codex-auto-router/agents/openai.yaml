@@ -1,8 +1,0 @@
-# Shallow Adapter metadata only; the canonical Policy owns routing state.
-interface:
-  display_name: "Codex Auto Router"
-  short_description: "Consider safe bounded native delegation"
-  default_prompt: "Apply the canonical Codex Auto Router Policy to the Main Task."
-
-policy:
-  allow_implicit_invocation: true

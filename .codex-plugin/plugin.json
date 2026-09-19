@@ -1,33 +1,32 @@
 {
-  "name": "codex-auto-router",
+  "name": "jev-auto-router",
   "version": "0.1.2",
-  "description": "Automatic, safety-gated routing of bounded Codex work to native Terra or Luna background agents.",
+  "description": "Jev-native capability and model routing for Codex: Jev selects, the Policy Guard validates, Codex executes, and Root verifies and accepts.",
   "author": {
     "name": "miniLV",
     "url": "https://github.com/miniLV"
   },
-  "homepage": "https://github.com/miniLV/codex-auto-router",
-  "repository": "https://github.com/miniLV/codex-auto-router",
+  "homepage": "https://github.com/miniLV/jev-auto-router",
+  "repository": "https://github.com/miniLV/jev-auto-router",
   "license": "Apache-2.0",
   "keywords": [
     "codex",
+    "jev",
     "routing",
     "subagents",
-    "terra",
-    "luna",
     "workflow"
   ],
   "skills": "./skills/",
   "interface": {
-    "displayName": "Codex Auto Router",
-    "shortDescription": "Automatically route safe bounded work to native Codex agents.",
-    "longDescription": "Considers every Main Task once, applies the repository policy gate, and delegates only safe bounded work to fixed Terra or Luna native-agent tuples while Root retains judgment and final verification.",
+    "displayName": "Jev Auto Router",
+    "shortDescription": "Jev-native, recoverable routing and delivery for Codex.",
+    "longDescription": "Considers every Main Task once: Root authors a bounded Task Capsule, Jev selects the route from a truthful runtime capability catalog, a deterministic Policy Guard validates the plan, Codex executes it natively, and Root independently verifies, reviews when triggered, and accepts.",
     "developerName": "miniLV",
     "category": "Productivity",
     "capabilities": [
       "skills"
     ],
-    "websiteURL": "https://github.com/miniLV/codex-auto-router",
+    "websiteURL": "https://github.com/miniLV/jev-auto-router",
     "composerIcon": "./assets/auto-router-cover.png",
     "logo": "./assets/auto-router-cover.png",
     "logoDark": "./assets/auto-router-cover.png",
@@ -35,7 +34,7 @@
       "./assets/auto-router-cover.png"
     ],
     "defaultPrompt": [
-      "Apply the Codex Auto Router policy to the Main Task."
+      "Apply the Jev Auto Router policy to the Main Task."
     ]
   }
 }

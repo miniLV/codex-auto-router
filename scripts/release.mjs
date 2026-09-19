@@ -48,15 +48,15 @@ function writeLockVersion(path, nextVersion) {
 
 function readMarketplaceRef(path) {
   const marketplace = JSON.parse(readFileSync(path, "utf8"));
-  const ref = marketplace.plugins?.find(({ name }) => name === "codex-auto-router")?.source?.ref;
-  if (typeof ref !== "string") fail(`no codex-auto-router source ref found in ${path}`);
+  const ref = marketplace.plugins?.find(({ name }) => name === "jev-auto-router")?.source?.ref;
+  if (typeof ref !== "string") fail(`no jev-auto-router source ref found in ${path}`);
   return ref;
 }
 
 function writeMarketplaceRef(path, tag) {
   const marketplace = JSON.parse(readFileSync(path, "utf8"));
-  const plugin = marketplace.plugins?.find(({ name }) => name === "codex-auto-router");
-  if (!plugin?.source) fail(`no codex-auto-router source found in ${path}`);
+  const plugin = marketplace.plugins?.find(({ name }) => name === "jev-auto-router");
+  if (!plugin?.source) fail(`no jev-auto-router source found in ${path}`);
   plugin.source.ref = tag;
   writeFileSync(path, `${JSON.stringify(marketplace, null, 2)}\n`);
 }

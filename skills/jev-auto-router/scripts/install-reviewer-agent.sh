@@ -29,8 +29,8 @@ exists_or_linked() {
 }
 
 this_dir=$(CDPATH= cd "$(dirname "$0")" && pwd) || exit 1
-bundled_profile=$this_dir/../agents/codex-auto-router-astra-reviewer.toml
-profile_filename=codex-auto-router-astra-reviewer.toml
+bundled_profile=$this_dir/../agents/jev-auto-router-astra-reviewer.toml
+profile_filename=jev-auto-router-astra-reviewer.toml
 verify_only=0
 
 if [ -n "${CODEX_HOME-}" ]; then
@@ -99,7 +99,7 @@ mkdir -p "$target_dir" || die "could not create $target_dir"
 [ -d "$target_dir" ] && [ ! -L "$target_dir" ] ||
   die "$target_dir changed underneath this script; aborting."
 
-pending=$(mktemp "$target_dir/.codex-auto-router-reviewer.XXXXXX") ||
+pending=$(mktemp "$target_dir/.jev-auto-router-reviewer.XXXXXX") ||
   die "could not create a temporary file next to the destination."
 trap 'rm -f "$pending"' 0 HUP INT TERM
 cp "$bundled_profile" "$pending" || die "could not copy the bundled profile."

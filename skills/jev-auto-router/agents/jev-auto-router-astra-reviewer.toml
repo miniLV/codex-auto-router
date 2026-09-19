@@ -1,5 +1,5 @@
-name = "codex_auto_router_astra_reviewer"
-description = "Codex Auto Router's optional installed profile for its risk-triggered semantic reviewer."
+name = "jev_auto_router_astra_reviewer"
+description = "Jev Auto Router's optional installed profile for its risk-triggered semantic reviewer."
 model = "gpt-6-astra"
 model_reasoning_effort = "medium"
 sandbox_mode = "read-only"

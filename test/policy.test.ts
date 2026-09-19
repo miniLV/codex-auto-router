@@ -4,13 +4,33 @@ import { join, relative } from "node:path";
 import test from "node:test";
 
 const repoRoot = process.cwd();
-const skillRoot = join(repoRoot, "skills", "codex-auto-router");
+const skillRoot = join(repoRoot, "skills", "jev-auto-router");
 const policyPath = join(skillRoot, "references", "routing-policy.md");
 const skillPath = join(skillRoot, "SKILL.md");
 const metadataPath = join(skillRoot, "agents", "openai.yaml");
-const reviewerPath = join(skillRoot, "agents", "codex-auto-router-astra-reviewer.toml");
+const reviewerPath = join(skillRoot, "agents", "jev-auto-router-astra-reviewer.toml");
 const installerPath = join(skillRoot, "scripts", "install-reviewer-agent.sh");
 const packagePath = join(repoRoot, "package.json");
+const pluginManifestPath = join(repoRoot, ".codex-plugin", "plugin.json");
+const marketplacePath = join(repoRoot, ".agents", "plugins", "marketplace.json");
+
+const canonicalDocPaths = [
+  "spec.md",
+  "CONTEXT.md",
+  "docs/solution.md",
+  "docs/sdd/README.md",
+  "docs/sdd/architecture.md",
+  "docs/sdd/task-capsule.md",
+  "docs/sdd/capability-catalog.md",
+  "docs/sdd/jev-adapter.md",
+  "docs/sdd/route-plan.md",
+  "docs/sdd/policy-guard.md",
+  "docs/sdd/delivery-lifecycle.md",
+  "docs/sdd/decision-receipt.md",
+  "docs/sdd/benchmark.md",
+  "README.md",
+  "README.en.md"
+];
 
 function read(path: string): string {
   return readFileSync(path, "utf8");
@@ -21,6 +41,13 @@ function filesUnder(path: string): string[] {
     const child = join(path, name);
     return statSync(child).isDirectory() ? filesUnder(child) : [child];
   });
+}
+
+function repoTextFiles(): string[] {
+  return filesUnder(repoRoot).filter((path) =>
+    /\.(?:md|ts|mjs|json|ya?ml|toml|sh)$/i.test(path) &&
+    !/(?:^|\/)(?:node_modules|dist|\.git)(?:\/|$)/.test(path)
+  );
 }
 
 test("the Policy is the sole canonical authority and carries no version pin", () => {
@@ -39,6 +66,7 @@ test("no document exposes a specific contract version", () => {
   const docPaths = [
     policyPath,
     skillPath,
+    metadataPath,
     join(repoRoot, "CONTEXT.md"),
     join(repoRoot, "docs", "solution.md"),
     join(repoRoot, "docs", "adr", "README.md"),
@@ -66,9 +94,9 @@ test("SKILL.md links to the canonical Policy", () => {
   assert.equal(existsSync(join(skillRoot, policyLink[1])), true);
 });
 
-test("ROOT_DIRECT is the terminal state of every failure path", () => {
+test("ROOT_DIRECT is the first-class outcome and terminal state of every failure path", () => {
   const policy = read(policyPath);
-  assert.match(policy, /`ROOT_DIRECT` is not a route chosen for economy/);
+  assert.match(policy, /`ROOT_DIRECT` is a first-class outcome, not a failure/);
   assert.match(
     policy,
     /missing,\s+ambiguous, or unverifiable resolves to `ROOT_DIRECT`/
@@ -77,29 +105,28 @@ test("ROOT_DIRECT is the terminal state of every failure path", () => {
     policy,
     /explicitly downgrades an unobservable signal to recorded residual risk/
   );
-  assert.match(policy, /gpt-6-astra` or `gpt-5\.6-sol` at `medium`, `high`, `xhigh`, `max`,\s+or `ultra`/);
+  assert.match(policy, /gpt-6-astra` or `gpt-5\.6-sol` at\s+`medium`, `high`, `xhigh`, `max`,\s+or `ultra`/);
   assert.match(policy, /A Skill cannot\s+change the Root model/);
 });
 
-test("channel tuples are exact and every child gets a fresh context", () => {
+test("Jev is the sole automatic selector and Root holds no shape heuristic", () => {
   const policy = read(policyPath);
-  assert.match(policy, /LUNA:\s+model: gpt-5\.6-luna\s+reasoning_effort: max\s+fork_turns: none/);
-  assert.match(policy, /TERRA:\s+model: gpt-5\.6-terra\s+reasoning_effort: high\s+fork_turns: none/);
-  assert.match(policy, /REVIEWER:\s+model: gpt-6-astra\s+reasoning_effort: medium\s+fork_turns: none/);
-  assert.match(policy, /Exactly one child per Main Task at a time/);
-  assert.match(policy, /may not create descendants/);
-  assert.match(policy, /Never substitute another model, effort,\s+or context boundary/);
-});
-
-test("classification is by nature, never by difficulty", () => {
-  const policy = read(policyPath);
+  assert.match(policy, /Jev chooses\.\s+The Guard validates\.\s+Codex executes\.\s+Root verifies\./);
+  assert.match(policy, /Jev is the only automatic route-selection intelligence/);
+  assert.match(
+    policy,
+    /there is no\s+"single-file goes to a cheap lane, everything else goes to a bigger lane"\s+heuristic anywhere in this contract/
+  );
   assert.match(policy, /\*\*Judgment work always stays in Root\*\*/);
-  assert.match(policy, /\*\*writing the dispatch specification itself\*\*/);
-  assert.match(policy, /Do not vary the channel by perceived difficulty/);
-  assert.match(policy, /\*\*Implementation work is delegated by default\*\*/);
+  assert.match(policy, /authoring the Task Capsule and the dispatch specification itself/);
+  // The fixed-lane selector is gone: no channel table, no delegated-by-default rule.
+  assert.doesNotMatch(policy, /LUNA:|TERRA:/);
+  assert.doesNotMatch(policy, /delegated by default/i);
+  assert.doesNotMatch(policy, /Everything else eligible goes to Terra/);
+  assert.doesNotMatch(policy, /Everything else eligible\b/);
 });
 
-test("the dispatch template carries every required section and return field", () => {
+test("the Task Capsule gate carries every template section, return field, and mechanical check", () => {
   const policy = read(policyPath);
   for (const section of [
     "OBJECTIVE",
@@ -114,10 +141,6 @@ test("the dispatch template carries every required section and return field", ()
   assert.match(policy, /A completion claim without evidence is invalid/);
   assert.match(policy, /Other work may land in this repository while you run/);
   assert.match(policy, /Keep changes made by\s+others intact/);
-});
-
-test("the gate is three mechanical checks with no cost or size floor", () => {
-  const policy = read(policyPath);
   assert.match(policy, /"Filled concretely" is not a judgment call/);
   assert.match(policy, /\*\*Every owned path resolves\.\*\*/);
   assert.match(policy, /No globs, no "the relevant files"/);
@@ -126,29 +149,89 @@ test("the gate is three mechanical checks with no cost or size floor", () => {
   assert.match(policy, /a section\s+with no executable command blocks the dispatch/);
   assert.match(policy, /\*\*The repository is safe and a baseline exists\.\*\*/);
   assert.match(policy, /either named concrete items or the\s+literal word `none`/);
-  assert.match(policy, /No size or cost floor gates delegation in this version/);
-  assert.doesNotMatch(policy, /Expected Sol Work Reduction|break-even/i);
-  assert.doesNotMatch(policy, /at no extra cost/);
+  // The capsule is a bounded economic boundary.
+  assert.match(policy, /\*\*economic boundary\*\*/);
+  assert.match(policy, /must not copy the entire Root\s+conversation by default/);
+  assert.match(policy, /the capsule may only narrow/);
 });
 
-test("Luna is gated by verifiable shape, not by judgement", () => {
+test("the Capability Catalog is observed, truthful, and constrains Jev", () => {
   const policy = read(policyPath);
-  assert.match(policy, /\*\*read-only evidence\*\*: an exact path plus an exact line or time window/);
-  assert.match(policy, /\*\*bounded write\*\*: a single file, or same-directory files of the same kind/);
-  assert.match(policy, /no change to a public interface, configuration, or dependency/);
-  assert.match(policy, /verification is one command with a binary result/);
-  assert.match(policy, /Everything else eligible goes to Terra/);
+  assert.match(policy, /what the runtime can actually do \*\*now\*\*/);
+  assert.match(policy, /`UNKNOWN` evidence means the\s+capability is \*\*absent\*\*/);
+  assert.match(policy, /Discovery failures omit capabilities; they never fabricate them/);
+  assert.match(policy, /Jev may select only entries present in this catalog/);
+  assert.match(policy, /referencing\s+an absent or invented capability is invalid and the Guard denies it/);
+  assert.match(policy, /There is\nno silent substitution/);
+  assert.match(policy, /catalog digest is recorded in the Decision Receipt/);
 });
 
-test("a reported tuple mismatch rejects output, an unobservable tuple does not", () => {
+test("Jev routing failures degrade to Root and never invent a route", () => {
   const policy = read(policyPath);
-  assert.match(policy, /Requesting a tuple does not prove it was applied/);
-  assert.match(policy, /\*\*Observed and mismatched\*\*/);
-  assert.match(policy, /Do not accept the output: restore the baseline and\s+choose `ROOT_DIRECT`/);
-  assert.match(policy, /\*\*Unobservable on this host\*\*/);
-  assert.match(policy, /Do not discard the output for that reason alone/);
-  assert.match(policy, /record the unverified tuple as residual risk/);
-  assert.match(policy, /Discarding paid-for output because the host cannot label it/);
+  assert.match(policy, /`decision: root` is a valid, first-class plan/);
+  assert.match(policy, /UNAVAILABLE`/);
+  assert.match(policy, /MALFORMED`/);
+  assert.match(policy, /LOW_CONFIDENCE`/);
+  assert.match(
+    policy,
+    /Every adapter failure state means automatic delegation is unavailable and\s+resolves to `ROOT_DIRECT`/
+  );
+  assert.match(
+    policy,
+    /There is no heuristic fallback route, no legacy\s+lane table, and no second selector anywhere in this contract/
+  );
+  assert.match(policy, /never an invented token or dollar forecast/);
+});
+
+test("the Policy Guard has unconditional veto and zero alternate-routing authority", () => {
+  const policy = read(policyPath);
+  assert.match(policy, /holds unconditional\s+veto authority with \*\*no alternate-routing authority\*\*/);
+  assert.match(policy, /never selects,\nsubstitutes, or downgrades a plan/);
+  assert.match(policy, /ALLOW\(RoutePlan\)\s+— execute exactly the plan/);
+  assert.match(policy, /DENY\(reason\) → Root/);
+  assert.match(policy, /A `DENY` never produces a modified plan/);
+  for (const check of [
+    "the RoutePlan schema is valid",
+    "route confidence meets the frozen requirement",
+    "the requested model supports the requested reasoning effort",
+    "task ownership is bounded",
+    "user authorization covers the action class and side-effect class",
+    "every writable target has a recoverable baseline",
+    "the permission set is least-privilege enough",
+    "no forbidden child delegation or fan-out",
+    "the benchmark profile permits automatic routing for this task shape",
+    "the attempt budget remains",
+    "the review budget remains",
+    "genuinely observable"
+  ]) assert.match(policy, new RegExp(check.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), check);
+  assert.match(policy, /frozen per benchmark release/);
+  assert.match(policy, /never tuned per\s+task at runtime/);
+  assert.match(
+    policy,
+    /Until a task profile holds frozen benchmark qualification, check 13 fails for\s+it by default/
+  );
+});
+
+test("the execution contract distinguishes safety failure from attribution taint", () => {
+  const policy = read(policyPath);
+  for (const state of [
+    "requested_match",
+    "requested_mismatch",
+    "routing_metadata_unobservable",
+    "accepted_under_unobservable",
+    "permission_scope_violation",
+    "context_boundary_violation"
+  ]) assert.match(policy, new RegExp(state), state);
+  assert.match(policy, /\*\*UNKNOWN is never MATCH\.\*\*/);
+  assert.match(policy, /Artifact correctness is separate from route\/cost attribution/);
+  assert.match(policy, /excluded from verified-savings evidence/);
+  assert.match(policy, /stronger safety failure/);
+  assert.match(
+    policy,
+    /restore the\s+baseline when necessary, stop automatic delegation for this task/
+  );
+  assert.match(policy, /Record the unverified dimensions as residual risk/);
+  assert.match(policy, /adopt at most once under `accepted_under_unobservable`/);
 });
 
 test("mechanical verification cannot be skipped or self-reported", () => {
@@ -158,117 +241,121 @@ test("mechanical verification cannot be skipped or self-reported", () => {
     policy,
     /Rerun in Root every verification command whose inputs the child's owned\s+paths could affect/
   );
-  assert.match(policy, /reuse the result\s+recorded at the dispatch gate/);
+  assert.match(policy, /reuse the result\s+recorded at the capsule gate/);
   assert.match(
     policy,
     /cannot be skipped, delegated, or satisfied by self-report/
   );
 });
 
-test("semantic review is risk triggered, candidate-scoped, and skipping it never counts as review", () => {
+test("semantic review is risk triggered, isolation is observed, and verdicts are voidable", () => {
   const policy = read(policyPath);
-  assert.match(policy, /Root wrote both the\s+specification and the verification commands/);
-  assert.match(policy, /at most one\*\* semantic review for each candidate/);
-  assert.match(policy, /at most five semantic\s+reviews, one for each of its at most five candidates/);
-  assert.match(policy, /Spanning multiple files is not a trigger by itself/);
-  assert.doesNotMatch(policy, /- it spans multiple files/);
+  assert.match(policy, /Run \*\*at most one\*\* semantic review for each candidate/);
   assert.match(policy, /public interface, data structure, permission, or security path/);
   assert.match(policy, /non-empty `JUDGMENT CALLS` or `GAPS`/);
+  assert.match(policy, /Spanning multiple files is not a trigger by itself/);
+  assert.match(policy, /REVIEWER:\s+model: gpt-6-astra\s+reasoning_effort: medium\s+fork_turns: none/);
   assert.match(
     policy,
     /whether the objective\s+and constraints themselves were adequate for the stated outcome/
   );
-  assert.match(
-    policy,
-    /Skipping review under these rules is not a\s+claim that the change was reviewed/
-  );
   assert.match(policy, /`ACCEPT`, `REVISE`, or `RECONSIDER`/);
-  assert.match(policy, /No finding ledger or stable identifiers\s+are required/);
-  assert.match(policy, /Any change made after a verdict voids that verdict/);
-});
-
-test("reviewer creation offers an optional profile without ever claiming isolation", () => {
-  const policy = read(policyPath);
+  assert.match(policy, /No finding ledger or stable\s+identifiers are required/);
   assert.match(policy, /Isolation is observed, never assumed/);
-  assert.match(policy, /\*\*Named profile, when available\.\*\*/);
-  assert.match(policy, /This path is optional hardening, not a prerequisite/);
-  assert.match(policy, /\*\*Per-spawn parameters, always available\.\*\*/);
+  assert.match(policy, /ENFORCED_READ_ONLY/);
+  assert.match(policy, /BEHAVIORALLY_READ_ONLY/);
+  assert.match(policy, /REVIEW_UNAVAILABLE/);
+  assert.match(policy, /Never describe this tier as enforced read-only/);
+  assert.match(policy, /Stop the\s+lane; do not hide or repair a mutation under the verdict/);
+  assert.match(policy, /Any change made after a verdict voids that verdict/);
+  assert.match(policy, /A corrected candidate is\na new candidate/);
   assert.match(
     policy,
-    /Neither the profile, its installer, nor its `--check` proves that a reviewer was\s+spawned/
+    /Neither the profile, its installer, nor its `--check` proves that a reviewer\s+was spawned/
   );
-  assert.match(
-    policy,
-    /Never describe the review as\s+enforced read-only unless the observed sandbox policy type is exactly\s+`read-only`/
-  );
-  assert.match(policy, /do not hide or repair it\s+under the verdict/);
+  assert.match(policy, /agents\/jev-auto-router-astra-reviewer\.toml/);
 });
 
-test("retry state machine gives each corrected candidate an independent review within five attempts", () => {
+test("correction is evidence-driven, continuation is proven or absent, and budgets are bounded", () => {
   const policy = read(policyPath);
-  assert.match(policy, /A corrected candidate is a\s+new candidate/);
-  assert.match(policy, /reviewed independently within the remaining task budget/);
-  assert.match(policy, /before the fifth dispatch/);
-  assert.match(policy, /on the fifth dispatch/);
-  assert.match(policy, /At most five dispatches per Main Task/);
-  assert.match(policy, /up to four corrected\s+retries/);
-  assert.match(policy, /A candidate receives at most one semantic review, and the task may\s+run at most five semantic reviews total/);
-  assert.match(policy, /Failed, timed-out, unverifiable, and rejected dispatches all count/);
-  assert.match(policy, /Its\s+specification must differ from\s+the one that failed/);
-  assert.match(policy, /Never\s+silently repair the child's\s+patch/);
-  assert.match(policy, /a\s+fresh\s+candidate starting from the restored baseline,\s+not a resumed one/);
-  assert.match(policy, /needs no\s+same-child follow-up capability/);
+  assert.match(policy, /restore the baseline first/);
+  assert.match(policy, /structured failure evidence/);
+  assert.match(policy, /`continue_same_worker`/);
+  assert.match(policy, /never resend the same\s+instructions/);
+  assert.match(policy, /never silently repair the child's patch/);
   assert.match(
     policy,
-    /Restoring a candidate and continuing in Root is not termination of the user's\s+goal/
+    /\*\*Same-worker continuation is permitted only when runtime evidence proves\*\*/
   );
-  assert.match(policy, /reviewer and worker never run at the same time|Reviewer and worker never run at the same time/i);
+  assert.match(
+    policy,
+    /a valid continuation handle, worker identity matching the original,\s+unchanged ownership, and a re-confirmable model\/runtime contract/
+  );
+  assert.match(policy, /it is unavailable to Jev/);
+  assert.match(policy, /hard worker execution ceiling: \*\*3\*\*/);
+  assert.match(policy, /normal automatic economic ceiling: \*\*2\*\*/);
+  assert.match(policy, /a \*\*third\*\* execution requires explicit benchmark qualification/);
+  assert.match(policy, /The safety budget is not consumed merely because it\s+exists/);
+  assert.match(policy, /the same verification command failing twice/);
+  assert.match(policy, /scope thrash/);
+  assert.match(policy, /execution identity becoming uncertain/);
+  assert.match(policy, /Exactly one child runs at a time/);
+  assert.match(policy, /A child may not create descendants/);
+  assert.match(
+    policy,
+    /`RECONSIDER` → stop, return to Root architecture and judgment, and consult\s+the user/
+  );
 });
 
-test("usage and credit data are barred from routing, and notes stay commentary", () => {
+test("usage and credit data are barred from routing; receipts are evidence, not authority", () => {
   const policy = read(policyPath);
   assert.match(
     policy,
-    /Dashboard, `ccusage`, `src\/credit\.ts`, Credit or usage estimates, model mix,\s+historical token share, and latency are never inputs/
+    /Dashboard, `ccusage`, `src\/credit\.ts`, Credit or usage estimates, account\nquota, model mix, historical token share, and latency are never inputs/
   );
-  assert.match(policy, /Elapsed time may be a\s+user-facing constraint but never a routing input/);
-  assert.match(policy, /Route notes are commentary/);
-  assert.match(policy, /a new stateless session\s+cannot know a prior one/);
+  assert.match(policy, /Elapsed time may be a user-facing constraint but never a\s+routing input/);
+  assert.match(policy, /\*\*Decision Receipt\*\*/);
+  assert.match(policy, /evidence,\nnever routing authority/);
+  assert.match(policy, /nothing reads a receipt to decide a future route/);
+  assert.match(policy, /Normal routing state is ephemeral/);
+  assert.match(policy, /A new stateless session cannot know a prior one/);
+  assert.match(policy, /stands down to `ROOT_DIRECT`/);
 });
 
-test("no file names or links to another project", () => {
-  const thirdPartyMarkers = /sol-advisor|zhijian|DannyMac180|zjp1997720|SOURCE\.json|NOTICE\.md/i;
-  for (const path of filesUnder(skillRoot)) {
-    assert.doesNotMatch(read(path), thirdPartyMarkers, path);
-  }
-  for (const path of [
-    "skills/codex-auto-router/SOURCE.json",
-    "skills/codex-auto-router/NOTICE.md",
-    "skills/codex-auto-router/SOL-ADVISOR-MIT-LICENSE",
-    "skills/codex-auto-router/UPSTREAM-MIT-LICENSE",
-    "docs/research/sol-advisor-reviewer-runtime.md"
-  ]) assert.equal(existsSync(join(repoRoot, path)), false, path);
-});
-
-test("the policy states its own design rationale without naming another project", () => {
+test("the policy states its own design rationale", () => {
   const policy = read(policyPath);
-  assert.match(policy, /## 11\. Design rationale/);
+  assert.match(policy, /## 13\. Design rationale/);
   for (const point of [
-    "A cheaper channel is selected by verifiable task shape",
+    "Jev is the sole selector",
+    "The Guard validates and never chooses",
+    "The catalog constrains selection",
+    "The capsule is bounded",
     "Every writable path gets a baseline before dispatch",
-    "The dispatch limit is five per Main Task",
-    "Semantic review is triggered by risk",
-    "Exactly one child runs at a time",
-    "Every failure path resolves to `ROOT_DIRECT`",
+    "Requested versus observed is explicit",
+    "Mechanical verification and semantic review are distinct",
+    "Economics are benchmark-qualified",
     "Usage, credit, and Dashboard data are barred"
   ]) assert.match(policy, new RegExp(point.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), point);
 });
 
-test("the optional reviewer profile and installer survive intact", () => {
+test("no file names or links to another project inside the Skill", () => {
+  const thirdPartyMarkers = /sol-advisor|zhijian|DannyMac180|BillionsBobby|SOURCE\.json|NOTICE\.md/i;
+  for (const path of filesUnder(skillRoot)) {
+    assert.doesNotMatch(read(path), thirdPartyMarkers, path);
+  }
+  for (const path of [
+    "skills/jev-auto-router/SOURCE.json",
+    "skills/jev-auto-router/NOTICE.md",
+    "skills/jev-auto-router/SOL-ADVISOR-MIT-LICENSE",
+    "skills/jev-auto-router/UPSTREAM-MIT-LICENSE"
+  ]) assert.equal(existsSync(join(repoRoot, path)), false, path);
+});
+
+test("the optional reviewer profile and installer survive intact under the new identity", () => {
   assert.equal(existsSync(reviewerPath), true);
   assert.equal(existsSync(installerPath), true);
   const reviewer = read(reviewerPath);
-  assert.match(reviewer, /^name = "codex_auto_router_astra_reviewer"$/m);
+  assert.match(reviewer, /^name = "jev_auto_router_astra_reviewer"$/m);
   assert.match(reviewer, /^model = "gpt-6-astra"$/m);
   assert.match(reviewer, /^model_reasoning_effort = "medium"$/m);
   assert.match(reviewer, /^sandbox_mode = "read-only"$/m);
@@ -279,15 +366,19 @@ test("the optional reviewer profile and installer survive intact", () => {
     /DELIVERABLE|CORRECTION_REQUIRED|ARCHITECTURAL_RECONSIDERATION|anchored|finding history/i
   );
   const installer = read(installerPath);
-  assert.match(installer, /matches the bundled profile byte for byte/);
+  assert.match(installer, /jev-auto-router-astra-reviewer\.toml/);
   assert.match(installer, /refusing to overwrite it/i);
 });
 
 test("removed over-engineered artifacts stay removed", () => {
   for (const path of [
-    "skills/codex-auto-router/references/task-packet.md",
-    "skills/codex-auto-router/references/native-subagent-lifecycle.md",
-    "skills/codex-auto-router/scripts/inspect-reviewer-runtime.sh"
+    "skills/jev-auto-router/references/task-packet.md",
+    "skills/jev-auto-router/references/native-subagent-lifecycle.md",
+    "skills/jev-auto-router/scripts/inspect-reviewer-runtime.sh",
+    "docs/diagrams/auto-routing-en.html",
+    "docs/diagrams/auto-routing-en.png",
+    "docs/diagrams/auto-routing-zh.html",
+    "docs/diagrams/auto-routing-zh.png"
   ]) assert.equal(existsSync(join(repoRoot, path)), false, path);
 
   const policy = read(policyPath);
@@ -299,7 +390,7 @@ test("removed over-engineered artifacts stay removed", () => {
   ]) assert.doesNotMatch(policy, new RegExp(term, "i"), term);
   // A finding ledger may only appear as an explicit non-requirement.
   assert.deepEqual(policy.match(/finding ledger/gi), ["finding ledger"]);
-  assert.match(policy, /No finding ledger or stable identifiers\s+are required/);
+  assert.match(policy, /No finding ledger or stable\s+identifiers are required/);
 });
 
 test("prohibited executable routing artifacts remain absent", () => {
@@ -309,7 +400,10 @@ test("prohibited executable routing artifacts remain absent", () => {
     "src/registry.ts",
     "src/llm-router.ts",
     "src/telemetry.ts",
-    "src/dashboard-control.ts"
+    "src/dashboard-control.ts",
+    "src/heuristic-router.ts",
+    "src/openai-router.ts",
+    "src/rule-router.ts"
   ]) assert.equal(existsSync(join(repoRoot, path)), false, path);
   for (const path of filesUnder(join(repoRoot, "src"))) {
     assert.doesNotMatch(
@@ -322,9 +416,7 @@ test("prohibited executable routing artifacts remain absent", () => {
 
 test("the plugin manifest version never drifts from the package version", () => {
   const manifest = JSON.parse(read(packagePath)) as { version: string };
-  const pluginManifest = JSON.parse(
-    read(join(repoRoot, ".codex-plugin", "plugin.json"))
-  ) as { version: string };
+  const pluginManifest = JSON.parse(read(pluginManifestPath)) as { version: string };
   assert.equal(pluginManifest.version, manifest.version);
 });
 
@@ -333,4 +425,107 @@ test("the credit dashboard is retained and its dependency stays pinned", () => {
   assert.deepEqual(manifest.dependencies, { ccusage: "20.0.19" });
   assert.equal(existsSync(join(repoRoot, "src", "credit.ts")), true);
   assert.equal(existsSync(join(repoRoot, "src", "server.ts")), true);
+});
+
+test("canonical identity is jev-auto-router everywhere it is declared", () => {
+  const pkg = JSON.parse(read(packagePath)) as { name: string };
+  const plugin = JSON.parse(read(pluginManifestPath)) as {
+    name: string;
+    interface: { displayName: string };
+    repository: string;
+    homepage: string;
+  };
+  const marketplace = JSON.parse(read(marketplacePath)) as {
+    name: string;
+    interface: { displayName: string };
+    plugins: { name: string; source: { url: string } }[];
+  };
+  assert.equal(pkg.name, "jev-auto-router");
+  assert.equal(plugin.name, "jev-auto-router");
+  assert.equal(plugin.interface.displayName, "Jev Auto Router");
+  assert.equal(plugin.repository, "https://github.com/miniLV/jev-auto-router");
+  assert.equal(plugin.homepage, "https://github.com/miniLV/jev-auto-router");
+  assert.equal(marketplace.name, "jev-auto-router");
+  assert.equal(marketplace.interface.displayName, "Jev Auto Router");
+  assert.equal(marketplace.plugins.length, 1);
+  assert.equal(marketplace.plugins[0].name, "jev-auto-router");
+  assert.equal(marketplace.plugins[0].source.url, "https://github.com/miniLV/jev-auto-router.git");
+  assert.equal(existsSync(join(repoRoot, "skills", "jev-auto-router", "SKILL.md")), true);
+  assert.equal(existsSync(join(repoRoot, "skills", "codex-auto-router")), false);
+  assert.match(read(skillPath), /^name: jev-auto-router$/m);
+  for (const readme of ["README.md", "README.en.md"]) {
+    assert.match(read(join(repoRoot, readme)), /github\.com\/miniLV\/jev-auto-router"/, readme);
+  }
+  for (const script of ["scripts/release.mjs", "scripts/verify-release-version.mjs"]) {
+    assert.match(read(join(repoRoot, script)), /jev-auto-router/, script);
+    assert.doesNotMatch(read(join(repoRoot, script)), /codex-auto-router/, script);
+  }
+});
+
+test("the old identity survives only as recorded history or migration text", () => {
+  const allowedHistorical = new Set([
+    "README.md",
+    "README.en.md",
+    "docs/solution.md",
+    "spec.md",
+    "plan.md",
+    "task.md"
+  ]);
+  const stale = /codex-auto-router|Codex Auto Router|codex_auto_router/i;
+  for (const path of repoTextFiles()) {
+    const rel = relative(repoRoot, path);
+    if (rel === join("test", "policy.test.ts")) continue;
+    if (allowedHistorical.has(rel)) continue;
+    assert.doesNotMatch(read(path), stale, rel);
+  }
+  for (const rel of allowedHistorical) {
+    const occurrences = read(join(repoRoot, rel)).match(stale)?.length ?? 0;
+    assert.ok(
+      occurrences <= 3,
+      `${rel} mentions the old identity ${occurrences} times; keep it historical`
+    );
+  }
+});
+
+test("no superseded architecture conclusion survives in the canonical documents", () => {
+  const staleConclusions =
+    /Jev is advisory|advisory[- ]only|not a core component|experiment[- ]only|Jev experiment|Jev cannot select|should be deferred|delegated by default|Everything else eligible|goes to Terra|fixed child tuples|LUNA:|TERRA:/i;
+  const docPaths = [
+    ...canonicalDocPaths.map((rel) => join(repoRoot, rel)),
+    policyPath,
+    skillPath,
+    metadataPath,
+    reviewerPath,
+    installerPath
+  ];
+  for (const path of docPaths) {
+    assert.doesNotMatch(read(path), staleConclusions, relative(repoRoot, path));
+  }
+});
+
+test("the benefit boundary stays benchmark-qualified and no savings are pre-claimed", () => {
+  const forbiddenClaims =
+    /automatically saves tokens|always saves quota|cheaper by design|guarantees the optimal model|lower[s]? cost automatically/i;
+  // User-facing claim surfaces only; spec.md/task.md legitimately define the
+  // forbidden-claims and stale-term lists themselves.
+  const claimSurfaces = [
+    "README.md",
+    "README.en.md",
+    "CONTEXT.md",
+    "docs/solution.md",
+    "docs/sdd/README.md",
+    "docs/sdd/architecture.md",
+    "docs/sdd/benchmark.md"
+  ];
+  for (const rel of claimSurfaces) {
+    assert.doesNotMatch(read(join(repoRoot, rel)), forbiddenClaims, rel);
+  }
+  const spec = read(join(repoRoot, "spec.md"));
+  assert.match(spec, /Quality non-inferiority passes before any economics is evaluated/);
+  assert.match(spec, /End-to-end economic savings remain benchmark-dependent/);
+  const policy = read(policyPath);
+  assert.match(
+    policy,
+    /safety eligibility is not an economic claim/
+  );
 });

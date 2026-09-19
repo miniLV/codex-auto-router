@@ -1,0 +1,8 @@
+# Shallow Adapter metadata only; the canonical Policy owns routing state.
+interface:
+  display_name: "Jev Auto Router"
+  short_description: "Consider every task; Jev routes, the Guard validates, Root verifies"
+  default_prompt: "Apply the Jev Auto Router Policy to the Main Task."
+
+policy:
+  allow_implicit_invocation: true
