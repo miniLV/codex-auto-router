@@ -144,7 +144,11 @@ Legend: ✅ done · 🔜 next · ⬜ pending · ◐ code/fixtures complete, live
   this one file only; no question type other than the single Choice exists
   in the adapter.
 
-## Task 9 — Replace old route-selection Policy with Policy Guard ⬜
+## Task 9 — Replace old route-selection Policy with Policy Guard ✅
+
+- Implemented deterministic validation against current identity, scope,
+  qualification and delivery evidence. Table-driven denials preserve the exact
+  selected plan on ALLOW and never return an alternative.
 
 - Files: `src/policy-guard.ts`, `test/policy.test.ts`,
   `skills/jev-auto-router/references/routing-policy.md` (already rewritten).
