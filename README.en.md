@@ -24,7 +24,7 @@ Flagship Codex sessions burn quota on mechanical work. This plugin routes **boun
 Needs current Codex CLI with plugins, Root = `gpt-6-astra` or `gpt-5.6-sol` at Medium+, and `spawn_agent`.
 
 ```sh
-codex plugin marketplace add miniLV/codex-auto-router --ref master
+codex plugin marketplace add miniLV/Jev-Auto-Router --ref master
 codex plugin add jev-auto-router@jev-auto-router
 ```
 
