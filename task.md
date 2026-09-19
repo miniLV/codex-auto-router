@@ -200,7 +200,11 @@ Legend: ✅ done · 🔜 next · ⬜ pending · ◐ code/fixtures complete, live
   P3's module graph.
 - Acceptance: UNKNOWN never recorded as MATCH; zero writable spawns.
 
-## Task 12 — Implement agent/context routing ⬜
+## Task 12 — Implement agent/context routing ◐
+
+- Implemented continuation proof validation over stopped worker identity,
+  restoration, unchanged ownership/configuration and current handle evidence.
+  Actual host continuation observation remains UNVERIFIED.
 
 - Files: `src/exec.ts` extensions, tests.
 - Agent/profile selection from the catalog; context mode fresh vs
