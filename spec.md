@@ -109,8 +109,9 @@ verification count, context-size bucket, persistent change, risk flags).
 Semantic summaries are free English **except** they must never contain
 route-directed language — difficulty judgments, recommended models or lanes,
 cheap/expensive, simple/complex, delegate/root suggestions, or
-strong/weak-model characterizations. Root describes; only Jev chooses. Exact
-fields and the banned vocabulary:
+strong/weak-model characterizations. These restrictions apply to authored
+recommendations, not literal identifiers or trusted protocol enums. Root
+describes; only Jev chooses. Exact fields and provenance requirements:
 [Task Capsule](docs/sdd/task-capsule.md).
 
 ## 5. Capability truth
@@ -202,8 +203,10 @@ permission and context restrictions must be proven before the first child
 instruction. Unknown safety cannot be rescued by a correct patch.
 
 Missing model/effort attribution alone may permit one independently verified
-adoption per Main Task, with required review, while closing further delegation.
-An attribution-only mismatch follows the same closure and validation rules.
+adoption per Main Task, with required review, while closing this unit's delegation.
+An attribution-only mismatch follows the same unit-level closure and validation
+rules. Sibling units require valid host evidence; invalidated host trust closes
+the Main Task.
 Neither counts as verified route savings. Preserve observations after adoption.
 Track provider, model, effort, profile, context, sandbox, permissions, Skills,
 MCPs, tools and continuation identity. See
@@ -251,7 +254,7 @@ capsule revisions, resumes and transport retries never reset them.
 
 | Counter | Limit |
 | --- | --- |
-| Semantic Jev decisions | At most 2 per task unit (initial + one correction); none after unit closure |
+| Semantic Jev decisions | At most 2 per registered task unit, plus one decision solely for the qualified third worker correction; none after unit closure |
 | HTTP attempts | 2 per decision, bounded by the unit decision cap |
 | Worker executions | Normal economic cap 2; hard cap 3 per Main Task |
 | Delegated-candidate reviews | At most 1 per candidate; at most 3 |
@@ -343,8 +346,8 @@ population, uncertainty, coverage and losing strata.
 
 Canonical identity is jev-auto-router. The old codex-auto-router identity is
 historical; remote migration remains in [plan.md](plan.md) §9.
-This revision changes architecture Markdown only; READMEs, images, runtime
-and test source are separate implementation/productization work.
+The implementation phases follow the same architecture contract; research
+fixtures and passing static tests do not constitute runtime qualification.
 
 ## 18. Implementation readiness
 

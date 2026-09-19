@@ -84,12 +84,18 @@ negation and acceptance meaning. **The projection seam must not become a
 second selector.** `task_traits` are computed deterministically from
 observable capsule facts by a versioned rule — never authored freehand.
 Summaries are free English **except** they must never contain route-directed
-language. Banned from every projected field: difficulty or complexity
+recommendations. Banned from authored semantic recommendations: difficulty or complexity
 judgments, recommended models/lanes/agents, cheap/expensive or
 strong/weak-model characterizations, simple/complex framing, and
-delegate/root suggestions. Root describes what the unit is; only Jev chooses
-who executes it. A projection containing banned vocabulary is
-UNSAFE_PROJECTION and closes routing. Translation is not mandatory or free:
+delegate/root suggestions. Literal identifiers in quoted task data and trusted
+protocol enums (including the root candidate) are not recommendations. A
+whole-payload word blacklist would reject the protocol's own root option and
+valid tasks about complex numbers or filesystem roots. Validate control fields
+structurally; check authored summaries separately with provenance and explicit
+Root attestation. A lexical screen is defense in depth, never proof of semantic
+neutrality. Root describes what the unit is; only Jev chooses who executes it.
+An unclassified or route-directed summary is UNSAFE_PROJECTION and closes
+routing. Translation is not mandatory or free:
 measure its overhead and qualify the language regime. A summary that loses
 material intent sets context_complete=false and closes routing. User text
 containing a secret is not made safe merely by being an "objective".

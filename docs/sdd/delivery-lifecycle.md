@@ -14,7 +14,7 @@ Counters are monotonic, Main-Task-scoped, and survive every same-task resume.
 
 | Counter | Increment point | Ceiling |
 | --- | --- | --- |
-| semantic_decisions | Before submitting a new semantic request to Adapter | 2 per task unit (initial + one correction); none after unit closure |
+| semantic_decisions | Before submitting a new semantic request to Adapter | 2 per task unit; one additional decision solely for the qualified third worker correction; none after unit closure |
 | http_attempts | Before each outbound provider attempt | 2 per decision, bounded by the unit decision cap |
 | worker_executions | Before native start/resume may run an instruction | Economic 2, hard 3 per Main Task |
 | delegated_reviews | Before a governance review of a delegated final candidate | 1 per candidate, maximum 3 |
@@ -69,6 +69,16 @@ scope changes and safety/identity faults are never eligible. There is no
 subjective Root "remaining benefit" calculation. Research needs an explicit
 frozen third-correction permission as well; it cannot exceed the hard cap.
 
+Register the finite unit IDs against RootIntent before routing. Status messages,
+capsule revisions and correction labels cannot register replacement units. A
+material decomposition change requires Root to invalidate the affected evidence;
+it never refunds any reservation. For N registered units the semantic ceiling
+is 2N + 1, where the additional decision is usable only for worker execution
+three after execution two failed in that same unit. This exception makes the
+third correction reachable without creating a new unit. HTTP attempts remain
+at most two for each reserved decision. Decision and HTTP counts are stored by
+unit/decision inside one Main Task ledger, with monotonic aggregate totals.
+
 ## Requested, observed and disposition
 
 Keep immutable requested and observed records per provider/model/effort,
@@ -77,8 +87,8 @@ profile, context, sandbox, permissions, Skills, MCPs, tools and continuation.
 | Observation/event | Consequence |
 | --- | --- |
 | All dimensions proven equal | requested_match; ordinary verification/review |
-| Only model/effort attribution missing | routing_metadata_unobservable; close further delegation; candidate may be validated once |
-| Different model/effort with independently proven unchanged safety envelope | requested_mismatch; close delegation; candidate may be validated once |
+| Only model/effort attribution missing | routing_metadata_unobservable; close this unit's delegation; candidate may be validated once |
+| Different model/effort with independently proven unchanged safety envelope | requested_mismatch; close this unit's delegation; candidate may be validated once |
 | Missing/changed profile affects safety/context, unknown permissions, unproven confinement | Stop; no adoption based only on artifact checks |
 | Wider grants, weaker isolation, unauthorized reads/writes | permission_scope_violation; stop and safe isolated recovery |
 | Wrong context sources/freshness or worker identity | context_boundary_violation; stop and safe isolated recovery |
@@ -93,6 +103,8 @@ do not replace observation fields. Either uses the single task-wide attribution
 exception slot, requires Root verification and triggered review, and excludes
 verified route-savings attribution. It does not remove costs/outcomes from the
 benchmark's whole-policy cohort. Unknown safety has no adoption exception.
+Sibling units remain eligible only while their current host evidence is valid;
+an attribution anomaly that invalidates host trust instead closes the Main Task.
 
 ## Isolated baseline
 

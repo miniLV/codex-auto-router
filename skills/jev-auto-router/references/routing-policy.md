@@ -21,8 +21,9 @@ correction. Any condition below that is missing,
 ambiguous, or unverifiable resolves to `ROOT_DIRECT`, except where a section
 explicitly downgrades an unobservable signal to recorded residual risk.
 
-Optimize end-to-end total tokens subject to preserved delivery quality, not
-flagship token share. Jev is the sole automatic worker/model selector. Guard
+Optimize qualified weighted delivery cost and frontier-capacity consumption
+subject to preserved delivery quality. Raw total tokens and flagship token
+share are secondary observations. Jev is the sole automatic worker/model selector. Guard
 only validates; lifecycle owns fixed fallback to the existing Root. The fixed
 governance reviewer is an explicit role exception, not an economic route.
 Cancellation stops work and never triggers automatic Root execution. Required
@@ -204,8 +205,9 @@ provider failure to an explicit state and **never invents a route**:
 - `MALFORMED` — schema-invalid response, unexpected model id, alias drift;
 - `LOW_CONFIDENCE` — confidence below the Guard's frozen floor.
 
-Every adapter failure state means automatic delegation is unavailable and
-resolves to `ROOT_DIRECT`. There is no heuristic fallback route, no legacy
+Every adapter failure state except CANCELLED means automatic delegation is
+unavailable and resolves to `ROOT_DIRECT`; CANCELLED stops without takeover.
+There is no heuristic fallback route, no legacy
 lane table, and no second selector anywhere in this contract. A RoutePlan
 carries provider-native confidence/probabilities, policy/capsule risk, a benefit
 **class** from frozen evidence, and factual reason codes — never an invented
@@ -317,7 +319,7 @@ disposition: not_adopted | accepted | accepted_under_unobservable | accepted_wit
   weaker isolation or wrong context is a **stronger safety failure**: restore the
   baseline when necessary, stop automatic delegation for this task, and let
   Root take over. Restore only the attempt's isolated state, never shared edits.
-- Missing model/effort attribution with proven safety closes further routing.
+- Missing model/effort attribution with proven safety closes this unit's routing.
   Record the unverified dimensions as residual risk, verify the artifact and
   obtain required review, then adopt at most once under `accepted_under_unobservable`
   per Main Task. Attribution-only mismatch uses accepted_with_mismatch and the
@@ -468,9 +470,12 @@ permit) explicitly covers that non-repeated failure class, unchanged acceptance
 and attempt regime. Otherwise Root takes over. Root never estimates remaining
 benefit. The safety budget is not consumed merely because it exists.
 
-All counters are monotonic per trusted Main Task: at most three semantic Jev
-decisions, six HTTP attempts (two per decision), three worker executions,
-three delegated-candidate reviews and one protected Root-final review.
+All counters are monotonic within a trusted Main Task ledger: two semantic Jev
+decisions per registered unit plus one additional decision solely for a
+qualified third worker correction, two HTTP attempts per decision, three worker
+executions, three delegated-candidate reviews and one protected Root-final review.
+Unit registration binds the original acceptance set and cannot be reset by
+renaming a failed unit. The lifecycle defines the aggregate decision bound.
 A worker start/resume consumes a slot before invocation even if start later
 fails; transport retries do not reset decisions. The third execution cannot
 start a new unit. Jev chooses every eligible correction's configuration.
@@ -522,8 +527,9 @@ digests alone do not replay a decision. Research replay needs approved sanitized
 fixtures plus exact question/candidate/configuration versions.
 See [receipt](../../../docs/sdd/decision-receipt.md).
 
-Qualification requires non-inferior quality followed by positive lower-bound
-total-token savings for the whole policy, including all C assignments, Jev,
+Qualification requires non-inferior quality followed by a preregistered positive
+lower bound on weighted-cost or frontier-capacity reduction for the whole policy,
+including all C assignments, Jev,
 reviews, rejected work, retries and takeover. Unknown attribution never deletes
 a losing run. Match frozen disjoint observable profiles and template/host/
 question/projection/attempt bindings; no favorable profile choice by Root.

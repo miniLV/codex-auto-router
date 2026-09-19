@@ -2,7 +2,8 @@
 
 Five roles, one automatic selection authority: **Jev chooses; Guard validates;
 Codex executes; Root verifies and accepts.** The objective is reduced total
-delivery tokens conditional on non-inferior quality, not maximum delegation.
+delivery cost and frontier-capacity consumption conditional on non-inferior
+quality. Raw token count is a secondary measurement, not the selection goal.
 
 ## Modules and Seams
 
@@ -85,8 +86,10 @@ delegation before independently enforced confinement is demonstrable.
     budgeted Jev correction, or closed routing and Root takeover.
 
 No two children run concurrently and no child delegates. Three worker
-executions and three semantic decisions are Main Task ceilings, not per-unit
-allowances. Root's final review slot is protected from worker retries.
+executions is the Main Task ceiling. Each registered unit permits two semantic
+decisions, with one additional decision only for the qualified third worker
+correction described in the lifecycle. Root's final review slot is protected
+from worker retries.
 
 ## Token locality
 

@@ -16,7 +16,7 @@ product/system specification; these documents expand it without redefining it.
 | [delivery-lifecycle.md](delivery-lifecycle.md) | Baseline, verification, review, isolation tiers, correction, budgets |
 | [decision-receipt.md](decision-receipt.md) | Auditable evidence per routed attempt |
 | [benchmark.md](benchmark.md) | Arms, strata, metrics, anti-p-hacking, qualification |
-| [acceptance-cases.md](acceptance-cases.md) | A01–A30 behavioral acceptance cases and the review-finding closure map |
+| [acceptance-cases.md](acceptance-cases.md) | A01–A33 behavioral acceptance cases and the review-finding closure map |
 
 ## Status conventions
 

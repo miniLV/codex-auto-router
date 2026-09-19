@@ -13,7 +13,7 @@ Never replace a behavioral case with a prose-presence regex.
 | A04 | Raw capsule secret, credential, tool output or injected instruction never becomes provider state/criteria authority; unsafe projection makes zero HTTP calls | P1/P2 |
 | A05 | Correction preserves all acceptance IDs; narrowing work cannot erase a requirement | P1/P4 |
 | A06 | OBSERVED selectability does not produce requested_match; UNKNOWN safety fails before first child instruction | P1/P3 |
-| A07 | Safe attribution unknown/mismatch can be adopted once with required checks, preserves raw state and closes all later delegation | P1/P4 |
+| A07 | Safe attribution unknown/mismatch can be adopted once per Main Task with required checks, preserves raw state and closes this unit's delegation; invalidated host trust closes the Main Task | P1/P4 |
 | A08 | Same Main Task across units/resume retains all counters; unit closure never starves sibling units; start ambiguity consumes a worker slot and cannot duplicate dispatch | P1/P3 |
 | A09 | Second execution failure can reach a third only with exact correction qualification/permit and fresh Jev decision; repeated fault always stops | P1/P4 |
 | A10 | DENY, Jev root, cancellation and takeover close the current task unit; only the enumerated latch events (safety/permission violation, lost state/counter corruption, competing router, authorization ambiguity, global budget exhaustion, host trust invalidation) close the Main Task; new labels/revisions cannot reopen either layer | P1/P4 |
@@ -34,10 +34,10 @@ Never replace a behavioral case with a prose-presence regex.
 | A25 | Research permit bypasses only prior economics; absent/wrong permit cannot bypass any safety or hard budget | P1/P6 |
 | A26 | Disjoint observable profile match; unknown/overlap/binding drift blocks production; third permission separate | P1/P6 |
 | A27 | All C assignments, failures and takeover costs retained; missing usage cannot improve savings; cached/reasoning subsets not double-counted | P6 |
-| A28 | Quality gate passes before token inference; flagship-share or dollar improvement alone cannot qualify | P6 |
+| A28 | Quality gate passes before economic inference; model share cannot qualify; weighted-cost or frontier-capacity reduction requires the frozen corrected confidence bound | P6 |
 | A29 | Failure receipt has no fake plan/usage; replay needs sanitized fixtures beyond digests; live repeat not promised identical | P1/P6 |
 | A30 | Dashboard/receipts/account state never drives selection; typed current failure evidence may support a bounded correction | P1/P6 |
-| A31 | task_traits are computed deterministically from capsule facts by a versioned rule; a projection containing route-directed vocabulary (difficulty, recommended model/lane, cheap/expensive, simple/complex, delegate/root suggestion, strong/weak model) is UNSAFE_PROJECTION with zero HTTP calls | P1/P2 |
+| A31 | task_traits are fact-derived; route-directed recommendations or unknown summary provenance are UNSAFE_PROJECTION with zero HTTP calls; trusted root/delegate enums and literal task identifiers remain valid | P1/P2 |
 | A32 | Benchmark primary endpoints are weighted-cost and flagship-consumption reductions; a run with more raw total tokens but lower weighted cost and flagship consumption qualifies economics (after quality); runtime/Guard never read prices | P6 |
 | A33 | `delegated_write` executions are unconstructible until baseline, isolation, restore, verification, review and publication all exist; P3 `probe_read_only` cannot produce a writable child | P1/P3/P4 |
 

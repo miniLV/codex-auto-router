@@ -174,7 +174,7 @@ test("Jev routing failures degrade to Root and never invent a route", () => {
   assert.match(policy, /LOW_CONFIDENCE`/);
   assert.match(
     policy,
-    /Every adapter failure state means automatic delegation is unavailable and\s+resolves to `ROOT_DIRECT`/
+    /Every adapter failure state except CANCELLED means automatic delegation is\s+unavailable and resolves to `ROOT_DIRECT`; CANCELLED stops without takeover/
   );
   assert.match(
     policy,
@@ -584,8 +584,9 @@ test("ADR 0014 invariants: unit-scoped closure, deterministic projection, probe-
     "context_size_bucket"
   ]) assert.match(capsule, new RegExp(trait), trait);
   assert.match(capsule, /deterministic, fact-derived ONLY/);
-  assert.match(capsule, /Banned from every projected field/);
-  assert.match(capsule, /route-directed\s+language/);
+  assert.match(capsule, /Banned from authored semantic recommendations/);
+  assert.match(capsule, /route-directed\s+recommendations/);
+  assert.match(capsule, /literal identifiers|Literal identifiers/);
 
   // Probe-first execution gate.
   assert.match(spec, /probe_read_only/);

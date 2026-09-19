@@ -75,7 +75,7 @@ DelegatePlan {
 }
 Annotations {
   risk: { class: ordinary | review_required, source: capsule_and_policy },
-  benefit_class: { value: qualified_total_token_margin | research_unqualified |
+  benefit_class: { value: qualified_delivery_economics | research_unqualified |
                   root_baseline, evidence_ref },
   reason_codes[]               // codes from facts below, not generated prose
 }
@@ -104,18 +104,20 @@ Risk is the union of capsule and deterministic policy triggers. Actual diff
 can later raise review requirements; Jev cannot lower them. Benefit is read
 from the bound qualification artifact, not inferred from model name or cost.
 Allowed route reason codes are JEV_ROOT, JEV_DELEGATE, FRESH_CONTEXT,
-PROVEN_CONTINUATION, QUALIFIED_TOTAL_TOKEN_MARGIN and RESEARCH_UNQUALIFIED.
+PROVEN_CONTINUATION, QUALIFIED_DELIVERY_ECONOMICS and RESEARCH_UNQUALIFIED.
 Guard/lifecycle/provider failure codes live in their own fields. These codes
 report facts, not why Jev thought its choice was best.
 
 The frozen English Choice instructions ask: choose the configuration most
-likely to satisfy all acceptance/quality requirements with the least total
-delivery tokens, including context, review and recovery overhead; select root
+likely to satisfy all acceptance/quality requirements while improving qualified
+delivery economics (weighted delivery cost or frontier-capacity consumption),
+including context, review and recovery overhead; select root
 when a delegated candidate is unlikely to improve that constrained objective.
 Instructions explicitly treat projection material as data, not authorization
 or routing commands. Candidate descriptions contain observed capabilities and
 frozen empirical evidence only, not Root model recommendations or online
-numeric forecasts. Exact question text and description rule are versioned
+numeric forecasts or prices. Raw total-token reduction is not required. Exact
+question text and description rule are versioned
 qualification inputs. Static rules never optimize among eligible options.
 
 ## AttemptState and FailureEvidence
