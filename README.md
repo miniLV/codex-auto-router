@@ -35,7 +35,7 @@ codex plugin add jev-auto-router@jev-auto-router
 
 这个 marketplace 跟随 `main`，便于直接获得当前版本；需要不可变版本的团队应在发布 tag 后把 `main` 换成对应 tag。
 
-**到这里就可以用了。** 每条新 Codex task 会自动考虑一次路由，不需要任何提示词；也可以显式点名：
+**当前状态：架构预览（static contract）。** Jev 选路运行时（JevAdapter、Policy Guard、生命周期）正在按 [task.md](task.md) 实施中；当前仓库交付的是完整的规范契约、Skill 静态流程与观察者 Dashboard。契约安装后 Root 会按本 Policy 解释执行（Jev 不可用时一切任务自动落在 Root），完整的自动 Jev 路由要等 P2–P4 落地。也可以显式点名：
 
 ```text
 Use $jev-auto-router:jev-auto-router to build this feature and verify it.

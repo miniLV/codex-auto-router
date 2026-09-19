@@ -11,12 +11,27 @@ completes ADR 0013 without changing Jev's central authority.
 
 ## 1. Objective
 
-**Preserve delivery quality, then minimize end-to-end total tokens.** Jev is
-the sole automatic selector of the execution route and model configuration.
-Reducing flagship share or dollar cost alone does not satisfy this objective.
-Count capsule construction, discovery, routing, execution, verification,
-review, retries, integration and Root takeover. No globally optimal route is
-claimed before evidence exists.
+**Preserve delivery quality; then reduce quality-constrained delivery
+economics — frozen-price-weighted delivery cost and frontier-capacity
+consumption.** Jev is the sole automatic selector of the execution route and
+model configuration.
+
+- **Hard constraint:** delivery quality must be non-inferior to pure frontier
+  Root on every qualified profile. Critical regressions never buy economics.
+- **Primary economic objectives** (evaluated only after quality passes):
+  paired reduction in (a) weighted delivery cost and (b) frontier-capacity
+  consumption (flagship input and reasoning tokens attributable to the Main
+  Task). Either may qualify a profile; both are always reported.
+- **Secondary:** total raw tokens, latency, retry/restore rates, model share.
+  Raw cross-model token totals are **not** the primary objective: replacing
+  expensive frontier tokens with a larger number of cheap-model tokens can be
+  the intended outcome, not a failure.
+
+Price weights are frozen per benchmark release and used only by the
+benchmark; runtime routing and the Guard never see prices, predict cost, or
+optimize token counts. Count capsule construction, discovery, routing,
+execution, verification, review, retries, integration and Root takeover in
+every arm. No globally optimal route is claimed before evidence exists.
 
 Avoid duplicated Root implementation, full-conversation handoffs, repeated
 semantic sampling, unnecessary reviews and unchanged-context reads. Never
@@ -40,19 +55,31 @@ Fallback to the existing Root and the fixed independent governance reviewer
 are explicit exceptions to worker selection; neither may switch Root or
 select an economic replacement worker.
 
-## 3. Decisions and closure
+## 3. Routing state and closure
 
 A Jev RoutePlan is root or delegate. Lifecycle fallback is a separate outcome,
 never a fabricated Jev plan. Root's model is unchanged. One Choice selects
 one complete configuration. Only Jev can select a new model, fresh worker or
 continuation after a recoverable failure.
 
-A Jev root choice, Guard DENY, unrecoverable failure, exhausted budget or Root
-takeover permanently closes automatic routing for the Main Task. There is no
-semantic retry of a denied proposal or relabeling to reset counters.
-Cancellation closes routing and stops work, without automatic Root takeover.
-Fallback restores responsibility, not authorization for a denied action or a
-guarantee that every task can be completed.
+Routing state has two explicit layers. **MainTaskRoutingState** is `OPEN` or
+`CLOSED`. **TaskUnitRoutingState** is `OPEN | ROOT_DIRECT | DELEGATED |
+ACCEPTED | CLOSED`. All counters belong to the Main Task and never reset.
+
+**Unit-level events close the current unit's automatic routing only:** a Jev
+root choice, Guard DENY, provider failure, low confidence, unsafe or oversize
+projection, unsupported candidates, attribution closure, unit cancellation,
+or unit acceptance. The unit proceeds in Root; other units of an OPEN Main
+Task may still route within remaining budgets.
+
+**The Main Task latch closes all remaining units, only for:** a safety or
+permission-scope violation; unknown or lost lifecycle state, counter
+corruption or identity ambiguity; competing routing authority; authorization
+ambiguity; exhaustion of the global worker-execution budget; or invalidated
+host trust. There is no semantic retry of a denied proposal or relabeling to
+reset counters. Whole-task cancellation closes everything without automatic
+Root takeover. Fallback restores responsibility, not authorization for a
+denied action or a guarantee that every task can be completed.
 
 ## 4. Task Capsule and external data
 
@@ -73,15 +100,31 @@ projections close routing before HTTP.
 During correction ownership may narrow, but the capsule's acceptance criteria
 cannot be removed or weakened. Root retains the entire Main Task acceptance
 set across decomposed units. New scope requires authorization; ordinary
-in-scope correction does not require repeated permission. Exact fields:
+in-scope correction does not require repeated permission.
+
+The projection seam must not become a hidden selector. `task_traits` are
+**deterministic fields derived only from observable facts** (owned-file count
+bucket, changed language, side-effect class, public-interface touched,
+verification count, context-size bucket, persistent change, risk flags).
+Semantic summaries are free English **except** they must never contain
+route-directed language — difficulty judgments, recommended models or lanes,
+cheap/expensive, simple/complex, delegate/root suggestions, or
+strong/weak-model characterizations. Root describes; only Jev chooses. Exact
+fields and the banned vocabulary:
 [Task Capsule](docs/sdd/task-capsule.md).
 
 ## 5. Capability truth
 
-Record observed selectability separately from application: requestability
-does not prove a particular child used the configuration. UNKNOWN selectability
-means absent. Installed files, model names and tool descriptions alone do not
-prove permissions. Cache trusted discovery within the session by semantic
+Capability evidence has an explicit ladder: **DISCOVERED** (a file, name or
+listing exists), **REQUESTABLE** (a trusted host surface accepts the
+capability now), **ENFORCEABLE** (required sandbox/permission/scope
+enforcement is independently proven), **APPLIED** (observed on a specific
+execution). Catalog selectability requires at least REQUESTABLE plus the
+ENFORCEABLE properties the candidate claims; application is always a separate
+per-execution observation. UNKNOWN selectability means absent. Installed
+files, model names and tool descriptions alone prove nothing beyond
+DISCOVERED; MCP `tools/list` proves discovery, not permission or effect
+classification. Cache trusted discovery within the session by semantic
 host/configuration fingerprint; freshness-validate before each decision and
 spawn. Do not run paid probes for every model/effort combination.
 
@@ -208,8 +251,8 @@ capsule revisions, resumes and transport retries never reset them.
 
 | Counter | Limit |
 | --- | --- |
-| Semantic Jev decisions | 3 per Main Task |
-| HTTP attempts | 2 per decision; 6 per Main Task |
+| Semantic Jev decisions | At most 2 per task unit (initial + one correction); none after unit closure |
+| HTTP attempts | 2 per decision, bounded by the unit decision cap |
 | Worker executions | Normal economic cap 2; hard cap 3 per Main Task |
 | Delegated-candidate reviews | At most 1 per candidate; at most 3 |
 | Reserved Root-final-candidate review | 1 additional slot; workers cannot consume it |
@@ -238,18 +281,19 @@ same future model answer. See [Decision Receipt](docs/sdd/decision-receipt.md).
 
 ## 14. Failure semantics
 
-| Trigger | Result |
-| --- | --- |
-| Unsafe/ineligible projection, oversize or unknown sizing | No HTTP; close routing; Root responsibility |
-| Unavailable, malformed, low confidence or drift | Close routing; Root responsibility |
-| Guard DENY or changed pre-spawn evidence | Close routing; no substitution or semantic retry |
-| Correctable worker failure / REVISE | Restore isolated state; new Jev decision only within remaining rules |
-| Safety violation or unknown safety | Stop child; preserve evidence; safe isolated recovery; Root |
-| Attribution-only mismatch/unknown | Close routing; optionally validate/adopt once; no verified route savings |
-| RECONSIDER, reviewer mutation or unavailable required review | Close routing; Root judgment; no unreviewed delivery |
-| Integration conflict | Preserve shared changes; Root integration; revalidate/review as needed |
-| Lost lifecycle state or competing routing authority | Close routing; Root |
-| Cancellation | Disarm late results, stop active work, preserve recoverable state; no automatic takeover |
+| Trigger | Result | Level |
+| --- | --- | --- |
+| Unsafe/ineligible projection, oversize or unknown sizing | No HTTP; close unit routing; Root responsibility | Unit |
+| Unavailable, malformed, low confidence or drift | Close unit routing; Root responsibility | Unit |
+| Guard DENY or changed pre-spawn evidence | Close unit routing; no substitution or semantic retry | Unit |
+| Correctable worker failure / REVISE | Restore isolated state; new Jev decision only within remaining rules | Unit |
+| Safety violation or unknown safety | Stop child; preserve evidence; safe isolated recovery; latch Main Task | Main |
+| Attribution-only mismatch/unknown | Close unit routing; optionally validate/adopt once; no verified route savings | Unit |
+| RECONSIDER, reviewer mutation or unavailable required review | Close unit routing; Root judgment; no unreviewed delivery | Unit |
+| Integration conflict | Preserve shared changes; Root integration; revalidate/review as needed | Unit |
+| Lost lifecycle state, counter corruption or competing routing authority | Latch Main Task; Root | Main |
+| Global worker-execution budget exhausted | Latch Main Task; Root | Main |
+| Cancellation | Disarm late results, stop active work, preserve recoverable state; no automatic takeover | As issued |
 
 Root follows existing authorization. Unmet authorization or acceptance gates
 may require clarification or pending status.
@@ -267,12 +311,17 @@ Quality includes completion, blinded acceptance, critical/security/Interface
 defects, intervention, restore and retry rates. Failures and unknown outcomes
 remain in the analysis. Critical regressions cannot buy token benefit.
 
-Primary tokens = sum(input + output) for every model call in the Main Task,
-including Jev and takeover. Cached input and reasoning are subsets, not extra
-tokens. Require a positive lower confidence bound on paired total-token savings
-after quality passes. Flagship share, cost and latency are secondary. Keep all
-C assignments in intention-to-treat accounting; unknown attribution/usage must
-be conservatively bounded or prevent qualification.
+**Primary economic evaluation (only after quality passes):** preregistered
+one-sided lower confidence bounds on the paired reductions of (a)
+frozen-price-weighted delivery cost and (b) frontier-capacity consumption,
+including required stratum/multiple-comparison corrections. Weights come from
+frozen price data captured in the benchmark release; the runtime never sees
+them. Total raw tokens, latency, retry/restore rates and model share are
+secondary and reported, never substitutes: raw total-token reduction is not
+required, and a cheap-token increase is not failure when weighted cost or
+flagship consumption improves. Keep all C assignments in intention-to-treat
+accounting; unknown attribution/usage must be conservatively bounded or
+prevent qualification.
 
 Explicit research authorization plus a frozen ExperimentManifest waives only
 prior economic qualification. All safety, authorization, review and hard
@@ -283,10 +332,12 @@ production delegation. See [Benchmark](docs/sdd/benchmark.md).
 
 ## 16. Claims
 
-The architecture aims to reduce end-to-end tokens while preserving quality.
-End-to-end economic savings remain benchmark-dependent. Model share changes,
-one A/B pair and static tests are not savings evidence. Claims must identify
-the qualified population, uncertainty, coverage and losing strata.
+The architecture aims to reduce quality-constrained delivery economics —
+weighted delivery cost and frontier-capacity consumption — while preserving
+quality. End-to-end economic savings remain benchmark-dependent; raw total
+token counts may legitimately increase. Model share changes, one A/B pair and
+static tests are not savings evidence. Claims must identify the qualified
+population, uncertainty, coverage and losing strata.
 
 ## 17. Identity and scope
 
@@ -302,6 +353,12 @@ P2 proves pinned-token sizing and one-Choice normalization. P3 proves a concrete
 Root-driven host invocation/evidence chain with a read-only attempt. No real
 delegated writes before isolation, recovery, review and publication exist;
 no production routing before qualification.
+
+Implementation must carry a code-level execution mode: `probe_read_only`
+until the full P4 chain exists, then `delegated_write`. A `delegated_write`
+execution is **unconstructible** without baseline, isolation, restore,
+verification, review and publication all present — the gate is a type/state
+constraint, not a runtime check that can be skipped.
 
 Node cannot call model-side native tools merely by importing a function.
 Root invokes available native tools and supplies trusted request-bound

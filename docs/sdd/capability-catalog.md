@@ -22,6 +22,19 @@ OBSERVED selectability means a trusted host surface accepts the requested
 capability now. Application is a separate per-execution observation, never
 inferred from requestability. UNKNOWN selectability excludes the option.
 
+Evidence levels are explicit and never conflated:
+
+| Level | Meaning | Example proof |
+| --- | --- | --- |
+| DISCOVERED | A file, name or listing exists | agent TOML present; MCP `tools/list` entry |
+| REQUESTABLE | A trusted host surface accepts the capability now | loaded agent registry; native schema accepts the selector |
+| ENFORCEABLE | Required sandbox/permission/scope enforcement is independently proven | observed policy enforcement, not profile text |
+| APPLIED | Observed on one specific execution | requested-vs-observed record for that execution |
+
+Catalog selectability requires at least REQUESTABLE plus every ENFORCEABLE
+property the candidate claims; DISCOVERED alone never enters the candidate
+set, and APPLIED never transfers across executions.
+
 Read the actual native tool schema/model catalog, loaded agent registry and
 effective configuration, policy/permission enforcement, tool availability and
 continuation handles. File presence proves a file exists, not a loaded agent.

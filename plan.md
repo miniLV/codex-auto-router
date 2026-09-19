@@ -80,21 +80,33 @@ fields; catalog-evidence classes).
 
 ## 5. P2 — Jev routing core
 
-Implement the single JevAdapter: serialize RouteRequest → Jev `state` +
-typed questions (Choice/Score/Noul), call `POST /v1/systemone`, normalize the
-response into a RoutePlan, map failures to `UNAVAILABLE` / `MALFORMED` /
-`LOW_CONFIDENCE`, pin an explicit Jev model id, honor retry/backoff with
-bounded attempts, retain the raw response for the receipt. No fallback
-selector exists anywhere in this phase — failure is Root execution.
+Implement the single JevAdapter to the V1 contract: serialize the
+RouteRequest into a Jev `state` (English JSON) plus **exactly one Choice
+question over complete candidate IDs** — no Score, no Noul, no multi-question
+batch in V1 (future supervision Noul is reserved for Task 27 and requires its
+own qualification). Call `POST /v1/systemone` with pinned `jev-1.13.0`;
+normalize the single Choice answer into a RoutePlan by exact candidate
+lookup; map failures to `UNAVAILABLE` / `MALFORMED` / `LOW_CONFIDENCE` /
+`UNSAFE_PROJECTION` / `INPUT_UNSUPPORTED` / `CANCELLED`; enforce the 64k/32k
+size preflight with a proven tokenizer; single retry owner (20s total
+deadline, ≤2 attempts) honoring `retry-after`; retain sanitized selection
+evidence for the receipt. No fallback selector exists anywhere in this phase
+— failure is Root execution.
 
-## 6. P3 — Policy Guard + model/agent execution
+## 6. P3 — Policy Guard + read-only execution probes
 
 Implement the Guard as the deterministic validator over the RoutePlan
 (spec §8 checks). Implement Codex capability discovery that builds the
-truthful catalog from observed surfaces (spawn surface parameters, agent
-TOMLs, MCP `tools/list`, sandbox policy types). Execute accepted plans via
-native spawn with per-spawn model/effort/agent/context; record the
-requested-vs-observed contract per execution.
+truthful catalog from observed surfaces, using the evidence ladder
+(DISCOVERED → REQUESTABLE → ENFORCEABLE → APPLIED; DISCOVERED alone never
+enters the candidate set). Real runtime integration in P3 is **read-only
+probes only**: capability probes, execution-identity probes, model/effort
+observation, fresh-context observation and sandbox observation — under the
+code-level `execution_mode: "probe_read_only"` gate. Writable delegated
+execution is impossible until P4 completes (spec §18): `delegated_write`
+is unconstructible without baseline, isolation, restore, verification,
+review and publication. Record the requested-vs-observed contract for every
+probe.
 
 ## 7. P4 — Trustworthy delivery
 

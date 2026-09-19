@@ -122,7 +122,11 @@ qualification inputs. Static rules never optimize among eligible options.
 
 ~~~text
 AttemptState {
-  main_task_id, status: OPEN | CLOSED,
+  main_task_id, task_unit_id,
+  main_task_state: OPEN | CLOSED, main_latch_reason?,
+  unit_state: OPEN | ROOT_DIRECT | DELEGATED | ACCEPTED | CLOSED,
+  unit_close_reason?,
+  status: OPEN | CLOSED,
   close_reason?, decision_count, http_attempt_count, worker_execution_count,
   delegated_review_count, root_review_used, attribution_exception_used,
   active_execution_id?, current_candidate_digest?, failure_history[]

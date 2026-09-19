@@ -43,8 +43,13 @@ codex plugin add jev-auto-router@jev-auto-router
 This marketplace follows `main` so users receive the current version. Teams that
 require an immutable version should replace `main` with a published tag.
 
-**That is the whole setup.** Every new Codex task is automatically considered once,
-with no prompt required; you can also name it explicitly:
+**Current status: architecture preview (static contract).** The Jev routing
+runtime (JevAdapter, Policy Guard, lifecycle) is being implemented per
+[task.md](task.md); what this repository ships today is the complete
+normative contract, the Skill's static flow, and the observer dashboard.
+With the contract installed, Root interprets the Policy as written (every
+task falls back to Root when Jev is unavailable); full automatic Jev routing
+arrives with P2–P4. You can also name it explicitly:
 
 ```text
 Use $jev-auto-router:jev-auto-router to build this feature and verify it.

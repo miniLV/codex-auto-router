@@ -31,20 +31,31 @@ Collect costs/tokens during runs; evaluating/selecting an economic winner
 waits for quality. Do not exclude failed, denied, timed-out, pending or
 Root-takeover assignments. Reviewer gates must not produce selection bias.
 
-## Token objective and missing data
+## Economic objective and missing data
 
-For every Main Task compute T = sum(input_tokens + output_tokens) over every
-model invocation, including Root intent/capsule construction, context rereads,
-Jev attempts, discovery probes, workers, verification reasoning, reviews,
-retries, conflict integration and Root takeover. Cached input is a subset of
-input; reasoning is a subset of output where the provider defines it so.
-Never double count these categories. Zero-priced Jev output is still output
-tokens for this primary objective.
+For every Main Task compute, per model invocation, input and output tokens
+(including Root intent/capsule construction, context rereads, Jev attempts,
+discovery probes, workers, verification reasoning, reviews, retries, conflict
+integration and Root takeover). Cached input is a subset of input; reasoning
+is a subset of output where the provider defines it so. Zero-priced Jev
+output is still output tokens and is still reported.
 
-Qualify only if quality passes and the preregistered one-sided lower confidence
-bound of paired mean (T_A - T_C) is strictly positive, including required
-stratum/multiple-comparison corrections. A profile's scope must be supported
-by its evaluated population; do not extrapolate tiny-edit wins to unknown work.
+**Primary endpoints (only after quality passes):** preregistered one-sided
+lower confidence bounds on paired reductions of (a) frozen-price-weighted
+delivery cost — each arm's per-model token counts multiplied by price
+weights frozen in the benchmark release — and (b) frontier-capacity
+consumption (flagship input + reasoning tokens attributable to the Main
+Task). Either endpoint may qualify a profile; both are always reported.
+Weights live only in the frozen benchmark release; runtime routing and the
+Guard never see prices. Raw total-token reduction is **not** required: a
+cheap-token increase with weighted-cost or flagship reduction is success,
+not failure. Total raw tokens, latency, retry/restore rates and model share
+are secondary and reported.
+
+Qualify only if quality passes and the preregistered bound holds for at least
+one primary endpoint, including required stratum/multiple-comparison
+corrections. A profile's scope must be supported by its evaluated population;
+do not extrapolate tiny-edit wins to unknown work.
 
 All assigned C tasks remain in intention-to-treat analysis. Missing model
 attribution bars verified route-attribution claims but does not erase that
@@ -53,9 +64,10 @@ preregistered conservative bound, otherwise the profile cannot qualify.
 Report missingness, coverage and attributable-only diagnostics separately.
 
 Secondary metrics: total/flagship/cached/reasoning tokens, role overhead,
-P50/P95 tokens, cost proxy and latency. Dollar savings or subscription quota
-cannot substitute for primary total-token improvement. Frozen experimental
-budgets are conservative starting choices, not proven optimal values.
+P50/P95 tokens and latency, retry/restore rates. Dollar savings or
+subscription quota cannot substitute for a primary endpoint. Frozen
+experimental budgets and price weights are conservative starting choices,
+not proven optimal values.
 
 ## Research bootstrap
 
@@ -66,7 +78,8 @@ ExperimentManifest {
   contract_bindings, task_profiles[], candidate_template_digests[],
   frozen_confidence_floors, question_digest, sizing_evidence_ref,
   worker_cap: 2 | 3, third_correction_failure_classes[],
-  quality_endpoints_and_margins, token_endpoint, statistical_plan,
+  quality_endpoints_and_margins, economic_endpoints, price_weights_digest,
+  statistical_plan,
   missingness_and_exclusion_rules, retention_policy, expires_at
 }
 ~~~
@@ -100,7 +113,8 @@ QualificationArtifact {
     profile_id, observable_predicate,
     supported_candidate_families, confidence_floor_by_review_class,
     quality_result: { endpoints, estimates, intervals, margins, passed },
-    token_result: { paired_total_margin, lower_bound, coverage, passed },
+    economic_result: { weighted_cost_margin, flagship_consumption_margin,
+                       lower_bounds, coverage, passed },
     automatic_routing_allowed,
     max_worker_executions: 2 | 3,
     third_correction: { allowed, failure_classes[], evidence_report_ref }

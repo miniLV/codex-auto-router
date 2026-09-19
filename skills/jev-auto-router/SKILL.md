@@ -33,28 +33,36 @@ unavailable, keep the work in Root; it is not a setup prerequisite.
 2. Judgment work stays in Root, always: requirements, architecture,
    decomposition, authoring the Task Capsule and dispatch specification,
    verification, external actions, and final acceptance.
-3. For an implementation unit, author the bounded Task Capsule (the
-   five-section dispatch template). If any section cannot be filled
+3. For an implementation unit, author the bounded Task Capsule and complete
+   its three mechanical checks **before any routing**: owned paths resolve,
+   every verification command is pre-run by Root with results recorded, and
+   an isolated baseline is captured for every writable path. Authorization
+   must cover the side-effect class. If any section cannot be filled
    concretely, do the work in Root instead.
 4. Build the Runtime Capability Catalog of what the host actually provides
-   now; UNKNOWN evidence means absent.
-5. Route: RouteRequest → JevAdapter → Jev → RoutePlan → Policy Guard. The
-   Guard's only verdicts are ALLOW (execute exactly the plan) and DENY →
-   Root. Jev may return `decision: root`; that is a first-class outcome.
-6. Capture a baseline for every writable path, then execute the accepted
-   plan on exactly one child with the plan's model, effort, agent, and
-   context mode.
-7. Record the requested-versus-observed execution contract. UNKNOWN is never
+   now; UNKNOWN evidence means absent, and DISCOVERED alone is never
+   selectable.
+5. Project deterministically: fact-derived `task_traits` plus semantic
+   summaries without any route-directed language (no difficulty judgments,
+   recommended models, cheap/expensive or simple/complex framing).
+6. Route: RouteRequest → JevAdapter → Jev (exactly one Choice) → RoutePlan →
+   Policy Guard. The Guard's only verdicts are ALLOW (execute exactly the
+   plan) and DENY → this unit runs in Root. Jev may return `decision: root`;
+   that is a first-class outcome and closes only this unit.
+7. Execute the accepted plan on exactly one child with the plan's model,
+   effort, agent, and context mode, in the already-captured isolated
+   baseline.
+8. Record the requested-versus-observed execution contract. UNKNOWN is never
    MATCH; a weaker or unauthorized permission or scope is a safety failure
    (restore, stop delegation), not just an attribution note.
-8. Verify mechanically: read the complete diff and rerun the capsule's
+9. Verify mechanically: read the complete diff and rerun the capsule's
    verification commands yourself. Treat the child's report as a claim.
-9. Run at most one risk-triggered fresh semantic review per candidate, within
-   the Policy's execution-budget-bound review budget.
-10. Adopt, or restore and let Jev re-route with structured failure evidence
+10. Run at most one risk-triggered fresh semantic review per candidate, within
+    the Policy's execution-budget-bound review budget.
+11. Adopt, or restore and let Jev re-route with structured failure evidence
     within the attempt budgets (hard ceiling 3 executions; automatic
-    economic ceiling 2). Take over in Root when the budgets or the evidence
-    say so.
+    economic ceiling 2). Unit outcomes close that unit's routing; only the
+    enumerated latch events close the whole Main Task.
 
 ## What Root never delegates
 

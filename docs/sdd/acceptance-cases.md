@@ -14,9 +14,9 @@ Never replace a behavioral case with a prose-presence regex.
 | A05 | Correction preserves all acceptance IDs; narrowing work cannot erase a requirement | P1/P4 |
 | A06 | OBSERVED selectability does not produce requested_match; UNKNOWN safety fails before first child instruction | P1/P3 |
 | A07 | Safe attribution unknown/mismatch can be adopted once with required checks, preserves raw state and closes all later delegation | P1/P4 |
-| A08 | Same Main Task across units/resume retains all counters; start ambiguity consumes a worker slot and cannot duplicate dispatch | P1/P3 |
+| A08 | Same Main Task across units/resume retains all counters; unit closure never starves sibling units; start ambiguity consumes a worker slot and cannot duplicate dispatch | P1/P3 |
 | A09 | Second execution failure can reach a third only with exact correction qualification/permit and fresh Jev decision; repeated fault always stops | P1/P4 |
-| A10 | DENY, Jev root, cancellation and takeover latch routing closed; new labels/revisions cannot reopen it | P1/P4 |
+| A10 | DENY, Jev root, cancellation and takeover close the current task unit; only the enumerated latch events (safety/permission violation, lost state/counter corruption, competing router, authorization ambiguity, global budget exhaustion, host trust invalidation) close the Main Task; new labels/revisions cannot reopen either layer | P1/P4 |
 | A11 | Cancellation prevents late HTTP/native responses from spawning work; cleanup does not execute the user task in Root | P2/P3 |
 | A12 | 255 options accepted, 256 closes without truncation; exact 32k/64k token rules and unknown sizing handled without byte estimates | P2 |
 | A13 | One question only; finite full distribution validated; wrong option/model/answer IDs, invalid sum, malformed and low confidence never resample | P2 |
@@ -37,10 +37,13 @@ Never replace a behavioral case with a prose-presence regex.
 | A28 | Quality gate passes before token inference; flagship-share or dollar improvement alone cannot qualify | P6 |
 | A29 | Failure receipt has no fake plan/usage; replay needs sanitized fixtures beyond digests; live repeat not promised identical | P1/P6 |
 | A30 | Dashboard/receipts/account state never drives selection; typed current failure evidence may support a bounded correction | P1/P6 |
+| A31 | task_traits are computed deterministically from capsule facts by a versioned rule; a projection containing route-directed vocabulary (difficulty, recommended model/lane, cheap/expensive, simple/complex, delegate/root suggestion, strong/weak model) is UNSAFE_PROJECTION with zero HTTP calls | P1/P2 |
+| A32 | Benchmark primary endpoints are weighted-cost and flagship-consumption reductions; a run with more raw total tokens but lower weighted cost and flagship consumption qualifies economics (after quality); runtime/Guard never read prices | P6 |
+| A33 | `delegated_write` executions are unconstructible until baseline, isolation, restore, verification, review and publication all exist; P3 `probe_read_only` cannot produce a writable child | P1/P3/P4 |
 
 ## Existing static-test migration
 
-The current suite has 49 tests, including 26 in test/policy.test.ts. Preserve
+The current suite has 51 tests, including 28 in test/policy.test.ts. Preserve
 useful metadata, installer, identity and observer checks. Rework prose-only
 policy assertions into the cases above as the runtime lands.
 

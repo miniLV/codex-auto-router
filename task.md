@@ -112,13 +112,22 @@ Legend: ✅ done · 🔜 next · ⬜ pending.
 ## Task 8 — Implement JevAdapter ⬜
 
 - Files: `src/jev-adapter.ts`, tests (mocked HTTP).
-- Serialize RouteRequest → `state` + Choice/Score/Noul questions; call
-  `POST https://api.typesafe.ai/v1/systemone` with pinned model id; normalize
-  to RoutePlan; map failures to UNAVAILABLE/MALFORMED/LOW_CONFIDENCE; bounded
-  backoff honoring `retry-after`; retain raw response.
-- Verification: mocked timeout/429/malformed/low-confidence/drift tests.
+- Serialize RouteRequest → English JSON `state` plus **exactly one Choice
+  question over complete candidate IDs** (V1 asks no other question type —
+  future supervision questions are reserved for Task 27 with their own
+  qualification); call `POST https://api.typesafe.ai/v1/systemone` with
+  pinned `jev-1.13.0`;
+  normalize the single Choice answer to a RoutePlan by exact candidate
+  lookup; map failures to UNAVAILABLE/MALFORMED/LOW_CONFIDENCE/
+  UNSAFE_PROJECTION/INPUT_UNSUPPORTED/CANCELLED; 64k/32k size preflight with
+  a proven tokenizer (unknown sizing → INPUT_UNSUPPORTED, no HTTP); single
+  retry owner (20s total deadline, ≤2 attempts) honoring `retry-after`;
+  retain sanitized selection evidence.
+- Verification: mocked timeout/429/malformed/low-confidence/drift/oversize
+  tests; one-Choice-only schema test.
 - Acceptance: adapter failure never produces a route; Jev schema appears in
-  this one file only.
+  this one file only; no question type other than the single Choice exists
+  in the adapter.
 
 ## Task 9 — Replace old route-selection Policy with Policy Guard ⬜
 
@@ -133,20 +142,36 @@ Legend: ✅ done · 🔜 next · ⬜ pending.
 ## Task 10 — Implement Codex capability discovery ⬜
 
 - Files: `src/discovery.ts`, tests.
-- Build the catalog from observed surfaces: spawn-surface parameters, agent
-  TOML presence, MCP `tools/list`, sandbox policy types; discovery failures
-  omit capabilities, never fabricate.
-- Verification: fixture-based discovery tests (present/absent/unknown).
-- Acceptance: catalog digests reproducible per attempt.
+- Build the catalog from observed surfaces using the explicit evidence
+  ladder: **DISCOVERED** (file/name/listing exists — e.g. agent TOML present,
+  MCP `tools/list` entry) → **REQUESTABLE** (a trusted host surface accepts
+  the capability now — loaded agent registry, native schema acceptance) →
+  **ENFORCEABLE** (required sandbox/permission/scope enforcement
+  independently proven) → **APPLIED** (observed on one specific execution,
+  never transferred). DISCOVERED alone never enters the candidate set;
+  selectability requires ≥ REQUESTABLE plus every claimed ENFORCEABLE
+  property. Discovery failures omit capabilities, never fabricate them.
+- Verification: fixture tests covering each ladder level and the
+  TOML-exists-but-not-loaded and tools/list-is-not-permission cases.
+- Acceptance: catalog digests reproducible per attempt; a TOML file or
+  tools/list entry alone can never produce a selectable candidate.
 
-## Task 11 — Implement model/effort routing ⬜
+## Task 11 — Implement model/effort routing (read-only probes) ⬜
 
 - Files: `src/exec.ts` (spawn + requested-vs-observed), tests.
-- Execute accepted plans via native spawn with per-spawn model/effort;
-  `fork_turns: none` for fresh context; record requested/observed model and
-  effort.
-- Verification: contract-state tests (match/mismatch/unobservable).
-- Acceptance: UNKNOWN never recorded as MATCH.
+- P3 real runtime integration is **read-only probes only**, under the
+  code-level gate `execution_mode: "probe_read_only"`: capability probe,
+  execution-identity probe, model/effort observation, fresh-context
+  observation (`fork_turns: none`), sandbox observation. Record the
+  requested-vs-observed contract for every probe.
+- **No writable child may exist in P3.** `delegated_write` is unconstructible
+  until Tasks 14–16 (baseline/restore, verification, review) and the
+  publication chain land in P4 — the gate is a type/state constraint, not a
+  runtime check (spec §18, acceptance case A33).
+- Verification: contract-state tests (match/mismatch/unobservable) on probe
+  observations; a test proving `delegated_write` cannot be constructed in
+  P3's module graph.
+- Acceptance: UNKNOWN never recorded as MATCH; zero writable spawns.
 
 ## Task 12 — Implement agent/context routing ⬜
 
@@ -175,6 +200,9 @@ Legend: ✅ done · 🔜 next · ⬜ pending.
 - Files: `src/baseline.ts`, tests.
 - Capture pre-dispatch state for every owned writable path; restore as
   primary recovery; no invisible repair of rejected patches.
+- Completion of Tasks 14–16 (with publication) is the prerequisite that makes
+  `delegated_write` constructible (Task 11's gate flips from
+  `probe_read_only`).
 - Verification: capture/restore round-trip on temp fixtures.
 - Acceptance: every delegated write is recoverable.
 

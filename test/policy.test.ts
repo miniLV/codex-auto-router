@@ -545,3 +545,75 @@ test("the benefit boundary stays benchmark-qualified and no savings are pre-clai
     /safety eligibility is not an economic claim/
   );
 });
+
+test("ADR 0014 invariants: unit-scoped closure, deterministic projection, probe-first execution, one Choice", () => {
+  const spec = read(join(repoRoot, "spec.md"));
+  const lifecycle = read(join(repoRoot, "docs", "sdd", "delivery-lifecycle.md"));
+  const capsule = read(join(repoRoot, "docs", "sdd", "task-capsule.md"));
+  const planDoc = read(join(repoRoot, "plan.md"));
+  const taskDoc = read(join(repoRoot, "task.md"));
+  const task8 = taskDoc.slice(taskDoc.indexOf("## Task 8"), taskDoc.indexOf("## Task 9"));
+
+  // Two-layer routing state and the main-task latch list.
+  assert.match(spec, /MainTaskRoutingState/);
+  assert.match(spec, /TaskUnitRoutingState/);
+  assert.match(spec, /close the current unit's automatic routing only/);
+  for (const latch of [
+    "safety or\npermission-scope violation",
+    "counter\ncorruption",
+    "competing routing authority",
+    "authorization\nambiguity",
+    "global worker-execution budget",
+    "invalidated\nhost trust"
+  ]) assert.match(spec, new RegExp(latch), latch);
+  assert.match(lifecycle, /Latch Main Task/);
+  assert.match(lifecycle, /2 per task unit/);
+
+  // Economics objective: weighted cost / flagship consumption primary, raw tokens secondary.
+  assert.match(spec, /frozen-price-weighted delivery cost and frontier-capacity\nconsumption/);
+  assert.match(spec, /Raw cross-model token totals are \*\*not\*\* the primary objective/);
+  assert.match(read(join(repoRoot, "docs", "sdd", "benchmark.md")), /Primary endpoints \(only after quality passes\)/);
+  assert.match(read(join(repoRoot, "docs", "sdd", "benchmark.md")), /price_weights_digest/);
+
+  // Deterministic projection: fact-derived traits and banned route-directed vocabulary.
+  for (const trait of [
+    "owned_file_count_bucket",
+    "changed_language",
+    "public_interface_touched",
+    "verification_count",
+    "context_size_bucket"
+  ]) assert.match(capsule, new RegExp(trait), trait);
+  assert.match(capsule, /deterministic, fact-derived ONLY/);
+  assert.match(capsule, /Banned from every projected field/);
+  assert.match(capsule, /route-directed\s+language/);
+
+  // Probe-first execution gate.
+  assert.match(spec, /probe_read_only/);
+  assert.match(spec, /unconstructible/);
+  const task11 = taskDoc.slice(taskDoc.indexOf("## Task 11"), taskDoc.indexOf("## Task 12"));
+  assert.match(task11, /read-only probes only/);
+  assert.match(task11, /No writable child may exist in P3/);
+
+  // V1 is exactly one Choice everywhere an implementer might look.
+  assert.match(planDoc, /exactly one Choice\nquestion over complete candidate IDs/);
+  assert.match(task8, /exactly one Choice/);
+  assert.doesNotMatch(task8, /Score|Noul/);
+
+  // Discovery evidence ladder.
+  const task10 = taskDoc.slice(taskDoc.indexOf("## Task 10"), taskDoc.indexOf("## Task 11"));
+  for (const level of ["DISCOVERED", "REQUESTABLE", "ENFORCEABLE", "APPLIED"]) {
+    assert.match(task10, new RegExp(`\\*\\*${level}\\*\\*`), level);
+  }
+  assert.match(task10, /DISCOVERED alone never enters the candidate set/);
+
+  // ADR 0014 exists and is referenced by the spec.
+  assert.equal(existsSync(join(repoRoot, "docs", "adr", "0014-quality-constrained-jev-delivery.md")), true);
+  assert.match(spec, /0014-quality-constrained-jev-delivery\.md/);
+});
+
+test("READMEs present the runtime as architecture preview, not a shipped product", () => {
+  assert.match(read(join(repoRoot, "README.md")), /架构预览/);
+  assert.match(read(join(repoRoot, "README.en.md")), /architecture preview/);
+  assert.doesNotMatch(read(join(repoRoot, "README.md")), /到这里就可以用了/);
+  assert.doesNotMatch(read(join(repoRoot, "README.en.md")), /That is the whole setup/);
+});

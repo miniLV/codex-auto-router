@@ -6,14 +6,17 @@ fallback. It never chooses an alternative model.
 ## State and counters
 
 Main Task identity comes from the trusted host and is not generated anew by a
-capsule, retry or user status message. Unknown/conflicting state closes routing.
-Counters are monotonic and survive every same-task resume.
+capsule, retry or user status message. Routing state has two layers:
+**MainTaskRoutingState** (`OPEN | CLOSED`) and per-unit
+**TaskUnitRoutingState** (`OPEN | ROOT_DIRECT | DELEGATED | ACCEPTED |
+CLOSED`). Unknown or conflicting state latches the Main Task closed.
+Counters are monotonic, Main-Task-scoped, and survive every same-task resume.
 
 | Counter | Increment point | Ceiling |
 | --- | --- | --- |
-| semantic_decisions | Before submitting a new semantic request to Adapter | 3 per Main Task |
-| http_attempts | Before each outbound provider attempt | 2 per decision; 6 per Main Task |
-| worker_executions | Before native start/resume may run an instruction | Economic 2, hard 3 |
+| semantic_decisions | Before submitting a new semantic request to Adapter | 2 per task unit (initial + one correction); none after unit closure |
+| http_attempts | Before each outbound provider attempt | 2 per decision, bounded by the unit decision cap |
+| worker_executions | Before native start/resume may run an instruction | Economic 2, hard 3 per Main Task |
 | delegated_reviews | Before a governance review of a delegated final candidate | 1 per candidate, maximum 3 |
 | root_review_used | Before reviewing a Root-direct/takeover final candidate | One protected additional slot |
 | integration_attempts | Before compare-and-apply | Recorded; no autonomous retry on conflict |
@@ -27,26 +30,37 @@ any counter. Reservation is local transactional state, not free-form prose.
 
 ## Canonical transitions
 
+Unit-level transitions (`S` = the current task unit's routing state):
+
 | State/event | Next action |
 | --- | --- |
-| OPEN, prerequisites or qualifying profile missing | Close automatic routing; Root responsibility; no Jev call |
-| OPEN, complete request | Reserve decision; Adapter's bounded HTTP sequence |
-| Provider failure / low confidence / Guard DENY / stale evidence | Close routing; Root; never another semantic request |
-| Jev root plan | Close routing; Root implements against original acceptance |
+| Unit OPEN, prerequisites or qualifying profile missing | Close unit routing; Root responsibility; no Jev call |
+| Unit OPEN, complete request | Reserve decision; Adapter's bounded HTTP sequence |
+| Provider failure / low confidence / Guard DENY / stale evidence | Close **unit** routing; Root runs this unit; sibling units of an OPEN Main Task may still route |
+| Jev root plan | Close **unit** routing; Root implements this unit against original acceptance |
 | Jev delegate plan + all checks | Reserve execution; native child in confined isolated workspace |
-| Candidate passes verification and any required review | Integrate unchanged final candidate; accept unit |
-| Correctable verification failure or REVISE, budgets remain | Restore isolated baseline; record bounded failure; another Jev decision |
-| Repeated verification/semantic fault, scope thrash, safety/identity violation, RECONSIDER | Close routing; safe recovery; Root judgment |
-| Execution two fails with eligible third-correction evidence | Keep OPEN solely for that correction and a fresh Jev decision |
-| Execution two fails without that evidence, or execution three fails | Close routing; Root |
-| Required review unavailable/exhausted or review mutation | Close routing; unaccepted candidate; Root may use its reserved review if available |
-| Integration conflict | Close routing; preserve shared state; Root builds a new final candidate |
-| Cancellation | Close/disarm; stop active child; no implicit Root execution |
+| Candidate passes verification and any required review | Integrate unchanged final candidate; unit → ACCEPTED |
+| Correctable verification failure or REVISE, budgets remain | Restore isolated baseline; record bounded failure; another Jev decision for this unit |
+| Repeated verification/semantic fault, scope thrash, RECONSIDER | Close **unit** routing; safe recovery; Root judgment |
+| Safety/identity violation, unknown safety | **Latch Main Task**; stop child; safe recovery; Root judgment |
+| Execution two fails with eligible third-correction evidence | Keep Main Task OPEN solely for that correction and a fresh Jev decision |
+| Execution two fails without that evidence, or execution three fails | **Latch Main Task** (global budget) or close unit per cause; Root |
+| Required review unavailable/exhausted or review mutation | Close **unit** routing; unaccepted candidate; Root may use its reserved review if available |
+| Integration conflict | Close **unit** routing; preserve shared state; Root builds a new final candidate |
+| Lost lifecycle state, counter corruption, competing router, authorization ambiguity, invalidated host trust | **Latch Main Task**; Root |
+| Cancellation (unit) | Close that unit; disarm; stop its child |
+| Cancellation (whole task) | Latch Main Task closed; stop all work; no implicit Root execution |
 
-Accepted units do not reset budgets. Another decomposed unit may route only if
-the task is still OPEN and budgets remain. The third slot cannot start a new
-unit: it is exclusively a qualified correction after execution two failed.
-No new automatic delivery cycle is smuggled in under renamed units.
+The Main Task latch is reserved for the enumerated events above — safety or
+permission-scope violation, unknown/lost lifecycle state or counter
+corruption, competing routing authority, authorization ambiguity, exhausted
+global worker-execution budget, or invalidated host trust. Ordinary unit
+outcomes (Jev root, DENY, provider failure, low confidence, attribution
+closure) never starve sibling units. Accepted units do not reset budgets.
+Another decomposed unit may route only if the Main Task is still OPEN and
+budgets remain. The third worker slot cannot start a new unit: it is
+exclusively a qualified correction after execution two failed. No new
+automatic delivery cycle is smuggled in under renamed units.
 
 Third-correction qualification identifies the exact non-repeated failure class
 (verification, semantic_revision or tool_execution), reviewed execution regime

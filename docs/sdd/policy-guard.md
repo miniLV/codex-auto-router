@@ -63,7 +63,8 @@ The Guard never estimates token benefit at runtime.
 ## DENY is terminal for automatic routing
 
 DENY returns a reason, not an alternate RoutePlan. Lifecycle closes automatic
-routing for the Main Task. Root may complete authorized work or resolve intent;
-it may not repair the request and ask Jev again inside that closed task.
-No automatic re-route is triggered by denial classes. Only a recoverable
-worker failure before closure can create another semantic Jev decision.
+routing for **the task unit that was denied**. Root may complete authorized
+work or resolve intent; it may not repair the request and ask Jev again for
+that closed unit. Sibling units of an OPEN Main Task keep their routing. No
+automatic re-route is triggered by denial classes. Only a recoverable
+worker failure before unit closure can create another semantic Jev decision.

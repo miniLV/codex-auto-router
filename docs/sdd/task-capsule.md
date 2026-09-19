@@ -28,6 +28,16 @@ RoutingProjection {
   relevant_context_summary, context_complete,
   correction_summary?, provenance[], egress_policy_digest
 }
+TaskTraits {                    // deterministic, fact-derived ONLY
+  owned_file_count_bucket,      // e.g. 1 | 2-5 | 6-20 | 21+
+  changed_language,             // from file extensions actually owned
+  side_effect_class,            // read_only | bounded_write (capsule fact)
+  public_interface_touched,     // boolean, from owned paths vs interface set
+  verification_count,           // number of capsule verification commands
+  context_size_bucket,          // measured context bytes bucket
+  persistent_change,            // delivery-intended, from RootIntent
+  risk_flags[]                  // copied verbatim from capsule risk facts
+}
 ~~~
 
 Empty compatible-Interface/constraint lists project to literal "none" in the
@@ -70,10 +80,19 @@ or provider authentication fields are allowed. Prefer opaque local IDs and
 observable traits (counts, context-size buckets, change/risk classes).
 
 Root prepares concise English semantic summaries while preserving identifiers,
-negation and acceptance meaning. Translation is not mandatory or free: measure
-its overhead and qualify the language regime. A summary that loses material
-intent sets context_complete=false and closes routing. User text containing a
-secret is not made safe merely by being an "objective".
+negation and acceptance meaning. **The projection seam must not become a
+second selector.** `task_traits` are computed deterministically from
+observable capsule facts by a versioned rule — never authored freehand.
+Summaries are free English **except** they must never contain route-directed
+language. Banned from every projected field: difficulty or complexity
+judgments, recommended models/lanes/agents, cheap/expensive or
+strong/weak-model characterizations, simple/complex framing, and
+delegate/root suggestions. Root describes what the unit is; only Jev chooses
+who executes it. A projection containing banned vocabulary is
+UNSAFE_PROJECTION and closes routing. Translation is not mandatory or free:
+measure its overhead and qualify the language regime. A summary that loses
+material intent sets context_complete=false and closes routing. User text
+containing a secret is not made safe merely by being an "objective".
 
 Use allowlisted categories and trusted provenance first; secret scanning is
 defense in depth. Redaction may replace an incidental secret with an opaque

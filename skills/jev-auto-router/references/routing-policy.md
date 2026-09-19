@@ -266,10 +266,15 @@ The Guard denies a plan unless every check passes:
 Guard thresholds are frozen per benchmark release; they are never tuned per
 task at runtime, and the Guard never reads Dashboard, `ccusage`, credit,
 quota, model-mix, or latency data. A `DENY` never produces a modified plan:
-lifecycle closes automatic routing for the Main Task. Root handles authorized
-work or missing requirements; it cannot repair the proposal and re-route a
-DENY. A valid Jev root choice, takeover or exhausted budget also closes routing.
-Only an eligible worker failure while OPEN permits a new Jev decision.
+lifecycle closes automatic routing for **this task unit**. Root handles
+authorized work or missing requirements; it cannot repair the proposal and
+re-route a DENY. A valid Jev root choice, unit takeover or exhausted unit
+budget also closes that unit's routing. Only the enumerated latch events —
+safety or permission-scope violation, lost lifecycle state or counter
+corruption, competing routing authority, authorization ambiguity, exhaustion
+of the global worker-execution budget, or invalidated host trust — close the
+whole Main Task. Only an eligible worker failure while a unit is OPEN permits
+a new Jev decision for that unit.
 
 Until a task profile holds frozen benchmark qualification, check 13 fails for
 it by default and its units execute in Root. This is the benefit boundary:
@@ -484,7 +489,8 @@ Exactly one child runs at a time. A child may not create descendants.
 Restoring a candidate and continuing in Root is not termination of the
 user's goal and needs no new authorization inside the existing scope.
 Materially new scope requires authorization; it never silently resets counters
-or reopens this Main Task's closed automatic route.
+or reopens a closed route — unit closures stay closed for that unit, and the
+Main Task latch stays latched.
 
 ## 11. Never routing input
 

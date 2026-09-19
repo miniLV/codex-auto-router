@@ -23,3 +23,4 @@ reset.
 | 0011 | Supply the child tuple per spawn | Accepted (retained by 0013) |
 | 0012 | Gate delegation with a template, not a cost estimate | Partially superseded by 0013 |
 | 0013 | Jev-native routing architecture: Jev selects, Guard validates, Root verifies | Accepted |
+| 0014 | Quality-constrained Jev delivery: economics objective, two-layer routing state, projection discipline, probe-first execution | Accepted |
