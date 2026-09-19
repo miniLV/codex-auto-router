@@ -24,7 +24,7 @@
 需要：支持插件的当前 Codex CLI；Root 为 `gpt-6-astra` 或 `gpt-5.6-sol` 且 Medium+；以及 `spawn_agent`。
 
 ```sh
-codex plugin marketplace add miniLV/codex-auto-router --ref master
+codex plugin marketplace add miniLV/Jev-Auto-Router --ref master
 codex plugin add jev-auto-router@jev-auto-router
 ```
 
