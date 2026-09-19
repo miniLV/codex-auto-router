@@ -108,7 +108,11 @@ Legend: ✅ done · 🔜 next · ⬜ pending · ◐ code/fixtures complete, live
 - Verification: digest stability test; UNKNOWN-evidence rejection test.
 - Acceptance: RoutePlan validation can rely entirely on the catalog.
 
-## Task 7 — Define normalized RouteRequest/RoutePlan ⬜
+## Task 7 — Define normalized RouteRequest/RoutePlan ✅
+
+- Implemented strict resolved execution/plan validation and qualification/profile
+  readers. Template and per-request question digests are distinct. Schema and
+  quality-first qualification tests pass; no passing production artifact exists.
 
 - Files: `src/route-plan.ts`, tests.
 - Implement schemas of spec §6, including `decision: "root"` as first-class,

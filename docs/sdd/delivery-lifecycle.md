@@ -12,6 +12,15 @@ capsule, retry or user status message. Routing state has two layers:
 CLOSED`). Unknown or conflicting state latches the Main Task closed.
 Counters are monotonic, Main-Task-scoped, and survive every same-task resume.
 
+Routing eligibility and delivery progress are independent axes. The public
+unit labels above are summaries, not the storage state machine. Store
+`routing: OPEN | CLOSED` separately from `phase: READY | DECIDING | EXECUTING |
+VERIFYING | REVIEWING | INTEGRATING | ACCEPTED | PENDING | CANCELLED` and the
+responsible producer (`root | worker`). Closing routing never cancels required
+verification/review of a safe existing candidate or erases accepted work.
+ACCEPTED is reachable only after all delivery gates pass, even for a unit whose
+routing was previously closed by an attribution-only anomaly.
+
 | Counter | Increment point | Ceiling |
 | --- | --- | --- |
 | semantic_decisions | Before submitting a new semantic request to Adapter | 2 per task unit; one additional decision solely for the qualified third worker correction; none after unit closure |
@@ -27,6 +36,14 @@ consumes its reserved worker slot; ambiguity never refunds a slot. A resumed
 worker turn is an execution. Reviewer turns do not consume worker slots.
 Transport retries do not create semantic decisions; candidate IDs do not reset
 any counter. Reservation is local transactional state, not free-form prose.
+
+Reservation also binds an opaque operation ID and the expected state revision.
+Consume each host completion once. Reject stale revisions, unknown operation
+IDs, cross-task events and repeated completions. Cancellation disarms an
+operation immediately, but its child remains active until trusted stop evidence
+arrives. No next worker or reviewer may start while cleanup is uncertain.
+Resuming without the complete trusted ledger closes routing rather than
+reconstructing counters from receipts or model recollection.
 
 ## Canonical transitions
 

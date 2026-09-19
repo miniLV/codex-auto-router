@@ -63,7 +63,8 @@ GuardContext {                 // local only, never serialized to Jev
 }
 SelectionEvidence {
   decision_id, candidate_snapshot_digest, provider_model,
-  choice, confidence, probabilities, request_digest, question_digest
+  choice, confidence, probabilities, request_digest, question_digest,
+  question_template_digest
 }
 RootPlan {
   decision: root, candidate_id: root, selection: SelectionEvidence,
@@ -120,6 +121,14 @@ numeric forecasts or prices. Raw total-token reduction is not required. Exact
 question text and description rule are versioned
 qualification inputs. Static rules never optimize among eligible options.
 
+The qualification binding's question digest identifies the frozen instruction
+and description template. `SelectionEvidence.question_template_digest` binds
+that version. `question_digest` instead hashes the exact per-request question,
+including its option IDs and descriptions; `request_digest` also binds the
+projection. Never compare a task-specific question hash to a release template
+hash. Both digests are necessary: qualification survives changing task IDs,
+while a response cannot be replayed against another candidate set.
+
 ## AttemptState and FailureEvidence
 
 ~~~text
@@ -127,6 +136,7 @@ AttemptState {
   main_task_id, task_unit_id,
   main_task_state: OPEN | CLOSED, main_latch_reason?,
   unit_state: OPEN | ROOT_DIRECT | DELEGATED | ACCEPTED | CLOSED,
+  unit_routing: OPEN | CLOSED, delivery_phase, producer: root | worker,
   unit_close_reason?,
   status: OPEN | CLOSED,
   close_reason?, decision_count, http_attempt_count, worker_execution_count,
@@ -140,6 +150,12 @@ FailureEvidence {
   repeated_fault: boolean, restoration_result, correction_scope_unchanged
 }
 ~~~
+
+`unit_state` is a display projection; `unit_routing` and `delivery_phase` are
+the authoritative independent axes. Decision counts are indexed by unit and
+HTTP counts by decision in the Main Task ledger. Aggregate totals never replace
+those indices. See lifecycle for reservation, cancellation and the narrowly
+qualified third-decision exception.
 
 Failure evidence is bounded current-task state produced from Root verification.
 It excludes transcripts, secrets, historical receipts and worker conclusions

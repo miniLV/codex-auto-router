@@ -69,6 +69,22 @@ First runtime integration is a read-only probe demonstrating native invocation,
 evidence provenance, fresh-context handling and cancellation. No writable
 delegation before independently enforced confinement is demonstrable.
 
+### Trust and execution boundary
+
+TypeScript brands and state constructors prevent accidental misuse inside the
+library; they are not a security boundary against a malicious caller. Host
+evidence must enter through a trusted host integration, bound to the current
+session, configuration, operation and expiry. Worker text, untrusted JSON and
+fixtures cannot mint production host evidence. Root-authored intent/summary
+attestations establish provenance, not sandbox enforcement. When the host has
+no authoritative enforcement surface, production delegation remains unavailable.
+
+The library emits commands; a host bridge executes them. Simulation uses the
+same command/event protocol but carries `evidence_mode: simulation` throughout,
+and cannot emit a production qualification artifact. A CLI or a native tool
+listing alone does not close this integration gap. These boundaries are
+explicit readiness gates, not defaults to be filled with optimistic booleans.
+
 ## End-to-end flow
 
 1. Root captures original intent/acceptance and a bounded local capsule.
