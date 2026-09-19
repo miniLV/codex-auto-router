@@ -17,6 +17,7 @@
 
 <p align="center">
   <a href="#quick-start"><strong>Quick start</strong></a> ·
+  <a href="#jev-prerequisites"><strong>Jev prerequisites</strong></a> ·
   <a href="#routes"><strong>Routes</strong></a> ·
   <a href="#reading-the-payoff"><strong>Reading the payoff</strong></a> ·
   <a href="#updating"><strong>Updating</strong></a>
@@ -33,7 +34,9 @@ at Medium or higher for the primary session (confirmed from trusted
 current-task runtime metadata), and the native `spawn_agent` surface. Model
 and lane access is needed only when the selected route delegates. **No `jq`
 and no companion roles to install** — model, effort, and fresh context are
-supplied per spawn as `spawn_agent` parameters.
+supplied per spawn as `spawn_agent` parameters. Automatic Jev delegation
+additionally needs TypeSafe Jev API access and a qualified benchmark profile
+for the task shape; see [Jev prerequisites](#jev-prerequisites).
 
 ```sh
 codex plugin marketplace add miniLV/jev-auto-router --ref main
@@ -43,13 +46,15 @@ codex plugin add jev-auto-router@jev-auto-router
 This marketplace follows `main` so users receive the current version. Teams that
 require an immutable version should replace `main` with a published tag.
 
-**Current status: architecture preview (static contract).** The Jev routing
-runtime (JevAdapter, Policy Guard, lifecycle) is being implemented per
-[task.md](task.md); what this repository ships today is the complete
-normative contract, the Skill's static flow, and the observer dashboard.
-With the contract installed, Root interprets the Policy as written (every
-task falls back to Root when Jev is unavailable); full automatic Jev routing
-arrives with P2–P4. You can also name it explicitly:
+**Current status: architecture preview (static contract + runtime Modules).**
+The P1–P4 runtime Modules now exist under `src/` and are test-enforced
+(JevAdapter, Capability Catalog, Policy Guard, lifecycle, baseline/restore,
+mechanical verification, semantic review, Decision Receipt, benchmark
+harness), but real host invocation evidence and benchmark qualification
+remain UNVERIFIED. Automatic delegation is therefore closed by default:
+every delegate plan is denied as `DENY(PROFILE_UNQUALIFIED)` and tasks run
+in Root. With the contract installed, Root interprets the Policy as
+written. You can also name it explicitly:
 
 ```text
 Use $jev-auto-router:jev-auto-router to build this feature and verify it.
@@ -71,6 +76,48 @@ succeeds idempotently on identical content, and refuses to overwrite different
 content. `--check` proves only byte-for-byte equality with the bundled template; it
 does **not** prove a reviewer spawn, a fresh context, or effective isolation. Start a
 new task afterwards, because custom agents are discovered at task creation.
+
+## Jev prerequisites
+
+Automatic Jev delegation happens only when all of the following hold; any
+missing item closes automatic routing and Root executes — degraded, never
+broken.
+
+- **API and model**: `POST https://api.typesafe.ai/v1/systemone` with pinned
+  `jev-1.13.0` (never follow `jev-latest` aliases; model drift is
+  `MALFORMED`). A TypeSafe API key is required (upstream documents
+  `TYPESAFE_API_KEY`), and calls are made only under an approved
+  egress-policy binding. Missing authentication returns
+  `UNAVAILABLE/AUTH_UNCONFIGURED`.
+- **Size ceilings**: at most 255 options in the single Choice; 64,000
+  provider input tokens for state plus all questions, and 32,000 for state
+  plus the longest question. Sizing must come from a pinned
+  provider-compatible tokenizer or a validated conservative bound; unknown
+  sizing returns `INPUT_UNSUPPORTED` with zero HTTP calls and Root executes.
+  Ceilings are tokens, not bytes, and candidates or acceptance criteria are
+  never truncated.
+- **Deadline and retries**: one 20-second total deadline, at most two HTTP
+  attempts of min(10 s, remaining), honoring `Retry-After`; 401/403,
+  non-retryable statuses, schema failure, model drift and low confidence are
+  terminal and are never resampled.
+- **Data egress**: only the allowlisted RoutingProjection leaves the host,
+  under a current approved egress-policy digest; credentials, raw logs,
+  environment values, full conversations and baseline contents never enter
+  provider state. Unsafe or oversized projections make zero HTTP calls and
+  Root executes.
+- **Host prerequisites**: Root is `gpt-6-astra` / `gpt-5.6-sol` at `medium`
+  or higher from trusted current-task metadata (otherwise `ROOT_DIRECT`);
+  capabilities need real host evidence (at least REQUESTABLE plus the claimed
+  ENFORCEABLE properties); independently enforced workspace, permission and
+  network confinement must already exist before the first child instruction.
+- **Qualification prerequisite**: production delegation requires a frozen
+  benchmark qualification for the task profile
+  (`docs/benchmarks/qualification.json`). No profile is qualified here, so
+  the Guard denies delegate plans with `DENY(PROFILE_UNQUALIFIED)`; Root
+  execution is today's automatic behavior.
+- **Billing and price isolation**: upstream documents Jev input at $42/Btok
+  with free output tokens; the runtime and the Guard never read prices, and
+  price weights exist only in the frozen benchmark configuration.
 
 ## What you do
 
@@ -252,10 +299,12 @@ git diff --check
 ```
 
 The tests cover the routing contract, the Task Capsule gate, Guard validation,
-the execution contract, attempt budgets, review triggers, identity consistency
-(including stale-identity sweeps), profile exactness, Dashboard isolation, and
-the local `ccusage` adapter. They validate the static contract and do not prove
-that any real dispatch, Jev call, or review ever executed.
+the execution contract, attempt budgets, review triggers, baseline
+capture/restore, mechanical verification, Decision Receipts, capability
+routing and the benchmark harness, plus identity consistency (including
+stale-identity sweeps), profile exactness, Dashboard isolation, and the local
+`ccusage` adapter. They validate the contract and deterministic fixtures; they
+do not prove that any real dispatch, Jev call, or review ever executed.
 
 ## Privacy and boundaries
 

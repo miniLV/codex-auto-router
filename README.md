@@ -17,6 +17,7 @@
 
 <p align="center">
   <a href="#快速开始"><strong>快速开始</strong></a> ·
+  <a href="#jev-前置条件"><strong>Jev 前置条件</strong></a> ·
   <a href="#路由"><strong>路由</strong></a> ·
   <a href="#收益怎么看"><strong>收益怎么看</strong></a> ·
   <a href="#更新"><strong>更新</strong></a>
@@ -26,7 +27,7 @@
 
 ## 快速开始
 
-前置条件：装有插件的当前版 Codex CLI，Root 会话为 GPT-6 Astra 或 GPT-5.6 Sol 的 Medium 或更高（从可信的当前任务 runtime metadata 确认），以及 `spawn_agent` 原生委派面。模型与 lane 的访问只在路由真的委派时才需要。**不需要 `jq`，也不需要安装任何 companion 角色** —— 模型、effort 与 fresh context 全部通过 `spawn_agent` 参数逐次指定。
+前置条件：装有插件的当前版 Codex CLI，Root 会话为 GPT-6 Astra 或 GPT-5.6 Sol 的 Medium 或更高（从可信的当前任务 runtime metadata 确认），以及 `spawn_agent` 原生委派面。模型与 lane 的访问只在路由真的委派时才需要。**不需要 `jq`，也不需要安装任何 companion 角色** —— 模型、effort 与 fresh context 全部通过 `spawn_agent` 参数逐次指定。自动 Jev 委派还额外依赖 TypeSafe Jev API 访问与本任务形态的 benchmark 资格，完整清单见 [Jev 前置条件](#jev-前置条件)。
 
 ```sh
 codex plugin marketplace add miniLV/jev-auto-router --ref main
@@ -35,7 +36,7 @@ codex plugin add jev-auto-router@jev-auto-router
 
 这个 marketplace 跟随 `main`，便于直接获得当前版本；需要不可变版本的团队应在发布 tag 后把 `main` 换成对应 tag。
 
-**当前状态：架构预览（static contract）。** Jev 选路运行时（JevAdapter、Policy Guard、生命周期）正在按 [task.md](task.md) 实施中；当前仓库交付的是完整的规范契约、Skill 静态流程与观察者 Dashboard。契约安装后 Root 会按本 Policy 解释执行（Jev 不可用时一切任务自动落在 Root），完整的自动 Jev 路由要等 P2–P4 落地。也可以显式点名：
+**当前状态：架构预览（static contract + 运行时 Modules）。** [task.md](task.md) 的 P1–P4 运行时 Modules 已落地并受测试约束（JevAdapter、Capability Catalog、Policy Guard、生命周期、baseline/restore、机械验证、语义 review、Decision Receipt、benchmark harness），但真实 host 调用链证据与 benchmark 资格仍是 UNVERIFIED，因此自动委派默认关闭：任何委派计划都会因缺少 benchmark 资格被 Guard 拒绝（`DENY(PROFILE_UNQUALIFIED)`），任务由 Root 执行。契约安装后 Root 按本 Policy 解释执行。也可以显式点名：
 
 ```text
 Use $jev-auto-router:jev-auto-router to build this feature and verify it.
@@ -51,6 +52,18 @@ sh skills/jev-auto-router/scripts/install-reviewer-agent.sh --check
 ```
 
 它只安装一个 allowlisted TOML（`jev-auto-router-astra-reviewer.toml`），内容相同则幂等成功，内容不同会拒绝覆盖。`--check` 只证明已安装文件与随附模板逐字节一致，**不证明** reviewer 已启动、fresh context 已获得或 sandbox 已生效。安装后需新建一条 task，custom agent 在 task 创建时被发现。
+
+## Jev 前置条件
+
+自动 Jev 委派只有在下列条件全部成立时才会发生；任何一条缺失都会关闭自动路由，改为 Root 执行 —— 降级，不断路。
+
+- **API 与模型**：`POST https://api.typesafe.ai/v1/systemone`，固定 `jev-1.13.0`（不跟随 `jev-latest` 等别名，模型漂移视为 `MALFORMED`）；需要 TypeSafe API key（上游文档记录的环境变量为 `TYPESAFE_API_KEY`），且只在已批准的 egress policy 绑定下发起调用。缺少认证返回 `UNAVAILABLE/AUTH_UNCONFIGURED`。
+- **输入上限**：单次 Choice 最多 255 个候选；provider 输入共 64,000 token（state + 全部问题），state + 最长单个问题 32,000 token。计量必须来自固定的 provider-compatible tokenizer 或经验证的保守上界；sizing 未证明时直接 `INPUT_UNSUPPORTED`，不发 HTTP，Root 执行。上限是 token 不是字节，且永不截断候选或验收条件。
+- **时限与重试**：总 deadline 20 秒、最多 2 次 HTTP 尝试、每次不超过 min(10 秒, 剩余时间)，遵守 `Retry-After`；401/403、非可重试状态、schema 失败、模型漂移与低置信度为终态，不重采样。
+- **数据出口**：离开主机的只有经过 allowlist 的 RoutingProjection，且需要未过期的已批准 egress policy 摘要；凭据、原始日志、环境值、完整对话与 baseline 内容永不进入 provider state。投影不安全或超限 → 零 HTTP，Root 执行。
+- **Host 前置**：Root 为 `gpt-6-astra` / `gpt-5.6-sol` 且 `medium` 以上（来自可信的当前任务 metadata，否则 `ROOT_DIRECT`）；候选能力必须有本机真实证据（≥ REQUESTABLE + 所声明的 ENFORCEABLE 属性），首次子指令之前必须已经存在独立强制的隔离/权限/网络证据。
+- **资格前置**：生产委派要求该任务形态持有冻结的 benchmark 资格（`docs/benchmarks/qualification.json`）。当前仓库没有任何合格 profile，Guard 对委派计划默认 `DENY(PROFILE_UNQUALIFIED)`；因此今天的自动行为就是 Root 执行。
+- **计费与价格隔离**：Jev 输入按上游文档为 $42/Btok、输出免费；运行时与 Guard 从不读取价格，价格权重只存在于冻结的 benchmark 配置中。
 
 ## 你要做什么
 
@@ -151,7 +164,7 @@ npm run typecheck
 git diff --check
 ```
 
-测试覆盖路由契约、Task Capsule 门、Guard 校验、执行契约、预算上限、review 触发条件、身份一致性（含旧身份残留清扫）、profile 精确性、Dashboard 隔离和本地 `ccusage` 适配。它只验证静态契约，不证明任何一次真实派发、Jev 调用或 review 已经发生。
+测试覆盖路由契约、Task Capsule 门、Guard 校验、执行契约、预算上限、review 触发条件、baseline 捕获/恢复、机械验证、Decision Receipt、capability 路由、benchmark harness，以及身份一致性（含旧身份残留清扫）、profile 精确性、Dashboard 隔离和本地 `ccusage` 适配。它验证契约与确定性 fixtures，不证明任何一次真实派发、Jev 调用或 review 已经发生。
 
 ## 隐私与边界
 
