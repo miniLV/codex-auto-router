@@ -97,7 +97,10 @@ Legend: ✅ done · 🔜 next · ⬜ pending · ◐ code/fixtures complete, live
 - Verification: unit tests for every construction rule.
 - Acceptance: a capsule that fails any rule is rejected before routing.
 
-## Task 6 — Define Capability Catalog ⬜
+## Task 6 — Define Capability Catalog ✅
+
+- Implemented complete host-resolved candidate enumeration, canonical digests,
+  evidence freshness and deterministic exclusions; catalog behavioral tests pass.
 
 - Files: `src/catalog.ts` (types + digest), tests.
 - Implement catalog types with evidence classes, per-attempt construction,
