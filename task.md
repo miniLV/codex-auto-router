@@ -158,7 +158,11 @@ Legend: ✅ done · 🔜 next · ⬜ pending · ◐ code/fixtures complete, live
 - Acceptance: the Guard contains no selection logic; every DENY resolves to
   Root.
 
-## Task 10 — Implement Codex capability discovery ⬜
+## Task 10 — Implement Codex capability discovery ◐
+
+- Implemented host-snapshot discovery, freshness invalidation and cached
+  catalogs. Fixtures prove listings/files are insufficient. Production host
+  provenance integration remains a separate readiness gate.
 
 - Files: `src/discovery.ts`, tests.
 - Build the catalog from observed surfaces using the explicit evidence
