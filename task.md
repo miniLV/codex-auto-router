@@ -153,6 +153,10 @@ Legend: ✅ done · 🔜 next · ⬜ pending.
 - Files: `src/exec.ts` extensions, tests.
 - Agent/profile selection from the catalog; context mode fresh vs
   continuation; continuation only with proven handle + identity (spec §12).
+- Probe for an addressable in-flight surface (`codex app-server`
+  `turn/steer`/`turn/interrupt`, per `docs/research/foreman.md`) as the
+  continuation-handle evidence; only its observation puts
+  `continue_same_worker` in the catalog.
 - Verification: continuation-proof tests; unprovable-continuation-absent
   test.
 - Acceptance: unprovable continuation is not selectable.
@@ -236,6 +240,10 @@ Legend: ✅ done · 🔜 next · ⬜ pending.
 - Files: `bench/` (separate harness; does not mutate the runtime contract),
   frozen corpus/strata/metrics/thresholds docs.
 - Arms A/B/C per spec §15; ablations; paired tasks from identical baselines.
+- Deterministic offline dry-run mode (fake Jev provider + fake worker
+  surface; no keys, no network — the pattern `docs/research/foreman.md`
+  observes upstream) exercising routing, guard, lifecycle, and receipts
+  end-to-end.
 - Verification: harness dry-run on fixtures.
 - Acceptance: anti-p-hacking rules enforced by harness config.
 
@@ -276,3 +284,21 @@ Legend: ✅ done · 🔜 next · ⬜ pending.
   review layer.
 - Acceptance: all gates green; sweeps clean; the complete diff reviewed
   against handoff §25 before handoff to the independent review layer.
+
+## Task 27 — In-flight supervision slice (FUTURE, post-P6, qualification-gated) ⬜
+
+- Not in V1. Candidate design recorded in `docs/research/foreman.md`
+  ("Combining the designs"); promotion requires a spec amendment and its own
+  benchmark qualification (false-positive takeover is the admitted upstream
+  risk).
+- Preconditions: observable execution channel in the catalog (`OBSERVED`
+  evidence); bounded config-typed observations; one parallel Jev Noul batch
+  per debounced window estimating `worker_stuck` / `work_off_track` /
+  `meaningful_progress`; deterministic policy with frozen thresholds,
+  anti-flap grace, outcomes exactly `CONTINUE | STEER | TAKEOVER`.
+- STEER = `continue_same_worker` over a proven handle (Root authors the
+  guidance; steer cap 1; a steered execution is still one execution).
+  TAKEOVER latches routing closed (acceptance case A10).
+- Invariants: supervision output is lifecycle input only — never routing
+  input, never lowers review (may raise); assessments count as route
+  overhead in receipts; ships OFF by default.

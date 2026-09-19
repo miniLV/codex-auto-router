@@ -82,6 +82,43 @@ selection *before* dispatch and judge the artifact *after* completion.
 4. **Their evaluation honesty** ("what Foreman proves" / "does not
    establish") mirrors our claims discipline; a good calibration-curve idea
    for our P6 benchmark reporting.
+5. **Deterministic offline demo.** Their `foreman demo` exercises runtime,
+   policy, persistence, and UI with fake model and worker, no keys or
+   network — the pattern our benchmark harness (Task 22) should copy as a
+   deterministic dry-run arm.
+6. **Anti-oscillation state.** Steering caps, grace periods, and
+   verification/steering history that prevent policy flapping — required
+   discipline for any future supervision-triggered takeover (see below).
+
+## Combining the designs: a supervision slice (candidate, not normative)
+
+Foreman exposes our one genuine blind window: between a Guard-ALLOWed
+dispatch and the worker's return, we have no signal — immediate-takeover
+conditions (spec §12) can only fire at boundaries. A Foreman-shaped
+**supervision slice** could close it under our invariants:
+
+- **Precondition**: the host exposes an observable execution channel
+  (App Server notifications or equivalent) — a catalog entry with `OBSERVED`
+  evidence; a silent child is acceptable and simply unsupervised.
+- **Observation**: bounded, config-typed evidence (diff cap, output tails,
+  recent events, elapsed time); never a repo dump.
+- **Assessment**: one parallel Jev Noul batch per debounced window
+  (`worker_stuck`, `work_off_track`, `meaningful_progress`) — Jev estimates;
+  it never selects anything here.
+- **Deterministic control (ours)**: frozen thresholds, anti-flap grace
+  period, outcomes exactly `CONTINUE | STEER | TAKEOVER`.
+- **STEER** is the `continue_same_worker` mechanism over a proven handle:
+  Root authors the guidance text (Jev cannot); a steered execution is still
+  one execution; steer cap 1 per execution.
+- **TAKEOVER** is an immediate takeover: latches routing closed (acceptance
+  case A10), restore when needed.
+- **Invariants**: supervision output is lifecycle input only — never a
+  routing input, never lowers review requirements (may raise them, which
+  route-plan.md already permits); assessments count as route overhead in
+  receipts; the slice ships OFF and requires its own benchmark qualification
+  (false-positive takeovers are the risk Foreman itself admits).
+- **V1 scope**: not included. V1 is the single-Choice routing slice; this is
+  a post-P6 candidate with its own acceptance cases.
 
 ## Concepts deliberately NOT copied
 
