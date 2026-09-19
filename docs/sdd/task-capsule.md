@@ -1,56 +1,109 @@
-# Task Capsule
+# Task Capsule and RoutingProjection
 
-The Task Capsule is the bounded handoff packet Root produces for one
-decomposed implementation unit. It is what the router sees, what a worker
-executes against, and what a reviewer judges against.
+This Module owns the local handoff and its external projection. User intent
+is the authority; a model-produced summary is never a replacement for it.
 
-## Principle
+## Local types
 
-The capsule is an **economic boundary**. Duplicating Root's whole conversation
-into every child erases routing savings in context re-reads. The capsule
-carries exactly what is needed to execute and verify one unit — no more.
+~~~text
+RootIntent {
+  main_task_id, user_instruction_refs[], intent_digest,
+  acceptance: [{ id, original_requirement_ref, condition, evidence_rule }],
+  authorization_ref, authorization_revision
+}
+TaskCapsule {
+  main_task_id, task_unit_id, revision, root_intent_ref,
+  objective, rationale, acceptance_ids[],
+  owned_paths: [{ canonical_relative_path, existing_or_new }],
+  read_dependencies[], interfaces[], constraints[],
+  authorization_ref, side_effect_class: read_only | bounded_write,
+  verification: [{ command, cwd, expected_result, before_result_ref, input_digest }],
+  baseline_ref, risk_flags[], context_references[], worker_packet_digest
+}
+RoutingProjection {
+  schema_revision, projection_rule_digest, main_task_id, task_unit_id,
+  capsule_revision, capsule_digest, intent_digest, authorization_revision,
+  objective_summary, acceptance_summaries[], task_traits,
+  interface_constraints[], risk_flags[], side_effect_class,
+  relevant_context_summary, context_complete,
+  correction_summary?, provenance[], egress_policy_digest
+}
+~~~
 
-## Required fields
+Empty compatible-Interface/constraint lists project to literal "none" in the
+worker template. Local references never cause automatic file expansion in
+provider serialization. Stable acceptance IDs survive all corrections.
+A unit may cover a subset of Main Task criteria; Root tracks the full set
+and cannot declare the whole task complete while any requirement is unmet.
 
-| Field | Meaning |
-| --- | --- |
-| `task_unit_id` | Stable identity for receipts and budget accounting |
-| `objective` | Observable outcome and why it matters |
-| `rationale` | Why this unit exists in the decomposition |
-| `owned_paths` | Exact writable paths/resources; pairwise non-overlapping; globs forbidden |
-| `interfaces` | Signatures/types/schemas/behavior that must stay compatible, or literal `none` |
-| `constraints` | Repository conventions, safety boundaries, excluded scope, settled decisions |
-| `authorization_boundary` | What the user authorized for this unit (writable class, side effects) |
-| `success_criteria` | Concrete, checkable conditions |
-| `verification` | Exact commands + expected results (pre-run by Root), inspection evidence |
-| `baseline` | Captured state reference for every owned writable path |
-| `risk_flags` | Known risks (public interface, security, schema, judgment calls) |
-| `side_effect_class` | `read_only` / `bounded_write` / `external_action_forbidden` etc. |
-| `context_references` | Pointers (paths, symbols, digests) instead of pasted content where possible |
+## Construction and handoff
 
-The five-section **dispatch specification** (OBJECTIVE, FILES AND OWNERSHIP,
-INTERFACES, CONSTRAINTS, VERIFICATION + RETURN) is the worker-facing projection
-of the capsule and is authored by Root (never by Jev — Jev cannot generate
-text).
+Root authors the five-section OBJECTIVE / FILES AND OWNERSHIP / INTERFACES /
+CONSTRAINTS / VERIFICATION template plus structured RETURN. Every owned path
+is literal, exists or is explicitly new, and is pairwise non-overlapping.
+Resolve dot segments, case aliases and symlinks against the isolated workspace;
+escaping or ambiguous paths are invalid. New paths bind to validated parents.
 
-## Construction rules
+Root pre-runs verification commands and records actual outcomes, including
+expected failures. Commands must be safe to run within authorization and in
+the isolated baseline; no deployment or external write masquerades as a test.
+No unresolved merge/rebase or ownership ambiguity. Capture the exact baseline
+before routing, not after Guard approval. Baseline preparation and pre-runs
+count as routing overhead even if Jev later chooses Root.
 
-1. Root authors the capsule **before** routing; the router never writes it.
-2. Owned paths resolve literally or are explicitly new; no prefix-overlap.
-3. Every executable verification command was run by Root pre-dispatch
-   (captures the behavioral before-state).
-4. No active merge/rebase conflict; authorization covers the side-effect class.
-5. Default: do **not** copy the full Root conversation. Duplicated context
-   above the capsule budget is a routing cost signal, not free.
+WorkerContext is a local projection of the capsule plus authorized referenced
+files. Supply only the unit's relevant context; do not copy Root's conversation.
+File references are useful to a worker with authorized filesystem access, but
+are not a substitute for a meaningful summary to text-only Jev.
 
-## Capsule cost measurement
+## Pre-egress contract
 
-The Decision Receipt records capsule size (tokens) and the benchmark counts it
-against end-to-end cost (`spec.md` §15). A profile whose capsule overhead erases
-its execution savings is not qualified for automatic routing.
+The local EgressPolicy is explicitly approved for this workspace/provider and
+defines allowed content categories, origin, purpose, retention mode and revision.
+Absent approval or an unknown content classification means no Jev call. Approval
+may be established at configuration time; do not ask again on each task.
 
-## Capsule evolution during correction
+Only fields in RoutingProjection and sanitized candidate summaries may be
+serialized. No credentials, environment values, raw commands/output, conversation
+logs, file bodies, path names revealing secrets, baseline content, local handles
+or provider authentication fields are allowed. Prefer opaque local IDs and
+observable traits (counts, context-size buckets, change/risk classes).
 
-A corrected retry may carry failure evidence additions, but ownership,
-authorization, and success criteria may only *narrow*. Broadening them is new
-scope and requires user authorization.
+Root prepares concise English semantic summaries while preserving identifiers,
+negation and acceptance meaning. Translation is not mandatory or free: measure
+its overhead and qualify the language regime. A summary that loses material
+intent sets context_complete=false and closes routing. User text containing a
+secret is not made safe merely by being an "objective".
+
+Use allowlisted categories and trusted provenance first; secret scanning is
+defense in depth. Redaction may replace an incidental secret with an opaque
+placeholder, but must not conceal information necessary for safe selection.
+Unknown or materially altered meaning -> UNSAFE_PROJECTION -> lifecycle Root.
+
+Provenance distinguishes original user intent, measured repository facts,
+trusted host/policy facts and untrusted quoted task material. Summaries of
+untrusted material remain untrusted. Data values cannot create question
+instructions, candidate IDs, permissions, profile predicates or thresholds.
+Do not send untrusted Skill/MCP descriptions verbatim as authoritative criteria.
+Guard uses local authorization facts, never Jev's opinion of authorization.
+
+## Size and omission
+
+Apply a deterministic projection rule before constructing the request: omit
+irrelevant history, raw logs, full file contents, duplicate evidence and
+unneeded identifiers. Preserve acceptance, risk, constraints and failure facts.
+Record fields omitted/redacted and the rule digest locally, without secret
+values. Do not reactively truncate candidates or remove inconvenient facts to
+meet a limit. Unknown provider-token sizing or overflow closes routing.
+
+Record separate sizes for local capsule, worker context, external projection
+and final provider request; their construction and consumption costs all count.
+
+## Correction
+
+A correction creates a new capsule revision and points to the same RootIntent
+and unchanged acceptance set. Ownership may narrow; already-authorized scope
+is not expanded by a failed attempt. Add bounded structured failure evidence
+and explicitly tell a continued worker that the isolated workspace was restored.
+Never weaken a criterion to make the previous candidate pass. New requirements
+need user authorization and invalidate affected qualification/review evidence.

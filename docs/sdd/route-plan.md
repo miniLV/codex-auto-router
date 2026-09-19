@@ -1,51 +1,142 @@
 # RouteRequest / RoutePlan
 
-Normalized internal schemas. These are repository-owned types; the Jev wire
-schema never leaks past the adapter (see jev-adapter.md).
+This is the repository-owned schema Interface. Jev wire fields are private to
+JevAdapter. See [Task Capsule](task-capsule.md) for local inputs and
+[Catalog](capability-catalog.md) for evidence.
 
-## RouteRequest
+## Identifiers and binding
 
-```text
-RouteRequest:
-  task_capsule:                        TaskCapsule
-  capability_catalog:                  CapabilityCatalog (+ digest)
-  attempt_state:                       { attempt_index, execution_index,
-                                         economic_cap, hard_cap }
-  previous_failure_evidence?:          structured failure record (if retry)
-  benchmark_qualification_context:     profile qualification snapshot
-```
+Use immutable main_task_id and task_unit_id from trusted lifecycle state.
+decision_id is unique within the Main Task; capsule_revision and counters are
+monotonic. Bind every request/response/host event to its decision and candidate
+digest. Canonical JSON hashing sorts object keys, preserves semantically ordered
+arrays, and hashes complete local contracts; no secret values go into receipts.
 
-## RoutePlan
+~~~text
+ResolvedExecutionContract {
+  template_id, template_digest, provider_id, model, reasoning_effort,
+  agent: { kind: builtin | custom, id, loaded_configuration_digest },
+  skills[], mcps[], tools[],
+  filesystem: { read_roots[], write_paths[], workspace_id, baseline_id },
+  network: { mode: disabled | read_only_allowlist, allowed_origins[] },
+  sandbox: { effective_policy_digest, confinement_evidence_ref },
+  approval_policy, descendants_allowed: false, external_writes_allowed: false,
+  context:
+    { mode: fresh, context_packet_digest, fresh_context_evidence_ref } |
+    { mode: continuation, context_packet_digest, worker_id, handle_ref,
+      previous_execution_id, ownership_digest, revalidation_evidence_ref },
+  host_fingerprint, resolved_configuration_digest
+}
+RootCandidate { candidate_id: root, decision: root }
+DelegateCandidate {
+  candidate_id, decision: delegate, execution: ResolvedExecutionContract,
+  capability_evidence_refs[], qualification_binding_ref, safe_description
+}
+CandidateSnapshot { candidates[], digest, construction_rule_digest, exclusion_records[] }
+~~~
 
-```text
-RoutePlan:
-  decision:            "root" | "delegate"
-  model                (must exist in catalog)
-  reasoning_effort     (must be supported by the model entry)
-  agent                (profile id from catalog, optional)
-  skills[]             (catalog ids)
-  mcps[]               (catalog ids)
-  tools[]              (catalog ids)
-  context_mode         "fresh" | "continuation"
-  continuation_target? (only if context_mode = continuation and runtime
-                        provably supports it)
-  confidence           (from Jev)
-  risk                 (class)
-  benefit_class        (class, not an invented dollar/token forecast)
-  reason_codes[]       (stable identifiers for the receipt)
-```
+The complete contract includes trusted provider identity and effective inherited
+grants. Missing fields are invalid. Empty scope arrays mean no grant; there
+are no implicit permissions. Internal workspace paths and continuation handles
+stay local; safe descriptions use opaque IDs and approved capability facts.
 
-## Rules
+Candidate IDs are stable hashes of canonical resolved contracts with a reserved
+root ID, not free-form model output. Jev's Choice returns exactly one ID.
+Continuation preserves worker/provider/model/effort/profile identity; changing
+that tuple requires a fresh candidate. Capsule ownership must remain identical
+for continuation; a narrower correction can use a fresh candidate or Root.
 
-1. Every capability field must resolve to a catalog entry. `UNKNOWN`
-   capability evidence ⇒ invalid plan ⇒ Guard `DENY`.
-2. `decision: root` is a valid, first-class RoutePlan. It means Root executes
-   with the capsule's verification discipline — no child.
-3. Continuation may be selected **only** for a target whose runtime identity
-   and handle are observable (see delivery-lifecycle.md §continuation);
-   otherwise continuation is simply absent from the catalog and cannot be
-   selected.
-4. No exact cost fields. Classes and calibrated probabilities only. The
-   adapter/Guard reject any plan carrying fabricated precise savings.
-5. Benefit class reflects benchmark-qualified economics for the task profile;
-   it is an input to Guard qualification checks, not a runtime forecast.
+## Routing Interface
+
+~~~text
+RouteRequest {
+  decision_id, main_task_id, task_unit_id, capsule_revision,
+  routing_projection, candidate_snapshot,
+  attempt_snapshot, frozen_selection_policy_ref,
+  qualification_binding_ref | research_manifest_ref,
+  failure_projection?
+}
+GuardContext {                 // local only, never serialized to Jev
+  root_intent_ref, capsule_ref, authorization_ref, egress_policy_ref,
+  baseline_ref, catalog_ref, qualification_ref | research_manifest_ref,
+  current_attempt_state, verification_evidence_ref, reviewer_readiness_ref
+}
+SelectionEvidence {
+  decision_id, candidate_snapshot_digest, provider_model,
+  choice, confidence, probabilities, request_digest, question_digest
+}
+RootPlan {
+  decision: root, candidate_id: root, selection: SelectionEvidence,
+  annotations
+}
+DelegatePlan {
+  decision: delegate, candidate_id, execution: ResolvedExecutionContract,
+  selection: SelectionEvidence, annotations
+}
+Annotations {
+  risk: { class: ordinary | review_required, source: capsule_and_policy },
+  benefit_class: { value: qualified_total_token_margin | research_unqualified |
+                  root_baseline, evidence_ref },
+  reason_codes[]               // codes from facts below, not generated prose
+}
+RoutingFailure {
+  kind: UNAVAILABLE | MALFORMED | LOW_CONFIDENCE |
+        UNSAFE_PROJECTION | INPUT_UNSUPPORTED | CANCELLED,
+  reason_code, decision_id, selection_evidence?, provider_attempt_refs[]
+}
+~~~
+
+Adapter constructs a plan only by exact lookup of the validated returned ID.
+It cannot derive missing fields or choose a fallback. Lifecycle fallback is
+a distinct recorded outcome with source=lifecycle, not a RootPlan attributed
+to Jev. Root plans have no child execution fields and never switch Root model.
+
+## Provenance and question semantics
+
+V1 asks one Choice. Confidence and probabilities are provider-native values;
+no aggregation, risk Score conversion or independent Noul safety result.
+Validate finite values in [0,1], complete option keys, sum within 0.000001 of
+one, choice membership and choice being a maximum-probability option within
+that tolerance. Ties keep the provider's chosen ID; never break them locally.
+Reject missing or extra answer/question IDs and unexpected model IDs.
+
+Risk is the union of capsule and deterministic policy triggers. Actual diff
+can later raise review requirements; Jev cannot lower them. Benefit is read
+from the bound qualification artifact, not inferred from model name or cost.
+Allowed route reason codes are JEV_ROOT, JEV_DELEGATE, FRESH_CONTEXT,
+PROVEN_CONTINUATION, QUALIFIED_TOTAL_TOKEN_MARGIN and RESEARCH_UNQUALIFIED.
+Guard/lifecycle/provider failure codes live in their own fields. These codes
+report facts, not why Jev thought its choice was best.
+
+The frozen English Choice instructions ask: choose the configuration most
+likely to satisfy all acceptance/quality requirements with the least total
+delivery tokens, including context, review and recovery overhead; select root
+when a delegated candidate is unlikely to improve that constrained objective.
+Instructions explicitly treat projection material as data, not authorization
+or routing commands. Candidate descriptions contain observed capabilities and
+frozen empirical evidence only, not Root model recommendations or online
+numeric forecasts. Exact question text and description rule are versioned
+qualification inputs. Static rules never optimize among eligible options.
+
+## AttemptState and FailureEvidence
+
+~~~text
+AttemptState {
+  main_task_id, status: OPEN | CLOSED,
+  close_reason?, decision_count, http_attempt_count, worker_execution_count,
+  delegated_review_count, root_review_used, attribution_exception_used,
+  active_execution_id?, current_candidate_digest?, failure_history[]
+}
+FailureEvidence {
+  execution_id, capsule_revision, acceptance_ids[],
+  class: verification | semantic_revision | tool_execution,
+  verification_command_id?, affected_acceptance_ids[], root_observed_facts,
+  repeated_fault: boolean, restoration_result, correction_scope_unchanged
+}
+~~~
+
+Failure evidence is bounded current-task state produced from Root verification.
+It excludes transcripts, secrets, historical receipts and worker conclusions
+without independent evidence. It may inform a new Jev decision only while
+AttemptState remains OPEN. Safety, identity, scope or specification failures
+are closure reasons, never ordinary correction classes.

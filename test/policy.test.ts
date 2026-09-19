@@ -180,7 +180,10 @@ test("Jev routing failures degrade to Root and never invent a route", () => {
     policy,
     /There is no heuristic fallback route, no legacy\s+lane table, and no second selector anywhere in this contract/
   );
-  assert.match(policy, /never an invented token or dollar forecast/);
+  assert.match(policy, /never an invented\s+token or dollar forecast/);
+  assert.match(policy, /V1 uses exactly one Choice over complete candidate IDs/);
+  assert.match(policy, /No Score\/Noul,/);
+  assert.match(policy, /Pin jev-1\.13\.0 and check every response/);
 });
 
 test("the Policy Guard has unconditional veto and zero alternate-routing authority", () => {
@@ -472,17 +475,30 @@ test("the old identity survives only as recorded history or migration text", () 
     "task.md"
   ]);
   const stale = /codex-auto-router|Codex Auto Router|codex_auto_router/i;
+  const staleGlobal = /codex-auto-router|Codex Auto Router|codex_auto_router/ig;
   for (const path of repoTextFiles()) {
     const rel = relative(repoRoot, path);
     if (rel === join("test", "policy.test.ts")) continue;
     if (allowedHistorical.has(rel)) continue;
     assert.doesNotMatch(read(path), stale, rel);
   }
-  for (const rel of allowedHistorical) {
-    const occurrences = read(join(repoRoot, rel)).match(stale)?.length ?? 0;
-    assert.ok(
-      occurrences <= 3,
-      `${rel} mentions the old identity ${occurrences} times; keep it historical`
+  // Exact per-file allowances derived from intent, not a blanket constant:
+  // README ×1 rename note each; solution/spec ×1 history sentence each;
+  // plan ×3 migration runbook; task ×4 migration status + sweep list.
+  const expected = new Map([
+    ["README.md", 1],
+    ["README.en.md", 1],
+    ["docs/solution.md", 1],
+    ["spec.md", 1],
+    ["plan.md", 3],
+    ["task.md", 4]
+  ]);
+  for (const [rel, count] of expected) {
+    const occurrences = [...read(join(repoRoot, rel)).matchAll(staleGlobal)].length;
+    assert.equal(
+      occurrences,
+      count,
+      `${rel} carries ${occurrences} old-identity mentions; expected exactly ${count} historical/migration uses`
     );
   }
 });

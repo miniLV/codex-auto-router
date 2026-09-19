@@ -1,100 +1,111 @@
 # Architecture
 
-## Five roles
+Five roles, one automatic selection authority: **Jev chooses; Guard validates;
+Codex executes; Root verifies and accepts.** The objective is reduced total
+delivery tokens conditional on non-inferior quality, not maximum delegation.
 
-```text
-User
-  → Frontier Root            supervisor / architect / verifier
-  → Jev                      routing brain (sole automatic selector)
-  → JevAdapter               the only seam to the TypeSafe Jev API
-  → Policy Guard             deterministic validator (veto, no alternates)
-  → Codex native runtime     executor substrate
-  → Root verification        mechanical, then fresh review when triggered
-  → Root final acceptance    deliver
-```
+## Modules and Seams
 
-### A. Frontier Root
+| Module | Interface | Responsibility hidden behind it |
+| --- | --- | --- |
+| Capsule/projection | Local intent -> capsule + safe RoutingProjection or ineligible | Stable acceptance, ownership, provenance and pre-egress policy |
+| Capability Catalog | Trusted host snapshot -> complete candidate snapshot | Freshness, effective inheritance, configuration compatibility |
+| JevAdapter | RouteRequest + frozen selection policy + cancellation -> plan or failure | Provider wire schema, sizing, one Choice, pinning and bounded transport |
+| Policy Guard | Plan + local GuardContext -> ALLOW(same plan) or DENY | Deterministic authorization, safety, qualification and budgets |
+| Delivery lifecycle | Host events + accepted plan -> commands/state/receipt | Counters, isolation, recovery, review and conflict-safe integration |
 
-Root owns requirements, ambiguity resolution, architecture, decomposition,
-task-unit definition, success criteria, user interaction, final verification
-judgment, final acceptance, and external irreversible actions.
+A Module's Interface includes error modes, evidence requirements and ordering,
+not only its TypeScript types. Keep these concerns local; do not distribute
+provider parsing or permission reconstruction among callers. No generic
+multi-provider router Interface is introduced.
 
-Root is **not** a router. Root contains no heuristic such as
-"single-file → Luna, multi-file → Terra". Root authoring the Task Capsule and
-judging results is its job; choosing *who* executes is Jev's.
+## Authority exceptions
 
-### B. Jev — routing brain
+Root authors intent, architecture, decomposition and acceptance. It cannot
+select a model or guess economic benefit. Jev chooses among every admitted
+complete candidate. Candidate enumeration and qualification are deterministic
+eligibility rules, never shape heuristics or a ranked shortlist.
 
-Jev is a **strategic core dependency**, not an optional advisor, second
-opinion, diagnostic, or experiment. It may select:
+Lifecycle maps failed prerequisites, DENY and exhausted limits to the existing
+Root. This fixed fallback is not an alternate-model selector. The fixed fresh
+Astra/medium semantic reviewer is a governance role outside worker economics.
+It still requires trustworthy runtime evidence and a bounded review budget.
 
-- root execution or delegated execution;
-- model, reasoning effort, agent/profile;
-- Skill set, MCP set, tool scope;
-- context strategy (fresh vs continuation);
-- continuation strategy after failure (takeover / continue / fresh / reroute).
+## Root-driven host Adapter
 
-### C. JevAdapter
+The implementation is a local Module invoked from Root's current task, not a
+background scheduler. A Node function cannot invoke model-visible spawn tools
+by importing them or naming them in prose. Root invokes the native tool that
+the current host actually exposes, then supplies trusted observations.
 
-`internal RouteRequest → JevAdapter → TypeSafe Jev API → normalized RoutePlan`.
-One adapter file boundary. It exists to isolate Jev API evolution, SDK/CLI
-changes, schema changes, response normalization, and timeout/error handling.
-It is **not** a multi-provider abstraction; Jev is the only provider
-(deliberately — see `spec.md` §19 non-goals).
+~~~text
+prepare(local intent, capsule, host evidence, lifecycle state)
+  -> ineligible | RouteRequest + local GuardContext
+route(RouteRequest, selection policy, cancellation)
+  -> RoutePlan | RoutingFailure
+validate(plan, current GuardContext)
+  -> ALLOW(same plan) | DENY(reason)
+advance(state, bound host event)
+  -> updated state + next command | closed/pending outcome
+~~~
 
-### D. Policy Guard
+Commands are discriminated as capture_baseline, native_worker_start,
+native_worker_continue, verify_candidate, native_review_start,
+prepare_integration, publish_candidate, stop_child or discard_isolated_state.
+They carry request/decision/execution IDs, expected state digests and required
+evidence. Root performs commands through observed native tools/filesystem
+operations; the library never autonomously starts another model.
 
-Deterministic. Validates the RoutePlan against the catalog, authorization,
-ownership, verification, baseline, least-privilege, budget, and profile
-qualification. Returns exactly `ALLOW(RoutePlan)` or `DENY(reason) → Root`.
-It never says "Jev chose A but I choose B".
+Only host-authoritative events can confirm applied configuration, stopped
+execution, sandbox grants or continuation identity. Worker prose cannot.
+Reject stale, duplicate, cross-task and out-of-order events. A start command
+consumes a slot before native invocation; ambiguous invocation does not permit
+a second start. Cancellation closes/disarms outstanding IDs before cleanup.
 
-### E. Codex native runtime
+The same Interface accepts deterministic fixture events for tests. Fixtures
+are labeled simulation and cannot masquerade as production host evidence.
+First runtime integration is a read-only probe demonstrating native invocation,
+evidence provenance, fresh-context handling and cancellation. No writable
+delegation before independently enforced confinement is demonstrable.
 
-Native agent spawn with per-spawn model/effort override, Skills, MCPs, tool
-permission surfaces, sandbox modes, and continuation surfaces where verifiably
-supported (first stable slice — see `spec.md` §18.7). No parallel generic agent runtime unless
-Codex lacks a required primitive and the gap is demonstrated.
+## End-to-end flow
 
-## Canonical flow
+1. Root captures original intent/acceptance and a bounded local capsule.
+2. Capture authorized isolated baseline; Root pre-runs concrete verification.
+3. Freshness-validate host evidence; enumerate complete eligible candidates.
+4. Build safe RoutingProjection and token-size it. If no delegate or missing
+   qualification, skip Jev and close routing to Root responsibility.
+5. Jev's one Choice selects a complete candidate; Adapter normalizes by lookup.
+6. Guard validates current local evidence. DENY closes routing; no alternate.
+7. Root performs the exact native spawn/resume in an enforced isolated workspace.
+8. Record actual application; Root verifies the complete output.
+9. Build the final integration candidate; required fresh governance review.
+10. Compare-and-publish under proven exclusive integration, or leave pending.
+11. Accept the unchanged candidate; otherwise isolated restore and a qualified,
+    budgeted Jev correction, or closed routing and Root takeover.
 
-1. Root decomposes and authors a **Task Capsule** (bounded, not the whole
-   conversation).
-2. Root builds the **Runtime Capability Catalog** of what is actually available
-   now.
-3. Catalog + capsule + attempt state → **RouteRequest**.
-4. JevAdapter calls Jev; Jev returns a typed decision → **RoutePlan**.
-5. **Policy Guard** validates: `ALLOW` or `DENY → Root`.
-6. Codex native execution of the accepted plan; requested-vs-observed contract
-   recorded.
-7. Worker result → **Root mechanical verification** (diff, scope, rerun).
-8. **Fresh independent semantic review** when triggered (isolation tier
-   observed, never assumed).
-9. **Root final acceptance** or restore/takeover. Deliver.
+No two children run concurrently and no child delegates. Three worker
+executions and three semantic decisions are Main Task ceilings, not per-unit
+allowances. Root's final review slot is protected from worker retries.
 
-## Failure flow
+## Token locality
 
-| Trigger | Resolution |
-| --- | --- |
-| Jev timeout / unavailable / malformed / low-confidence | Automatic delegation unavailable → Root executes |
-| Guard `DENY` | Root executes (never an alternate route) |
-| Execution contract violation (weaker/unauthorized scope) | Restore when necessary → Root takeover |
-| Worker failure (verifiable but wrong) | Restore → correction only if budget permits → else Root takeover |
-| Reviewer `RECONSIDER` | Return to Root architecture/judgment; never blindly retry workers |
-| Reviewer mutation / state change | Verdict voided; Tier 3 review-unavailable; stop the lane |
+Pass local file/diff references to workers and reviewers when authorized;
+send Jev compact semantic facts, not copies of these artifacts. Reuse observed
+catalog evidence by fingerprint and verification results only when input
+digests are unchanged. Root does not independently implement accepted worker
+work or duplicate the reviewer's semantic pass. Measure all remaining overhead.
 
-## Depth model
+No semantic cache reuses a route for a changed capsule, candidate set or
+qualification. No cross-task learning or historical usage feedback is needed.
+Large candidate sets, unsafe projections and unsupported hosts end at Root
+rather than adding an unqualified heuristic or hierarchy.
 
-- One active delegated child at a time. Reviewer and worker never run
-  concurrently. No child may delegate (no fan-out).
-- Depth is measured in **executions**, not dispatch labels: hard ceiling 3
-  worker executions per Main Task; automatic economic ceiling 2; a third
-  execution requires explicit benchmark qualification for that task profile.
+## Failure and proof
 
-## Authority and coexistence
-
-Exactly one automatic selector (Jev). If a competing routing authority (a
-same-session router, proxy router, another auto-router skill) governs the
-current Main Task, the Auto Router stands down to `ROOT_DIRECT`. Decision
-receipts and dashboards are evidence, never routing authority. Quota, account
-state, ccusage, model mix, and latency are never routing inputs.
+Closed automatic routing does not mean completed user work. Root still needs
+authorization, verification and required review; unavailable gates mean pending.
+Receipts explain what happened; they do not control future routing. All host
+and performance properties are UNVERIFIED until observed runtime tests and
+benchmark qualification establish them. The repository currently ships the
+static contract and observer Dashboard only.

@@ -14,10 +14,25 @@ Jev chooses.  The Guard validates.  Codex executes.  Root verifies.
 ```
 
 `ROOT_DIRECT` is a first-class outcome, not a failure: Root executes the unit
-itself with the same verification discipline. It is also the terminal state
-of every failure path in this contract. Any condition below that is missing,
+itself with the same verification and risk-triggered review discipline, within
+existing authorization. It is the terminal fallback for failed automatic
+routing; a recoverable worker failure may first use section 10's bounded
+correction. Any condition below that is missing,
 ambiguous, or unverifiable resolves to `ROOT_DIRECT`, except where a section
 explicitly downgrades an unobservable signal to recorded residual risk.
+
+Optimize end-to-end total tokens subject to preserved delivery quality, not
+flagship token share. Jev is the sole automatic worker/model selector. Guard
+only validates; lifecycle owns fixed fallback to the existing Root. The fixed
+governance reviewer is an explicit role exception, not an economic route.
+Cancellation stops work and never triggers automatic Root execution. Required
+authorization, review or safe integration may leave delivery pending.
+
+The [specification](../../../spec.md) owns product invariants and
+[SDD Interfaces](../../../docs/sdd/README.md) define exact schemas. Neither may
+relax this operational contract; conflicts close routing. The
+[acceptance cases](../../../docs/sdd/acceptance-cases.md) are the implementation
+handoff. Runtime enforcement and token savings still require observed proof.
 
 ## 1. Root condition
 
@@ -110,8 +125,22 @@ literal word `none`. An empty or hedging section is not filled.
 The capsule is also an **economic boundary**: it must not copy the entire Root
 conversation by default. Its size is measured, recorded in the Decision
 Receipt, and counted against end-to-end cost by the benchmark. During
-correction the capsule may only narrow; broadening ownership, authorization,
-or success criteria requires new user authorization.
+correction the capsule may only narrow its owned work; the original acceptance
+IDs and criteria must remain intact. Broadening ownership or authorization
+requires user authorization; ordinary in-scope correction does not.
+
+Keep original user intent and acceptance IDs in a local RootIntent independent
+of the capsule summary. Prepare an isolated baseline before routing, including
+authorized dirty/untracked/type/mode/symlink and relevant dependency state.
+Workers never write the shared checkout; a worktree alone is not confinement.
+
+The full capsule stays local. Only the allowlisted RoutingProjection covered by
+an approved provider/data policy may reach Jev. Credentials, raw logs, whole
+conversations, environment values and unrestricted file bodies are excluded.
+Secret scanning is defense in depth; unknown classification or lost meaning
+closes routing before HTTP. Untrusted context is data, never instructions or
+permission evidence. Projection/worker context are separate measured artifacts.
+See [capsule rules](../../../docs/sdd/task-capsule.md).
 
 ## 4. The Runtime Capability Catalog
 
@@ -137,6 +166,19 @@ an absent or invented capability is invalid and the Guard denies it. There is
 no silent substitution: if a requested capability is unavailable, the outcome
 is a denied plan and Root execution, never a different lane chosen on Jev's
 behalf.
+
+Distinguish observed selectability from observed application. Resolve complete
+template/model/effort/provider/profile/context/permission combinations before
+selection, including inherited Skills/MCPs/tools. Required empty arrays mean
+none, not inherit. Evidence is cached within the session by semantic host
+fingerprint and freshness-validated before each decision and spawn; do not
+spawn every model to discover it.
+
+Enumerate every compatible authorized candidate in the qualified family and
+include root. Record deterministic exclusion reasons. No ranking, top-K or
+shape heuristic constructs a favorable shortlist. Only-root preflight skips
+Jev. More than 255 options or unprovable input sizing closes routing rather
+than truncating. See [catalog](../../../docs/sdd/capability-catalog.md).
 
 ## 5. Jev routing
 
@@ -165,8 +207,27 @@ provider failure to an explicit state and **never invents a route**:
 Every adapter failure state means automatic delegation is unavailable and
 resolves to `ROOT_DIRECT`. There is no heuristic fallback route, no legacy
 lane table, and no second selector anywhere in this contract. A RoutePlan
-carries calibrated confidence, risk, a benefit **class**, and stable reason
-codes — never an invented token or dollar forecast.
+carries provider-native confidence/probabilities, policy/capsule risk, a benefit
+**class** from frozen evidence, and factual reason codes — never an invented
+token or dollar forecast. They are not generated Jev explanations.
+
+V1 uses exactly one Choice over complete candidate IDs. No Score/Noul,
+multi-step planner or repeated semantic sampling. Adapter looks up the exact
+selected configuration; it cannot fill fields or substitute a model. RootPlan
+contains no child fields. [Route schemas](../../../docs/sdd/route-plan.md)
+define complete contracts, provenance and local GuardContext.
+
+Pin jev-1.13.0 and check every response. Enforce 64,000 total tokens and 32,000
+state-plus-longest-question tokens (32,000 dominates the single-question slice),
+with a proven pinned tokenizer/bound, never bytes/4. Unknown sizing and
+overflow close routing. Guard owns the frozen floor; Adapter uses that same
+value for LOW_CONFIDENCE.
+
+One retry owner: 20-second total deadline, two HTTP attempts maximum, each
+at most 10 seconds within remaining time. Honor Retry-After only when it fits.
+Do not retry malformed, low-confidence, drift or non-retryable 4xx. Credentials
+stay in transport; no implicit endpoint redirect. Cancellation disarms late
+responses. Exact behavior: [Adapter](../../../docs/sdd/jev-adapter.md).
 
 ## 6. The Policy Guard
 
@@ -205,54 +266,63 @@ The Guard denies a plan unless every check passes:
 Guard thresholds are frozen per benchmark release; they are never tuned per
 task at runtime, and the Guard never reads Dashboard, `ccusage`, credit,
 quota, model-mix, or latency data. A `DENY` never produces a modified plan:
-Root decides what to do — execute directly, fix the capsule, or re-route with
-new information.
+lifecycle closes automatic routing for the Main Task. Root handles authorized
+work or missing requirements; it cannot repair the proposal and re-route a
+DENY. A valid Jev root choice, takeover or exhausted budget also closes routing.
+Only an eligible worker failure while OPEN permits a new Jev decision.
 
 Until a task profile holds frozen benchmark qualification, check 13 fails for
 it by default and its units execute in Root. This is the benefit boundary:
-safety eligibility is not an economic claim.
+safety eligibility is not an economic claim. This is the production rule.
+Explicit research authorization and a frozen ExperimentManifest may waive only
+prior economic qualification; all other gates and hard budgets remain.
+
+The complete [Guard Interface](../../../docs/sdd/policy-guard.md) binds all
+sixteen checks to current local evidence. Model/effort support alone is not
+enough: validate the complete effective profile/provider/configuration, actual
+scope enforcement, original acceptance, egress approval and protected Root
+review capacity. No unproven safety grant is treated as an attribution issue.
 
 ## 7. The execution contract: requested versus observed
 
-Execution of an accepted plan happens through native spawn parameters: the
-child receives the plan's model, reasoning effort, agent/profile, and context
-mode per spawn, and a fresh context is `fork_turns: none`. Nothing is
-inherited implicitly — which is exactly why the comparison below is
-mandatory.
+Root executes the exact plan through an observed native tool. Node does not
+gain a model-visible spawn tool by importing a function. Commands and trusted
+events bind task/decision/execution IDs and expected digests. Reserve a slot
+before native start/resume; ambiguous starts cannot be replayed. Fresh context
+is requested with the host's proven equivalent of fork_turns: none.
 
-Requesting a spawn configuration does not prove it was applied. For every
-delegated execution, compare the requested against the observed: model,
-reasoning effort, agent/profile, context mode, sandbox, permissions, Skills,
-MCPs, tool scopes, and continuation identity. Each dimension records exactly
-one state:
+Track provider, model, effort, agent/profile, context, sandbox, permissions,
+Skills, MCPs, tools and continuation identity. Keep observation, violation and
+adoption disposition separate:
 
-```text
-requested_match
-requested_mismatch
-routing_metadata_unobservable
-accepted_under_unobservable
-permission_scope_violation
-context_boundary_violation
-```
+~~~text
+observation: requested_match | requested_mismatch | routing_metadata_unobservable
+violation: none | permission_scope_violation | context_boundary_violation
+disposition: not_adopted | accepted | accepted_under_unobservable | accepted_with_mismatch
+~~~
 
-**UNKNOWN is never MATCH.** Two consequences follow, and they are not
-interchangeable:
+**UNKNOWN is never MATCH.**
 
 - **Artifact correctness is separate from route/cost attribution
-  correctness.** A more expensive unexpected model may produce a valid
-  artifact but invalid savings evidence; a run with `requested_mismatch` or
-  `routing_metadata_unobservable` is excluded from verified-savings evidence
-  even when its artifact is adopted.
-- **A weaker or unauthorized permission, or an execution-scope violation, is a
-  stronger safety failure.** It does not merely taint attribution: restore the
+  correctness.** Attribution-only unknown/mismatch may produce a valid artifact
+  but is excluded from verified-savings evidence for that route. Its usage and
+  outcome remain in whole-policy benchmark accounting.
+- Independently enforced data/workspace/tool/network/context safety must be
+  established before the first child instruction. Unknown safety, wider grants,
+  weaker isolation or wrong context is a **stronger safety failure**: restore the
   baseline when necessary, stop automatic delegation for this task, and let
-  Root take over.
+  Root take over. Restore only the attempt's isolated state, never shared edits.
+- Missing model/effort attribution with proven safety closes further routing.
+  Record the unverified dimensions as residual risk, verify the artifact and
+  obtain required review, then adopt at most once under `accepted_under_unobservable`
+  per Main Task. Attribution-only mismatch uses accepted_with_mismatch and the
+  same single exception slot. Neither overwrites the original observation.
+- Missing profile/identity evidence that affects safety is never this exception.
+  A narrower grant that prevents execution is a contract failure, not an
+  unauthorized privilege escalation.
 
-A host that exposes no routing metadata does not cause verified output to be
-discarded: mechanical verification and semantic review re-derive correctness
-from the artifact itself. Record the unverified dimensions as residual risk,
-adopt at most once under `accepted_under_unobservable`, and never count the
-run as verified savings.
+See the [execution matrix](../../../docs/sdd/delivery-lifecycle.md) for exact
+event disposition and host proof requirements.
 
 ## 8. Mechanical verification
 
@@ -267,6 +337,10 @@ independent inspection does. Before adoption:
 4. Compare the evidence against the objective, interfaces, and constraints.
 
 This step cannot be skipped, delegated, or satisfied by self-report.
+Reuse requires a complete unchanged dependency fingerprint; uncertain impact
+requires rerunning the command. Include untracked, deleted, mode and symlink
+changes in the diff. Root prepares the exact final integration candidate in
+isolation before review, rather than reviewing a patch that will later change.
 
 ## 9. Semantic review
 
@@ -286,8 +360,11 @@ one of:
 - the child returned a non-empty `JUDGMENT CALLS` or `GAPS`.
 
 Spanning multiple files is not a trigger by itself. The review budget is
-bounded by the execution budget (section 10): one review per candidate, and
-no more reviews than the hard execution ceiling allows.
+bounded by the execution budget (section 10): one review per delegated
+candidate and at most three delegated reviews. One additional Root-final
+review slot is reserved; delegated work cannot consume it. Root-direct and
+takeover candidates follow the same risk trigger. Missing or exhausted required
+review means pending/unaccepted, never silently accepted.
 
 Dispatch the reviewer fresh with the fixed role:
 
@@ -298,8 +375,9 @@ REVIEWER:
   fork_turns: none
 ```
 
-Give it the objective, the exact file list, the complete diff or explicit
-base/head revisions, the verification evidence, and the constraints. Instruct
+Give it the original user intent independently of the capsule, immutable
+acceptance IDs, the objective, the exact file list, complete final candidate
+diff/manifest and dependency digests, verification evidence and constraints. Instruct
 it to judge two things: whether the diff is sound, and whether the objective
 and constraints themselves were adequate for the stated outcome. Instruct it
 to stay strictly read-only: it must not create, modify, delete, or format
@@ -318,9 +396,10 @@ may be described as the other:
   `agents/jev-auto-router-astra-reviewer.toml`, installed by
   `scripts/install-reviewer-agent.sh`. Its requested `read-only` sandbox may
   then be honored. This path is optional hardening, not a prerequisite.
-- **Per-spawn parameters, always available.** Otherwise create the reviewer
-  with per-spawn model, effort, and `fork_turns`, placing its instructions in
-  the spawn message. Its sandbox is inherited from Root.
+- **Per-spawn parameters, when actually supported.** Otherwise request the
+  fixed model, effort and fresh context in the native spawn. Resolve inherited
+  settings explicitly. Unsupported selection/freshness means REVIEW_UNAVAILABLE;
+  prose role instructions cannot replace an unavailable runtime capability.
 
 Report the observed isolation tier and never strengthen it:
 
@@ -336,6 +415,10 @@ Report the observed isolation tier and never strengthen it:
 
 Neither the profile, its installer, nor its `--check` proves that a reviewer
 was spawned, that its context was fresh, or that any isolation took effect.
+Both allowed tiers also require effective tool/network/data confinement.
+Behavioral read-only can expose writes only in a disposable review workspace,
+never shared or external state. A filesystem sandbox alone does not prove MCP
+or network isolation.
 
 Any change made after a verdict voids that verdict. A corrected candidate is
 a new candidate: it must be verified mechanically and, when the trigger
@@ -347,15 +430,15 @@ applies, reviewed independently within the remaining budget.
 - `REVISE`, or section 8 failed → **restore the baseline first**, then
   decide. Root produces structured failure evidence (what was requested, what
   was observed, which checks failed, what the diff showed). Jev receives the
-  original capsule, the failure evidence, the remaining capabilities, and the
-  attempt state, and chooses: Root takeover, `continue_same_worker`,
+  safe projection of the original capsule, bounded failure evidence, remaining
+  complete candidates and attempt state, and chooses: Root takeover, `continue_same_worker`,
   `fresh_worker`, or a different model/agent/capability. A corrected
   specification must differ from the one that failed; never resend the same
   instructions, and never silently repair the child's patch to avoid counting
   a failed attempt.
 - `RECONSIDER` → stop, return to Root architecture and judgment, and consult
-  the user. Never blindly retry workers against a specification the reviewer
-  found inadequate.
+  the user only when intent or authorization is unresolved. Never blindly
+  retry workers against a specification the reviewer found inadequate.
 
 **Same-worker continuation is permitted only when runtime evidence proves**
 a valid continuation handle, worker identity matching the original,
@@ -373,16 +456,35 @@ dispatch labels do not reset it:
   task profile; otherwise Root takes over.
 
 Take over immediately on: the same verification command failing twice; the
-same semantic finding recurring; scope thrash; a permission violation;
-execution identity becoming uncertain; the second automatic execution
-failing; or the remaining expected benefit no longer being positive or being
-materially uncertain. The safety budget is not consumed merely because it
-exists.
+same semantic finding recurring; scope thrash; a permission violation; or
+execution identity becoming uncertain. After the second failure, a third
+correction is possible only if the bound qualification (or frozen research
+permit) explicitly covers that non-repeated failure class, unchanged acceptance
+and attempt regime. Otherwise Root takes over. Root never estimates remaining
+benefit. The safety budget is not consumed merely because it exists.
+
+All counters are monotonic per trusted Main Task: at most three semantic Jev
+decisions, six HTTP attempts (two per decision), three worker executions,
+three delegated-candidate reviews and one protected Root-final review.
+A worker start/resume consumes a slot before invocation even if start later
+fails; transport retries do not reset decisions. The third execution cannot
+start a new unit. Jev chooses every eligible correction's configuration.
+A closed task never reopens routing under another capsule label.
+
+Restore/discard only isolated attempt state. Under a proven exclusive
+integration lease, compare the exact reviewed candidate, original shared
+baseline and relevant dependencies before journaled publication. If any changed,
+stop publication and let Root integrate a new candidate; no automatic merge
+or overwrite. Journal recovery may revert only bytes still owned by that
+transaction. Missing exclusive publication capability leaves a patch pending.
+See [lifecycle](../../../docs/sdd/delivery-lifecycle.md) for increment points,
+conflict recovery and the reserved Root review.
 
 Exactly one child runs at a time. A child may not create descendants.
 Restoring a candidate and continuing in Root is not termination of the
-user's goal and needs no new authorization; broadening scope, changing the
-architecture, or starting new delegated work does.
+user's goal and needs no new authorization inside the existing scope.
+Materially new scope requires authorization; it never silently resets counters
+or reopens this Main Task's closed automatic route.
 
 ## 11. Never routing input
 
@@ -390,7 +492,7 @@ Dashboard, `ccusage`, `src/credit.ts`, Credit or usage estimates, account
 quota, model mix, historical token share, and latency are never inputs to a
 routing decision, to the Guard, or to continuation. They are reporting
 surfaces only. Elapsed time may be a user-facing constraint but never a
-routing input.
+routing input. Transport deadlines bound I/O availability, not model ranking.
 
 ## 12. Boundaries, receipts, and coexistence
 
@@ -402,7 +504,24 @@ attempt index, continuation mode, verification result, review tier and
 verdict, restore/takeover, final outcome, and usage. Receipts are evidence,
 never routing authority: nothing reads a receipt to decide a future route.
 Normal routing state is ephemeral and Root-owned; only benchmark/research mode
-persists sanitized receipts. A new stateless session cannot know a prior one,
+persists sanitized receipts. Current bounded FailureEvidence is separate live
+lifecycle state, not a query of stored receipts. Offline authorized research
+may analyze receipts and produce a frozen qualification artifact; no online
+adaptive threshold or historical-account feedback is allowed.
+
+Receipts distinguish preflight/provider/Guard failures, Jev root choice,
+lifecycle fallback, execution, adoption, pending and cancellation. No failure
+invented a plan or zero usage. Record all provider attempts and UNKNOWN usage;
+digests alone do not replay a decision. Research replay needs approved sanitized
+fixtures plus exact question/candidate/configuration versions.
+See [receipt](../../../docs/sdd/decision-receipt.md).
+
+Qualification requires non-inferior quality followed by positive lower-bound
+total-token savings for the whole policy, including all C assignments, Jev,
+reviews, rejected work, retries and takeover. Unknown attribution never deletes
+a losing run. Match frozen disjoint observable profiles and template/host/
+question/projection/attempt bindings; no favorable profile choice by Root.
+See [benchmark](../../../docs/sdd/benchmark.md). A new stateless session cannot know a prior one,
 so missing, incomplete, conflicting, or ambiguous state ends delegation and
 continues in Root.
 
@@ -416,8 +535,9 @@ This policy optimizes for **trustworthy routing**: intelligence decides,
 determinism governs, execution is recoverable, and acceptance is independent.
 
 - **Jev is the sole selector** because route choice is a judgment under
-  uncertainty: a typed decision model with calibrated probabilities beats a
-  hand-written shape classifier and can grow to agents, Skills, and MCPs.
+  uncertainty: a typed decision model selects among complete feasible choices.
+  Its delivery/token value is measured, never assumed from calibration, and
+  it can expand to Skills and MCPs only under a qualified new regime.
 - **The Guard validates and never chooses** so there is exactly one selector
   and one terminal fallback (`ROOT_DIRECT`) to reason about; governance is
   deterministic and auditable.
