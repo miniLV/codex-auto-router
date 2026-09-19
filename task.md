@@ -179,7 +179,11 @@ Legend: ✅ done · 🔜 next · ⬜ pending · ◐ code/fixtures complete, live
 - Acceptance: catalog digests reproducible per attempt; a TOML file or
   tools/list entry alone can never produce a selectable candidate.
 
-## Task 11 — Implement model/effort routing (read-only probes) ⬜
+## Task 11 — Implement model/effort routing (read-only probes) ◐
+
+- Implemented branded, single-use read-only probe commands and native host
+  bridge protocol. Writable and forged probes are rejected. No real confined
+  native probe is claimed; host enforcement evidence remains unavailable.
 
 - Files: `src/exec.ts` (spawn + requested-vs-observed), tests.
 - P3 real runtime integration is **read-only probes only**, under the
